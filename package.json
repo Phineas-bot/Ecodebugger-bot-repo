@@ -1,5 +1,5 @@
 {
-  "name": "Ecodebugger",
+  "name": "ecodebugger",
   "displayName": "eco-debugger",
   "description": "A gamified extension for debugging with eco coding tips.",
   "version": "0.0.1",
@@ -9,13 +9,16 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": ["onCommand:Ecodebugger.helloWorld"],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "Ecodebugger.helloWorld",
-        "title": "Hello World"
+        "command": "ecoDebugger.awardXP",
+        "title": "EcoDebugger: Award XP"
+      },
+      {
+        "command": "ecoDebugger.provideEcoTips",
+        "title": "EcoDebugger: Provide Eco Tips"
       }
     ]
   },
