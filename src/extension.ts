@@ -8,12 +8,12 @@ let level = 1;
 let statusBarItem: vscode.StatusBarItem;
 const achievements: { [key: string]: boolean } = {}; // Track unlocked achievements
 
-// Function to calculate the XP needed for the next level
+//  calculate the XP needed for the next level
 function xpForNextLevel(level: number): number {
     return level * 100; // Example: Level 1 → 100 XP, Level 2 → 200 XP, etc.
 }
 
-// Function to update the status bar
+//  update the status bar
 function updateStatusBar() {
     if (statusBarItem) {
         statusBarItem.text = `$(star) Level: ${level} | XP: ${xp}/${xpForNextLevel(level)}`;
@@ -21,7 +21,7 @@ function updateStatusBar() {
     }
 }
 
-// Function to check and unlock achievements
+//  check and unlock achievements
 function checkAchievements() {
     if (!achievements['First 100 XP'] && xp >= 100) {
         achievements['First 100 XP'] = true;
@@ -34,7 +34,7 @@ function checkAchievements() {
     }
 }
 
-// Function to analyze the active editor's code and provide eco tips
+// analyze the active editor's code and provide eco tips
 function provideEcoTips() {
     const editor = vscode.window.activeTextEditor;
 
@@ -61,7 +61,7 @@ function provideEcoTips() {
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 
-    // Create a status bar item
+    // here we create a status bar item @phineas 
     statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
     context.subscriptions.push(statusBarItem);
     updateStatusBar();
@@ -81,7 +81,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(disposable);
 
-    // Register the "ecoDebugger.awardXP" command
+    // here we register the "ecoDebugger.awardXP" command
     const awardXPCommand = vscode.commands.registerCommand('ecoDebugger.awardXP', () => {
         // Award 50 XP
         xp += 50;
@@ -113,9 +113,11 @@ export function activate(context: vscode.ExtensionContext) {
     
 }
 
-// This method is called when your extension is deactivated
+// The following method is called when your extension is deactivated 
 export function deactivate() {
     if (statusBarItem) {
         statusBarItem.dispose();
     }
 }
+
+//@phineas baby coder
