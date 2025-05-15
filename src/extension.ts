@@ -1,7 +1,8 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-
+import * as path from 'path';
+import * as fs from 'fs';
 // Variables to track XP, level, and achievements
 let xp = 0;
 let level = 1;
@@ -77,6 +78,23 @@ export function activate(context: vscode.ExtensionContext) {
         // The code you place here will be executed every time your command is executed
         // Display a message box to the user
         vscode.window.showInformationMessage('welcome to eco-debugger start coding clean and green.!');
+          const panel = vscode.window.createWebviewPanel(
+      'ecoDebugger',
+      'Eco Debugger',
+      vscode.ViewColumn.One,
+      {
+        enableScripts: true,
+        localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath, 'media'))]
+      }
+    );
+
+    const htmlPath = path.join(context.extensionPath, 'media', 'index.html');
+    let html = fs.readFileSync(htmlPath, 'utf8');
+    const cssUri = panel.webview.asWebviewUri(vscode.Uri.file(
+      path.join(context.extensionPath, 'media', 'style.css')
+    ));
+    html = html.replace('style.css', cssUri.toString());
+    panel.webview.html = html;
     });
 
     context.subscriptions.push(disposable);

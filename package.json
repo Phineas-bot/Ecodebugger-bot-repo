@@ -9,7 +9,10 @@
   "categories": [
     "Other"
   ],
-  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onCommand:ecoDebugger.showUI"
+  ],
+  "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
@@ -19,13 +22,17 @@
       {
         "command": "ecoDebugger.provideEcoTips",
         "title": "EcoDebugger: Provide Eco Tips"
+      },
+      {
+        "command": "ecoDebugger.showUI",
+        "title": "Show Eco Debugger UI"
       }
     ]
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
-    "compile": "webpack",
-    "watch": "webpack --watch",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
     "package": "webpack --mode production --devtool hidden-source-map",
     "compile-tests": "tsc -p . --outDir out",
     "watch-tests": "tsc -p . -w --outDir out",
@@ -45,6 +52,7 @@
     "webpack": "^5.98.0",
     "webpack-cli": "^6.0.1",
     "@vscode/test-cli": "^0.0.10",
-    "@vscode/test-electron": "^2.4.1"
+    "@vscode/test-electron": "^2.4.1",
+    "vscode": "^1.1.37"
   }
 }
