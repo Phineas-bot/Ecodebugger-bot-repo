@@ -2,18 +2,19 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 
-// Variables to track XP, level, and achievements
+// Variables to track XP, level, and achievements 
 let xp = 0;
 let level = 1;
 let statusBarItem: vscode.StatusBarItem;
-const achievements: { [key: string]: boolean } = {}; // Track unlocked achievements
+const achievements: { [key: string]: boolean } = {};
+let debounceTimer: NodeJS.Timeout | undefined;
 
-//  calculate the XP needed for the next level
+// Calculate the XP needed for the next level
 function xpForNextLevel(level: number): number {
-    return level * 100; // Example: Level 1 → 100 XP, Level 2 → 200 XP, etc.
+    return level * 100;
 }
 
-//  update the status bar
+// Update the status bar
 function updateStatusBar() {
     if (statusBarItem) {
         statusBarItem.text = `$(star) Level: ${level} | XP: ${xp}/${xpForNextLevel(level)}`;
@@ -21,7 +22,7 @@ function updateStatusBar() {
     }
 }
 
-//  check and unlock achievements
+// to check and unlock achievements
 function checkAchievements() {
     if (!achievements['First 100 XP'] && xp >= 100) {
         achievements['First 100 XP'] = true;
@@ -34,7 +35,13 @@ function checkAchievements() {
     }
 }
 
-// analyze the active editor's code and provide eco tips
+// this is the Reusable function to detect nested loops
+function detectNestedLoops(text: string): boolean {
+    const nestedLoopPattern = /for\s*\(.*\)\s*{[^{}]*for\s*\(.*\)/;
+    return nestedLoopPattern.test(text);
+}
+
+// to Analyze the active editor's code and provide eco tips notably .py .ts .js files only 
 function provideEcoTips() {
     const editor = vscode.window.activeTextEditor;
 
@@ -43,12 +50,9 @@ function provideEcoTips() {
         return;
     }
 
-    const document = editor.document;
-    const text = document.getText();
+    const text = editor.document.getText();
 
-    // Example: Check for nested loops as an inefficient pattern
-    const nestedLoopPattern = /for\s*\(.*\)\s*{[^{}]*for\s*\(.*\)/;
-    if (nestedLoopPattern.test(text)) {
+    if (detectNestedLoops(text)) {
         vscode.window.showWarningMessage(
             '⚡ Eco Tip: Avoid nested loops when possible. Consider using more efficient algorithms or data structures.'
         );
@@ -57,67 +61,126 @@ function provideEcoTips() {
     }
 }
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
+// to check for bugs in the active editor 
+function checkForBugs(): boolean {
+    const editor = vscode.window.activeTextEditor;
 
-    // here we create a status bar item @phineas 
+    if (!editor) {
+        vscode.window.showInformationMessage('No active editor found. Open a file to analyze.');
+        return false;
+    }
+
+    const text = editor.document.getText();
+
+    if (detectNestedLoops(text)) {
+        vscode.window.showWarningMessage(
+            '⚡ Eco Tip: Avoid nested loops when possible. Consider using more efficient algorithms or data structures.'
+        );
+        return true; // Bug detected
+    }
+
+    vscode.window.showInformationMessage('✅ No bugs detected in your code!');
+    return false; // No bugs detected
+}
+
+// Use the debounce logic to analyse the code in real time in editor 
+function analyzeCodeInRealTime(event: vscode.TextDocumentChangeEvent) {
+    console.log('Document change detected'); // Debug log
+
+    if (debounceTimer) {
+        clearTimeout(debounceTimer);
+    }
+
+    debounceTimer = setTimeout(() => {
+        const editor = vscode.window.activeTextEditor;
+
+        if (!editor) {
+            console.log('No active editor found'); // Debug log
+            return; // No active editor
+        }
+
+        if (event.document.languageId !== 'javascript' && event.document.languageId !== 'python') {
+            console.log(`Unsupported file type: ${event.document.languageId}`); // Debug log
+            return; // Skip unsupported file types
+        }
+
+        console.log('Analyzing document...'); // Debug log
+        const text = editor.document.getText();
+
+        // Check for bugs
+        if (detectNestedLoops(text)) {
+            console.log('Nested loops detected'); // Debug log
+            vscode.window.showWarningMessage(
+                '⚡ Eco Tip: Avoid nested loops when possible. Consider using more efficient algorithms or data structures.'
+            );
+        } else {
+            console.log('No bugs detected'); // Debug log
+            vscode.window.showInformationMessage('✅ Your code looks eco-friendly!');
+
+            // this logic utomatically award XP if no bugs are detected
+            xp += 50;
+
+            if (xp >= xpForNextLevel(level)) {
+                xp -= xpForNextLevel(level);
+                level++;
+                vscode.window.showInformationMessage(`🎉 Congratulations! You reached Level ${level}!`);
+            }
+
+            checkAchievements();
+            updateStatusBar();
+        }
+    }, 500); // Delay of 500ms
+}
+
+// This method is called when the extension is activated 
+export function activate(context: vscode.ExtensionContext) {
+    // Create a status bar item
     statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
     context.subscriptions.push(statusBarItem);
     updateStatusBar();
 
-    // Use the console to output diagnostic information (console.log) and errors (console.error)
-    // This line of code will only be executed once when your extension is activated
     console.log('Congratulations, your extension "Ecodebugger" is now active!');
 
-    // The command has been defined in the package.json file
-    // Now provide the implementation of the command with registerCommand
-    // The commandId parameter must match the command field in package.json
-    const disposable = vscode.commands.registerCommand('Ecodebugger.helloWorld', () => {
-        // The code you place here will be executed every time your command is executed
-        // Display a message box to the user
-        vscode.window.showInformationMessage('welcome to eco-debugger start coding clean and green.!');
+    // Register the "helloWorld" command
+    const helloWorldCommand = vscode.commands.registerCommand('Ecodebugger.helloWorld', () => {
+        vscode.window.showInformationMessage('Welcome to EcoDebugger! Start coding clean and green!');
     });
+    context.subscriptions.push(helloWorldCommand);
 
-    context.subscriptions.push(disposable);
-
-    // here we register the "ecoDebugger.awardXP" command
+    // Register the "awardXP" command
     const awardXPCommand = vscode.commands.registerCommand('ecoDebugger.awardXP', () => {
-        // Award 50 XP
-        xp += 50;
-
-        // Check if the user leveled up
-        if (xp >= xpForNextLevel(level)) {
-            xp -= xpForNextLevel(level); // Carry over extra XP
-            level++;
-            vscode.window.showInformationMessage(`Congratulations! You reached Level ${level}!`);
+        if (checkForBugs()) {
+            vscode.window.showInformationMessage('❌ Fix the bugs in your code before earning XP!'); 
+            return;
         }
 
-        // Check for achievements
-        checkAchievements();
+        xp += 50;
 
-        // Update the status bar
+        if (xp >= xpForNextLevel(level)) {
+            xp -= xpForNextLevel(level);
+            level++;
+            vscode.window.showInformationMessage(`🎉 Congratulations! You reached Level ${level}!`);
+        }
+
+        checkAchievements();
         updateStatusBar();
     });
-
     context.subscriptions.push(awardXPCommand);
 
-    // Register the "ecoDebugger.provideEcoTips" command
+    // Register the "provideEcoTips" command 
     const ecoTipsCommand = vscode.commands.registerCommand('ecoDebugger.provideEcoTips', () => {
         provideEcoTips();
     });
-
     context.subscriptions.push(ecoTipsCommand);
 
-
-    
+    // Register the code listener for real-time code analysis
+    const realTimeListener = vscode.workspace.onDidChangeTextDocument(analyzeCodeInRealTime);
+    context.subscriptions.push(realTimeListener);
 }
 
-// The following method is called when your extension is deactivated 
+// This method is called to  return when the  extension is deactivated 
 export function deactivate() {
     if (statusBarItem) {
         statusBarItem.dispose();
     }
 }
-
-//@phineas baby coder
