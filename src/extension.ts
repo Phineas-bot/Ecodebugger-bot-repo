@@ -51,23 +51,50 @@ export function activate(context: vscode.ExtensionContext): void {
 
     console.log('Congratulations, your extension "Ecodebugger" is now active!');
 
-    const helloWorldCommand = vscode.commands.registerCommand('Ecodebugger.helloWorld', () => {
-        vscode.window.showInformationMessage('Welcome to EcoDebugger! Start coding clean and green!');
-    });
-    context.subscriptions.push(helloWorldCommand);
+    context.subscriptions.push(
+        vscode.commands.registerCommand('Ecodebugger.helloWorld', () => {
+            vscode.window.showInformationMessage('Welcome to EcoDebugger! Start coding clean and green!');
+        }),
 
-    const awardXPCommand = vscode.commands.registerCommand('ecoDebugger.awardXP', () => {
-        provideEcoTips();
-    });
-    context.subscriptions.push(awardXPCommand);
+        vscode.commands.registerCommand('ecoDebugger.awardXP', () => {
+            provideEcoTips();
+        }),
 
-    const ecoTipsCommand = vscode.commands.registerCommand('ecoDebugger.provideEcoTips', () => {
-        provideEcoTips();
-    });
-    context.subscriptions.push(ecoTipsCommand);
+        vscode.commands.registerCommand('ecoDebugger.provideEcoTips', () => {
+            provideEcoTips();
+        }),
 
-    const realTimeListener = vscode.workspace.onDidChangeTextDocument(analyzeCodeInRealTime);
-    context.subscriptions.push(realTimeListener);
+        vscode.commands.registerCommand('ecoDebugger.showUI', () => {
+            const panel = vscode.window.createWebviewPanel(
+                'ecoDebuggerUI',
+                'Eco Debugger',
+                vscode.ViewColumn.One,
+                {
+                    enableScripts: true,
+                    localResourceRoots: [vscode.Uri.joinPath(context.extensionUri, 'media')],
+                }
+            );
+
+            panel.webview.html = getWebviewContent(panel.webview, context);
+        }),
+
+        vscode.workspace.onDidChangeTextDocument(analyzeCodeInRealTime)
+    );
+}
+
+function getWebviewContent(webview: vscode.Webview, context: vscode.ExtensionContext): string {
+    const cssUri = webview.asWebviewUri(vscode.Uri.joinPath(context.extensionUri, 'media', 'style.css'));
+    const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(context.extensionUri, 'media', 'main.js'));
+    const htmlPath = vscode.Uri.joinPath(context.extensionUri, 'media', 'index.html');
+
+    const fs = require('fs');
+    let html = fs.readFileSync(htmlPath.fsPath, 'utf8');
+
+    // Replace local CSS/script links with VS Code-compatible URIs
+    html = html.replace('style.css', cssUri.toString());
+    html = html.replace('main.js', scriptUri.toString());
+
+    return html;
 }
 
 export function deactivate(): void {
