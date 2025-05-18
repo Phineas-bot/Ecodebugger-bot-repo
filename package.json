@@ -28,7 +28,12 @@
       {
         "command": "ecoDebugger.provideEcoTips",
         "title": "EcoDebugger: Provide Eco Tips"
-      }
+      },
+      {
+         "command": "ecoDebugger.showUI",
+         "title": "EcoDebugger: Show UI"
+}
+
     ]
   },
   "scripts": {
