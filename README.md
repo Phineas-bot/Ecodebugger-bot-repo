@@ -1,4 +1,4 @@
-# Eco-Debugger: A Gamified VS Code Extension
+# ECO-DEBUGGER: A Gamified VS Code Extension
 
 
 
