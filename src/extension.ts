@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 import { checkAchievements } from './utils/achievements';
 import { provideEcoTips } from './utils/ecoTips';
 import { xpForNextLevel } from './utils/xp';
@@ -51,50 +52,82 @@ export function activate(context: vscode.ExtensionContext): void {
 
     console.log('Congratulations, your extension "Ecodebugger" is now active!');
 
+    // Register the webview view provider
     context.subscriptions.push(
-        vscode.commands.registerCommand('Ecodebugger.helloWorld', () => {
-            vscode.window.showInformationMessage('Welcome to EcoDebugger! Start coding clean and green!');
-        }),
-
-        vscode.commands.registerCommand('ecoDebugger.awardXP', () => {
-            provideEcoTips();
-        }),
-
-        vscode.commands.registerCommand('ecoDebugger.provideEcoTips', () => {
-            provideEcoTips();
-        }),
-
-        vscode.commands.registerCommand('ecoDebugger.showUI', () => {
-            const panel = vscode.window.createWebviewPanel(
-                'ecoDebuggerUI',
-                'Eco Debugger',
-                vscode.ViewColumn.One,
-                {
-                    enableScripts: true,
-                    localResourceRoots: [vscode.Uri.joinPath(context.extensionUri, 'media')],
-                }
-            );
-
-            panel.webview.html = getWebviewContent(panel.webview, context);
-        }),
-
-        vscode.workspace.onDidChangeTextDocument(analyzeCodeInRealTime)
+        vscode.window.registerWebviewViewProvider('ecodebuggerView', new EcoDebuggerViewProvider(context))
     );
 }
 
-function getWebviewContent(webview: vscode.Webview, context: vscode.ExtensionContext): string {
-    const cssUri = webview.asWebviewUri(vscode.Uri.joinPath(context.extensionUri, 'media', 'style.css'));
-    const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(context.extensionUri, 'media', 'main.js'));
-    const htmlPath = vscode.Uri.joinPath(context.extensionUri, 'media', 'index.html');
+class EcoDebuggerViewProvider implements vscode.WebviewViewProvider {
+    private readonly context: vscode.ExtensionContext;
 
-    const fs = require('fs');
-    let html = fs.readFileSync(htmlPath.fsPath, 'utf8');
+    constructor(context: vscode.ExtensionContext) {
+        this.context = context;
+    }
 
-    // Replace local CSS/script links with VS Code-compatible URIs
-    html = html.replace('style.css', cssUri.toString());
-    html = html.replace('main.js', scriptUri.toString());
+    resolveWebviewView(webviewView: vscode.WebviewView): void {
+        webviewView.webview.options = {
+            enableScripts: true,
+            localResourceRoots: [vscode.Uri.file(path.join(this.context.extensionPath, 'media'))],
+        };
 
-    return html;
+        webviewView.webview.html = getWebviewContent(webviewView.webview, this.context.extensionPath);
+    }
+}
+
+function getWebviewContent(webview: vscode.Webview, extensionPath: string): string {
+    const styleUri = webview.asWebviewUri(vscode.Uri.file(path.join(extensionPath, 'media', 'style.css')));
+    const scriptUri = webview.asWebviewUri(vscode.Uri.file(path.join(extensionPath, 'out', 'main.js')));
+
+    return `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>EcoDebugger</title>
+            <link rel="stylesheet" href="${styleUri}">
+        </head>
+        <body>
+            <div class="sidebar">
+                <div class="level-box">
+                    <span class="level">Level <span id="level">1</span></span>
+                    <span class="xp"><span id="current-xp">0</span> XP</span>
+                    <div class="progress-bar">
+                        <div id="progress-fill" style="width: 60%;"></div>
+                    </div>
+                </div>
+
+                <h4>Eco Tips</h4>
+                <div class="eco-tip">
+                    <p id="analysis-text">🌱 This loop wastes CPU → try map()</p>
+                    <p class="carbon">Et: 0.4 g</p>
+                    <button id="copy-code-btn">Copy Selected Code</button>
+                </div>
+
+                <h4>Achievements</h4>
+                <div class="achievements">
+                    <button id="green-coder">✅ Green Coder</button>
+                    <button id="bug-slayer">🚫 Bug Slayer</button>
+                </div>
+
+                <div id="achievement-modal" class="modal hidden">
+                    <div class="modal-content">
+                        <span id="close-modal">&times;</span>
+                        <h3 id="achievement-title"></h3>
+                        <p id="achievement-description"></p>
+                    </div>
+                </div>
+
+                <h4>Classroom Mode</h4>
+                <div class="classroom">
+                    <ul id="player-list"></ul>
+                </div>
+            </div>
+            <script src="${scriptUri}"></script>
+        </body>
+        </html>
+    `;
 }
 
 export function deactivate(): void {

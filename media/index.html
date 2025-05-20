@@ -5,29 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>EcoDebugger UI</title>
   <link rel="stylesheet" href="style.css" />
-  <script src="https://unpkg.com/monaco-editor@0.41.0/min/vs/loader.js"></script>
 </head>
 <body>
-  <div class="container">
-    <!-- Code Editor Panel -->
-    <div class="editor-panel">
-      <div class="title-bar">EcoDebugger</div>
-      <div id="editor"></div>
-    </div>
 
       <!-- ...sidebar content stays the same... -->
     
     <div class="sidebar">
-      <div class="level-box">
-        <span class="level">Level 3</span>
-        <span class="xp">182 XP</span>
-      </div>
+<div class="level-box">
+  <span class="level">Level <span id="level">1</span></span>
+  <span class="xp"><span id="current-xp">0</span> XP</span>
+  <div class="progress-bar">
+    <div id="progress-fill" style="width: 60%;"></div>
+  </div>
+</div>
 
-      <h4>Eco Tips</h4>
-      <div class="eco-tip">
-        <p>🌱 This loop wastes CPU → try map()</p>
-        <p class="carbon">Et: 0.4 g</p>
-      </div>
+<h4>Eco Tips</h4>
+<div class="eco-tip">
+  <p id="analysis-text">🌱 This loop wastes CPU → try map()</p>
+  <p class="carbon">Et: 0.4 g</p>
+  <button id="copy-code-btn">Copy Selected Code</button>
+</div>
 
       <h4>Achievements</h4>
 
@@ -45,60 +42,14 @@
         </div>
       </div>
 
-      <h4>Classroom Mode</h4>
-      <div class="classroom">
-        <p>🏆 Victory-1 — 250 XP</p>
-        <p>👩 Maria — 210 XP</p>
-        <p>👨 You — 182 XP</p>
-      </div>
+   <h4>Classroom Mode</h4>
+   <div class="classroom">
+  <ul id="player-list">
+    <!-- Players will be dynamically added here -->
+  </ul>
+</div>
     </div>
   </div>
-
-  <!-- Monaco Editor Setup -->
-  <script>
-    require.config({ paths: { vs: 'https://unpkg.com/monaco-editor@0.41.0/min/vs' }});
-    require(['vs/editor/editor.main'], function () {
-      monaco.editor.create(document.getElementById('editor'), {
-        value: `async function getData() {
-  const response = await fetch("https://api.example.com/data");
-  const items = await response.json();
-  const processedItems = items.map(item => process(item));
-  console.log(processedItems);
-}`,
-        language: 'javascript',
-        theme: 'vs-dark',
-        automaticLayout: true
-      });
-    });
-  </script>
-
-  
+<script src="../out/main.js"></script>
 </body>
 </html>
-<script>
-  const modal = document.getElementById("achievement-modal");
-  const title = document.getElementById("achievement-title");
-  const description = document.getElementById("achievement-description");
-  const closeBtn = document.getElementById("close-modal");
-
-  document.getElementById("green-coder").addEventListener("click", () => {
-    title.textContent = "Green Coder";
-    description.textContent = "Awarded for writing energy-efficient code using best practices like map(), filter(), and async/await.";
-    modal.classList.remove("hidden");
-  });
-
-  document.getElementById("bug-slayer").addEventListener("click", () => {
-    title.textContent = "Bug Slayer";
-    description.textContent = "Earned by identifying and resolving multiple logical errors or anti-patterns in your code.";
-    modal.classList.remove("hidden");
-  });
-
-  closeBtn.addEventListener("click", () => {
-    modal.classList.add("hidden");
-  });
-
-  // Optional: Close modal on background click
-  window.addEventListener("click", (e) => {
-    if (e.target === modal) modal.classList.add("hidden");
-  });
-</script>

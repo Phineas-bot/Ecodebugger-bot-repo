@@ -53,7 +53,7 @@ html {
 
 .level-box {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   background-color: #2c2f30;
   padding: 10px;
   border-radius: 10px;
@@ -63,10 +63,27 @@ html {
   background-color: #4caf50;
   padding: 4px 10px;
   border-radius: 5px;
+  margin-bottom: 5px;
 }
 
 .xp {
   color: #ccc;
+  margin-bottom: 5px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 10px;
+  background-color: #e0e0e0;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+#progress-fill {
+  height: 100%;
+  background-color: #4caf50;
+  width: 0%; /* Initial width */
+  transition: width 0.3s ease-in-out;
 }
 
 h4 {
@@ -82,6 +99,25 @@ h4 {
   margin-top: -10px;
   padding: 10px;
   border-radius: 10px;
+}
+
+#copy-code-btn {
+  padding: 10px 15px;
+  background-color: #4caf50; /* Green background */
+  color: #fff; /* White text */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+#copy-code-btn:hover {
+  background-color: #45a049; /* Slightly darker green on hover */
+}
+
+#copy-code-btn:active {
+  background-color: #3e8e41; /* Even darker green when clicked */
 }
 
 #green-coder,
@@ -152,22 +188,29 @@ h4 {
   color: #fff;
 }
 
-.analyze-btn {
-  background-color: #4caf50;
-  border: none;
-  color: white;
-  padding: 10px 15px;
-  margin-bottom: 15px;
-  font-size: 14px;
-  cursor: pointer;
+.classroom {
+  background-color: #08161b;
+  padding: 10px;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+.classroom ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.classroom li {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 10px;
+  background-color: #2c2f30;
   border-radius: 5px;
+  margin-bottom: 5px;
+  color: #fff;
 }
 
-.analyze-btn:hover {
-  background-color: #45a049;
+.classroom li span {
+  font-weight: bold;
 }
-
-.hidden {
-  display: none;
-}
-
