@@ -10,7 +10,7 @@ const path = require('path');
 /** @type WebpackConfig */
 const extensionConfig = {
   target: 'node', // VS Code extensions run in a Node.js-context 📖 -> https://webpack.js.org/configuration/node/
-	mode: 'none', // this leaves the source code as close as possible to the original (when packaging we set this to 'production')
+  mode: 'none', // this leaves the source code as close as possible to the original (when packaging we set this to 'production')
 
   entry: './src/extension.ts', // the entry point of this extension, 📖 -> https://webpack.js.org/configuration/entry-context/
   output: {
@@ -45,4 +45,30 @@ const extensionConfig = {
     level: "log", // enables logging required for problem matchers
   },
 };
-module.exports = [ extensionConfig ];
+
+/** @type WebpackConfig */
+const webviewConfig = {
+  mode: 'production',
+
+  entry: './media/main.js', // Entry point for your webview JavaScript
+
+  output: {
+    path: path.resolve(__dirname, 'out'),
+    filename: 'main.js', // Output bundled JavaScript
+  },
+
+  module: {
+    rules: [
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader'], // Load and bundle CSS
+      },
+      {
+        test: /\.(png|jpg|gif|svg)$/,
+        use: ['file-loader'], // Load images if needed
+      },
+    ],
+  },
+};
+
+module.exports = [extensionConfig, webviewConfig];
