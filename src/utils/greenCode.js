@@ -1,30 +1,19 @@
-import * as vscode from 'vscode';
-import { parseCodeToAST, traverse } from './parser';
-
-export interface CodeAnalysis {
-    hasNestedLoops: boolean;
-    suggestions: string[];
-    inefficientStringConcat: boolean;
-    redundantCalculations: boolean;
-    unusedVariables: string[];
-    inefficientArrayOperations: boolean;
-}
-
-export function analyzeGreenCode(text: string): CodeAnalysis {
-    const ast = parseCodeToAST(text);
-    const suggestions: string[] = [];
-
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.analyzeGreenCode = analyzeGreenCode;
+const parser_1 = require("./parser");
+function analyzeGreenCode(text) {
+    const ast = (0, parser_1.parseCodeToAST)(text);
+    const suggestions = [];
     let nestedLoopDetected = false;
     let inefficientStringConcat = false;
     let redundantCalculationDetected = false;
-    let unusedVariables: string[] = [];
+    let unusedVariables = [];
     let inefficientArrayPush = false;
-
-    const declaredVariables = new Set<string>();
-    const usedVariables = new Set<string>();
-    const calculationMap = new Map<string, number>();
-
-    traverse(ast, {
+    const declaredVariables = new Set();
+    const usedVariables = new Set();
+    const calculationMap = new Map();
+    (0, parser_1.traverse)(ast, {
         ForStatement(path) {
             if (path.findParent((p) => p.isForStatement())) {
                 nestedLoopDetected = true;
@@ -32,11 +21,9 @@ export function analyzeGreenCode(text: string): CodeAnalysis {
         },
         AssignmentExpression(path) {
             // Inefficient string concatenation
-            if (
-                path.node.operator === '+=' &&
+            if (path.node.operator === '+=' &&
                 path.node.left.type === 'Identifier' &&
-                path.node.right.type === 'Identifier'
-            ) {
+                path.node.right.type === 'Identifier') {
                 inefficientStringConcat = true;
             }
             // Redundant calculations
@@ -53,24 +40,19 @@ export function analyzeGreenCode(text: string): CodeAnalysis {
         },
         CallExpression(path) {
             // Inefficient array push in loops
-            if (
-                path.node.callee.type === 'MemberExpression' &&
+            if (path.node.callee.type === 'MemberExpression' &&
                 path.node.callee.property.type === 'Identifier' &&
-                path.node.callee.property.name === 'push'
-            ) {
+                path.node.callee.property.name === 'push') {
                 if (path.findParent((p) => p.isForStatement())) {
                     inefficientArrayPush = true;
                 }
             }
         }
     });
-
     // Redundant calculations: same assignment more than once
     redundantCalculationDetected = Array.from(calculationMap.values()).some(count => count > 1);
-
     // Unused variables
     unusedVariables = Array.from(declaredVariables).filter(v => !usedVariables.has(v));
-
     // Show messages
     if (nestedLoopDetected) {
         suggestions.push('Consider refactoring nested loops to improve performance and reduce energy consumption');
@@ -87,7 +69,6 @@ export function analyzeGreenCode(text: string): CodeAnalysis {
     if (inefficientArrayPush) {
         suggestions.push('Consider using array spread or Array(n).fill() for better performance');
     }
-
     return {
         hasNestedLoops: nestedLoopDetected,
         suggestions,
@@ -97,3 +78,4 @@ export function analyzeGreenCode(text: string): CodeAnalysis {
         inefficientArrayOperations: inefficientArrayPush
     };
 }
+//# sourceMappingURL=greenCode.js.map
