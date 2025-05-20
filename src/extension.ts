@@ -101,7 +101,7 @@ export function activate(context: vscode.ExtensionContext): void {
         const panel = vscode.window.createWebviewPanel(
             'ecoDebuggerUI',
             'EcoDebugger',
-            vscode.ViewColumn.One,
+            vscode.ViewColumn.One, 
             {
                 enableScripts: true,
                 retainContextWhenHidden: true
