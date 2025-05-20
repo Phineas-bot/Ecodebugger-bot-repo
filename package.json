@@ -13,7 +13,8 @@
   "activationEvents": [
     "onStartupFinished",
     "onLanguage:javascript",
-    "onLanguage:python"
+    "onLanguage:python",
+    "onCommand:ecodebugger.openPanel"
   ],
   "contributes": {
     "commands": [
@@ -30,11 +31,28 @@
         "title": "EcoDebugger: Provide Eco Tips"
       },
       {
-         "command": "ecoDebugger.showUI",
-         "title": "EcoDebugger: Show UI"
-}
-
-    ]
+        "command": "ecodebugger.openPanel",
+        "title": "Open EcoDebugger"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "ecodebugger",
+          "title": "EcoDebugger",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "ecodebugger": [
+        {
+          "id": "ecodebuggerView",
+          "name": "EcoDebugger",
+          "type": "webview"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
@@ -51,15 +69,18 @@
     "@types/babel__traverse": "^7.20.7",
     "@types/mocha": "^10.0.10",
     "@types/node": "20.x",
-    "@types/vscode": "^1.99.0",
+    "@types/vscode": "^1.100.0",
     "@typescript-eslint/eslint-plugin": "^8.28.0",
     "@typescript-eslint/parser": "^8.28.0",
     "@vscode/test-cli": "^0.0.10",
     "@vscode/test-electron": "^2.4.1",
+    "css-loader": "^7.1.2",
     "eslint": "^9.23.0",
+    "file-loader": "^6.2.0",
+    "style-loader": "^4.0.0",
     "ts-loader": "^9.5.2",
     "typescript": "^5.8.2",
-    "webpack": "^5.98.0",
+    "webpack": "^5.99.8",
     "webpack-cli": "^6.0.1"
   },
   "dependencies": {
