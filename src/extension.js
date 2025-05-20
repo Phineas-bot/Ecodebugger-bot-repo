@@ -1,15 +1,51 @@
-import * as vscode from 'vscode';
-import { checkAchievements } from './utils/achievements';
-import { provideEcoTips } from './utils/ecoTips';
-import { xpForNextLevel } from './utils/xp';
-import { updateStatusBar } from './utils/statusBar';
-import { detectNestedLoops } from './utils/bugs';
-
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.activate = activate;
+exports.deactivate = deactivate;
+const vscode = __importStar(require("vscode"));
+const achievements_1 = require("./utils/achievements");
+const ecoTips_1 = require("./utils/ecoTips");
+const xp_1 = require("./utils/xp");
+const statusBar_1 = require("./utils/statusBar");
+const bugs_1 = require("./utils/bugs");
 let xp = 0;
 let level = 1;
-let statusBarItem: vscode.StatusBarItem;
-let debounceTimer: NodeJS.Timeout | undefined;
-let xpLog: string[] = [];
+let statusBarItem;
+let debounceTimer;
+let xpLog = [];
 let classroom = {
     code: 'ABC123',
     leaderboard: [
@@ -19,94 +55,75 @@ let classroom = {
     weeklyTop: 'Victory-1'
 };
 let ecoTipsEnabled = true;
-
-function analyzeCodeInRealTime(event: vscode.TextDocumentChangeEvent): void {
+function analyzeCodeInRealTime(event) {
     if (debounceTimer) {
         clearTimeout(debounceTimer);
     }
-
     debounceTimer = setTimeout(() => {
         const editor = vscode.window.activeTextEditor;
-
         if (!editor) {
             console.log('No active editor found');
             return;
         }
-
         const text = editor.document.getText();
-
-        if (detectNestedLoops(text)) {
-            vscode.window.showWarningMessage(
-                '⚡ Eco Tip: Avoid nested loops when possible. Consider using more efficient algorithms or data structures.'
-            );
-        } else {
+        if ((0, bugs_1.detectNestedLoops)(text)) {
+            vscode.window.showWarningMessage('⚡ Eco Tip: Avoid nested loops when possible. Consider using more efficient algorithms or data structures.');
+        }
+        else {
             xp += 50;
-
-            if (xp >= xpForNextLevel(level)) {
-                xp -= xpForNextLevel(level);
+            if (xp >= (0, xp_1.xpForNextLevel)(level)) {
+                xp -= (0, xp_1.xpForNextLevel)(level);
                 level++;
                 vscode.window.showInformationMessage(`🎉 Congratulations! You reached Level ${level}!`);
             }
-
-            checkAchievements(xp, level);
-            updateStatusBar(statusBarItem, xp, level);
+            (0, achievements_1.checkAchievements)(xp, level);
+            (0, statusBar_1.updateStatusBar)(statusBarItem, xp, level);
         }
     }, 500);
 }
-
-function awardXP(type: 'bug' | 'ecoTip') {
+function awardXP(type) {
     if (type === 'bug') {
         xp += 10;
         xpLog.push(`+10 XP for fixing a bug (${new Date().toLocaleTimeString()})`);
-    } else if (type === 'ecoTip') {
+    }
+    else if (type === 'ecoTip') {
         xp += 5;
         xpLog.push(`+5 XP for applying an eco tip (${new Date().toLocaleTimeString()})`);
     }
-    if (xp >= xpForNextLevel(level)) {
-        xp -= xpForNextLevel(level);
+    if (xp >= (0, xp_1.xpForNextLevel)(level)) {
+        xp -= (0, xp_1.xpForNextLevel)(level);
         level++;
         vscode.window.showInformationMessage(`🎉 Congratulations! You reached Level ${level}!`);
     }
-    checkAchievements(xp, level);
-    updateStatusBar(statusBarItem, xp, level);
+    (0, achievements_1.checkAchievements)(xp, level);
+    (0, statusBar_1.updateStatusBar)(statusBarItem, xp, level);
 }
-
 // Listen for file saves to trigger eco tips
 vscode.workspace.onDidSaveTextDocument((doc) => {
     if (ecoTipsEnabled && (doc.languageId === 'javascript' || doc.languageId === 'typescript' || doc.languageId === 'python')) {
-        provideEcoTips();
+        (0, ecoTips_1.provideEcoTips)();
         awardXP('ecoTip');
     }
 });
-
-export function activate(context: vscode.ExtensionContext): void {
+function activate(context) {
     statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
     context.subscriptions.push(statusBarItem);
-    updateStatusBar(statusBarItem, xp, level);
-
+    (0, statusBar_1.updateStatusBar)(statusBarItem, xp, level);
     // Add a button to the status bar for quick access to the EcoDebugger UI
     statusBarItem.command = 'ecoDebugger.openUI';
     statusBarItem.tooltip = 'Open EcoDebugger Panel';
     statusBarItem.show();
-
     console.log('Congratulations, your extension "Ecodebugger" is now active!');
-
     const helloWorldCommand = vscode.commands.registerCommand('Ecodebugger.helloWorld', () => {
         vscode.window.showInformationMessage('Welcome to EcoDebugger! Start coding clean and green!');
     });
     context.subscriptions.push(helloWorldCommand);
-
     // Add command to open the EcoDebugger Webview UI
     const openEcoDebuggerUI = vscode.commands.registerCommand('ecoDebugger.openUI', () => {
-        const panel = vscode.window.createWebviewPanel(
-            'ecoDebuggerUI',
-            'EcoDebugger',
-            vscode.ViewColumn.One, 
-            {
-                enableScripts: true,
-                retainContextWhenHidden: true
-            }
-        );
+        const panel = vscode.window.createWebviewPanel('ecoDebuggerUI', 'EcoDebugger', vscode.ViewColumn.One, {
+            enableScripts: true,
+            retainContextWhenHidden: true
+        });
         // Initial state
         const state = {
             xp,
@@ -129,46 +146,35 @@ export function activate(context: vscode.ExtensionContext): void {
             ecoTipsEnabled
         };
         panel.webview.html = getEcoDebuggerWebviewContent(state);
-
         // Handle messages from the Webview (e.g., for the mini-game)
-        panel.webview.onDidReceiveMessage(
-            message => {
-                if (message.command === 'fixBug') {
-                    // Optionally update XP, achievements, etc. here
-                    panel.webview.postMessage({ command: 'bugFixed', bugsFixed: message.bugsFixed });
-                }
-            },
-            undefined,
-            context.subscriptions
-        );
+        panel.webview.onDidReceiveMessage(message => {
+            if (message.command === 'fixBug') {
+                // Optionally update XP, achievements, etc. here
+                panel.webview.postMessage({ command: 'bugFixed', bugsFixed: message.bugsFixed });
+            }
+        }, undefined, context.subscriptions);
     });
     context.subscriptions.push(openEcoDebuggerUI);
-
     const awardXPCommand = vscode.commands.registerCommand('ecoDebugger.awardXP', () => {
-        provideEcoTips();
+        (0, ecoTips_1.provideEcoTips)();
     });
     context.subscriptions.push(awardXPCommand);
-
     const ecoTipsCommand = vscode.commands.registerCommand('ecoDebugger.provideEcoTips', () => {
-        provideEcoTips();
+        (0, ecoTips_1.provideEcoTips)();
     });
     context.subscriptions.push(ecoTipsCommand);
-
     const realTimeListener = vscode.workspace.onDidChangeTextDocument(analyzeCodeInRealTime);
     context.subscriptions.push(realTimeListener);
-
     // Automatically open the EcoDebugger UI panel on activation
     vscode.commands.executeCommand('ecoDebugger.openUI');
 }
-
-export function deactivate(): void {
+function deactivate() {
     if (statusBarItem) {
         statusBarItem.dispose();
     }
 }
-
 // Helper to provide the Webview HTML (to be replaced with actual UI)
-function getEcoDebuggerWebviewContent(state: any): string {
+function getEcoDebuggerWebviewContent(state) {
     return `
     <!DOCTYPE html>
     <html lang="en">
@@ -222,7 +228,7 @@ function getEcoDebuggerWebviewContent(state: any): string {
             </div>
             <div id="tab-content-badges" style="display:none;">
                 <h3>Achievements</h3>
-                ${state.achievements.map((a: any) => `
+                ${state.achievements.map((a) => `
                     <div class="achievement${a.unlocked ? '' : ' locked'}">
                         <span class="badge-icon">${a.icon}</span>
                         <span>${a.name}${a.unlocked ? '' : ' (locked)'}</span>
@@ -233,14 +239,14 @@ function getEcoDebuggerWebviewContent(state: any): string {
             <div id="tab-content-eco" style="display:none;">
                 <h3>Eco Tips Log</h3>
                 <div class="xp-log">
-                    ${state.xpLog.map((entry: string) => `<div class="xp-log-entry">${entry}</div>`).join('')}
+                    ${state.xpLog.map((entry) => `<div class="xp-log-entry">${entry}</div>`).join('')}
                 </div>
             </div>
             <div id="tab-content-leader" style="display:none;">
                 <h3>Classroom Mode</h3>
                 <div>Classroom Code: <b>${state.classroom.code}</b></div>
                 <div>Weekly Top: <b>${state.classroom.weeklyTop}</b></div>
-                ${state.leaderboard.map((l: any) => `<div class="leader">${l.name}: ${l.xp} XP</div>`).join('')}
+                ${state.leaderboard.map((l) => `<div class="leader">${l.name}: ${l.xp} XP</div>`).join('')}
             </div>
             <div id="tab-content-settings" style="display:none;">
                 <h3>Settings</h3>
@@ -296,3 +302,4 @@ function getEcoDebuggerWebviewContent(state: any): string {
     </html>
     `;
 }
+//# sourceMappingURL=extension.js.map
