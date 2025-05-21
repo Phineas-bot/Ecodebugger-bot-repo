@@ -1,7 +1,6 @@
 # ECO-DEBUGGER: A Gamified VS Code Extension
 
 
-
 # INTRODUCTION
 
 # General Introduction
@@ -22,13 +21,23 @@ The objectives of Eco-Debugger are short listed below.
 Despite growing awareness of technology’s environmental impact, developers lack tools that make sustainable coding engaging and actionable. Current debugging extensions focus only on fixing errors, missing the opportunity to educate programmers about energy-efficient practices or incentivize greener solutions. Eco-Debugger bridges this gap by transforming debugging into a gamified experience.
 
  
-# LITERATURE REVIEW//////
+# LITERATURE REVIEW
 
+ 
 # RESEARCH METHODOLOGY
 
-We adopted the Agile Scrum methodology for iterative development ……..
+We adopted the Agile Scrum methodology for iterative development, with development cycles of a week sprints to facilitate iterative improvements and feedback integration. Daily stand-up meetings of about 30 minutes to 1hour to check how far works going and for problem resolutions for quicker yields. This methodology ensures that features such as real-time bug detection, energy-saving suggestions, and gamification elements (XP, badges, and leaderboards) are incrementally developed and refined. Test-Driven Development (TDD) is also applied to core functionalities, where unit tests are created for implementing features like CO₂ emission estimation or bug detection algorithms to maintain code reliability and effectiveness.
+
+The Eco-debugger extension is built on the Visual Studio Code’s API leveraging TypeScript, JavaScript and python for seamless integration with the IDE……………….
+
+# Data collection and evaluation.
+
 
 # SYSTEM REQUIREMENTS
-Eco-Debugger’s system requirements prioritize both functionality (real-time code analysis, gamified feedback) and sustainability (low-overhead performance, scalability), ensuring the VS Code extension delivers an engaging, energy-conscious debugging experience without compromising developer productivity. Functional requirements include bug detection, XP rewards, and CO₂ emission estimates, while non-functional requirements enforce responsiveness, and minimal resource usage.
+
+Eco-Debugger’s system requirements prioritizes both functionality (real-time code analysis, gamified feedback) and sustainability, ensuring the VS Code extension delivers an engaging, energy-conscious debugging experience without compromising developer productivity. Functional requirements include bug detection, XP rewards, and CO₂ emission estimates, while non-functional requirements enforce responsiveness, and minimal resource usage.
+
 
 # SYSTEM DESIGN
+
+This system is designed as a multi-layered architecture that integrates seamlessly with Visual Studio Code (VS Code) while providing real-time feedback on code efficiency and environmental impact. The architecture follows a model where the VS Code extension interacts with backend analysis tools and gamification services to deliver a responsive and engaging user experience. 
