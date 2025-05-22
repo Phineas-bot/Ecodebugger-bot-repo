@@ -1,0 +1,19 @@
+SCRUM METHODOLOGY.
+1.	Team Organization:
+•	Product Owner:
+ Adama Hadidjatou Oummoul Modi ICTU20234482
+•	Scrum Master: 
+Phineas.
+•	Development team: 
+	Temah Ian Sean Samuel N. ICTU20234062
+	Tiotse Doungmene Bertrand Junior ICTU20234362
+2.	 Workflow management:
+•	Daily standups: We had 20-40 minutes check -ins both in person and online. We exchanged on how the work is moving and also discussed on how to address and modify some aspects and parts of our project. The scrum master constantly made sure every team member had the necessary tools for the development of the project.
+•	Tools: 
+Visual Studio Code: It is a main development environment (IDE) used to build and test the extension.
+VS Code API: It is used to implement extension features (webviews, commands, events, status bar, etc.).
+GitHub: It hosts repositories, it deals with issue tracking, pull requests, and team code collaboration.
+Git: It is a version control that track changes and manage team collaboration.
+Command Palette: Trigger manual actions like scanning for eco tips (a user interaction points in the extension).
+Webview API: It is used to display the XP system, achievements, and leaderboard in the extension side panel.
+Local Storage / Cloud Backend: It is used for saving the user data (XP, achievements, classroom sync). 
