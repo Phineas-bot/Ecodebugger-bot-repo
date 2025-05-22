@@ -1,0 +1,63 @@
+A gamified debugger extension for VS Code 
+This extension includes features like:
+•	Tracking debugging progress
+•	Awarding achievements or points
+•	Encouraging users through gamification (levels, badges, missions)
+•	Interfacing with VS Code debugging API
+•	Possibly storing user progress or history
+Proposed Classes
+1. GamifiedDebuggerExtension
+•	The main controller of the extension.
+•	Attributes:
+          name: string
+          version: string
+          userProfile: UserProfile
+•	Methods:
+          activate()
+          deactivate()
+          onDebugSessionStart()
+          onDebugSessionEnd()
+2. UserProfile
+•	Tracks user’s stats and progression.
+
+•	Attributes:
+          username: string
+          level: int
+          experiencePoints: int
+          achievements: List<Achievement>
+•	Methods:
+         addExperience(points: int)
+         addAchievement(achievement: Achievement)
+         getProgress(): float
+3. Achievement
+•	Represents a badge or milestone.
+•	Attributes:
+          title: string
+          description: string
+          dateEarned: Date
+•	Methods:
+          display()
+4. Mission
+•	Represents a challenge or task (e.g., “Fix 5 breakpoints”).
+•	Attributes:
+         missionName: string
+         goalType: string (e.g., breakpoints, step-throughs)
+         targetCount: int
+          currentCount: int
+          isCompleted: bool
+•	Methods:
+         updateProgress()
+         checkCompletion(): bool
+5. DebuggerEventTracker
+•	Hooks into VS Code debugging events.
+•	Attributes:
+o	debugSession: DebugSession
+•	Methods:
+o	trackEvents()
+o	notifyUserProfile()
+o	logEvent(event: DebugEvent)
+Notes:
+•	GamifiedDebuggerExtension uses DebuggerEventTracker, owns a UserProfile
+•	UserProfile has a list of Achievement and a list of Mission
+•	DebuggerEventTracker sends updates to UserProfile
+
