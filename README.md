@@ -14,10 +14,10 @@ The aims and objectives of this gamified VS Code extension, Eco-Debugger will be
 The aim of Eco-Debugger is to make debugging fun while reducing carbon footprint of software by encouraging eco-friendly coding habits in VS code.
 #### Objectives:
 The objectives of Eco-Debugger are short listed below.
- 	##### Educate: To provide context-aware eco-tips during debugging sessions. For example; use map() instead of for loop when possible, avoid unnecessary print()/console.log() in production and use list/set comprehensions in Python for better efficiency.
- 	##### Engage: To implement a gamified system where users earn badges/XP when fixing bugs detected by the extension or when eco-tips suggested by the extension are applied.
- 	##### Analyze:  Develop real-time code analysis to highlight energy-wasteful patterns.
- 	Track progress: Track developers’ eco-progress.
+##### Educate: To provide context-aware eco-tips during debugging sessions. For example; use map() instead of for loop when possible, avoid unnecessary print()/console.log() in production and use list/set comprehensions in Python for better efficiency.
+##### Engage: To implement a gamified system where users earn badges/XP when fixing bugs detected by the extension or when eco-tips suggested by the extension are applied.
+##### Analyze:  Develop real-time code analysis to highlight energy-wasteful patterns.
+##### Track progress: Track developers’ eco-progress.
 
 ### Problem statement
 Despite growing awareness of technology’s environmental impact, developers lack tools that make sustainable coding engaging and actionable. Current debugging extensions focus only on fixing errors, missing the opportunity to educate programmers about energy-efficient practices or incentivize greener solutions. Eco-Debugger bridges this gap by transforming debugging into a gamified experience.
