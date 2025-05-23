@@ -1,0 +1,17 @@
+XP and Leveling System:
+Function AddXP(amount: number, source: "bug_fixed" | "eco_tip_applied"):
+  user.xp += amount
+  UpdateSidePanelXPBar()
+
+  // Level-up logic
+  xp_required = 100 * user.level
+  If user.xp >= xp_required:
+    user.level += 1
+    ShowCelebrationModal("Level Up! 🎉 Now Level " + user.level)
+    SaveUserData()
+
+  // Track stats for achievements
+  If source == "bug_fixed":
+    user.bugs_fixed += 1
+  Else if source == "eco_tip_applied":
+    user.eco_tips_applied += 1
