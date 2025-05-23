@@ -1,0 +1,19 @@
+Purpose of the Algorithm
+To evaluate code fixes and edits, detect eco-optimization opportunities, assign XP, and trigger achievements/badges in a gamified way.
+Key Supporting Components
+•	evaluate_bug_fix(): Detects if code quality improved (e.g., removed errors, performance gains).
+•	detect_eco_tips(): Uses static analysis rules (Python, JS, TS) to suggest:
+o	Replacing forEach with map when returning
+o	Removing unused imports/vars
+o	Using efficient data structures (e.g., set instead of list for lookups)
+•	update_user_xp(): Stores and updates user XP (based on difficulty + time efficiency)
+•	evaluate_achievements(): Tracks progress towards unlockable badges (e.g., "Green Coder", "Bug Smasher")
+Advanced Features 
+•	XP multiplier for eco-friendly fixes
+•	Leaderboard and Classroom mode: integrate with event stream
+•	Real-time UI feedback: Use VS Code's webview to show progress bars, animations, badges, and eco tips
+Integration Points
+•	VS Code API for listening to debug sessions and file edits
+•	Language Server / Linters for eco tip detection
+•	Local/Cloud storage for progress tracking
+
