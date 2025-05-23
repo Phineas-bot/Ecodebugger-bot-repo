@@ -25,14 +25,18 @@ Despite growing awareness of technology’s environmental impact, developers lac
  
 ## LITERATURE REVIEW
 
- 
-## RESEARCH METHODOLOGY
-
+## METHODOLOGY AND MATERIALS
+### Research Methodology
 We adopted the Agile Scrum methodology for iterative development, with development cycles of a week sprints to facilitate iterative improvements and feedback integration. Daily stand-up meetings of about 30 minutes to 1hour to check how far works going and for problem resolutions for quicker yields. This methodology ensures that features such as real-time bug detection, energy-saving suggestions, and gamification elements (XP, badges, and leaderboards) are incrementally developed and refined. Test-Driven Development (TDD) is also applied to core functionalities, where unit tests are created for implementing features like CO₂ emission estimation or bug detection algorithms to maintain code reliability and effectiveness.
 
-The Eco-debugger extension is built on the Visual Studio Code’s API leveraging TypeScript, JavaScript and python for seamless integration with the IDE……………….
+### Materials and Technologies Used
+The EcoDebugger extension is built using TypeScript as its primary language, leveraging advanced JavaScript programming methodologies and modern static typing features to enhance code reliability and prevent runtime bugs. The client-side debugging and code analysis functionalities are implemented in JavaScript, taking full advantage of VS Code's execution environment for real-time code introspection. The backend logic runs on Node.js, providing a robust runtime environment for energy profiling calculations and gamification services.
 
-### Data collection and evaluation.
+For version control and collaborative development, we utilize Git/GitHub, enabling seamless team coordination and continuous integration. The user interface is developed using VS Code's Webview API, which allows us to implement modern, interactive dashboards within the extension. These dashboards are built with HTML and CSS, styled to match VS Code's native theming system while providing enhanced visual feedback about code efficiency.
+
+The codebase employs Webpack as its module bundler, efficiently packaging our complex TypeScript architecture into optimized deployment bundles. This ensures smooth publishing to the VS Code Marketplace while maintaining excellent performance characteristics. For code quality assurance, we integrate ESLint with Prettier to enforce consistent formatting and catch potential bugs during development. The Live Share extension facilitates real-time collaborative debugging sessions among team members.
+
+Data persistence is handled through a hybrid storage approach: Firebase serves as our cloud database for leaderboard data and user achievements, while SQLite and local JSON databases manage offline-first scenarios and extension preferences. All project documentation is written in Markdown, following industry best practices for maintainability and version-controlled knowledge sharing.
 
 
 ## SYSTEM REQUIREMENTS
