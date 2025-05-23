@@ -1,0 +1,16 @@
+Classroom mode:
+On JoinClassroom(classroom_id: string):
+  user.classroom_id = classroom_id
+  FetchLeaderboard(classroom_id)  // From cloud/local server
+
+Function UpdateLeaderboard():
+  If user.classroom_id:
+    Send user.xp to server
+    leaderboard = GetLeaderboard(user.classroom_id)
+    UpdateSidePanelLeaderboard(leaderboard)
+
+  // Weekly reset logic
+  If isMonday() and time > 9:00 AM:
+    ResetWeeklyLeaderboard()
+    If user.rank == 1:
+      GrantAchievement("team_leader")
