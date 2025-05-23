@@ -1,0 +1,19 @@
+Eco Tips Engine:
+# Example for Python
+def scan_for_eco_tips(code: str) -> List[EcoTip]:
+  tips = []
+  # Anti-pattern: Unoptimized loops
+  if "for i in range" in code and not "map(" in code:
+    tips.append({
+      "type": "use_map",
+      "message": "Replace with map() for better efficiency",
+      "line": find_line_number(code, "for i in range")
+    })
+  # Anti-pattern: Debug prints in production
+  if "print(" in code and not in_dev_environment():
+    tips.append({
+      "type": "remove_print",
+      "message": "Remove debug prints in production",
+      "line": find_line_number(code, "print(")
+    })
+  return tips
