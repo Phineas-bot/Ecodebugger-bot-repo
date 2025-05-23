@@ -1,0 +1,23 @@
+Main Event Loop:
+On VS Code Activation:
+  Load user data from storage.
+  Initialize side panel with tabs (XP, Badges, Eco Tips, Leaderboard).
+  Start Eco Tips Engine (language-specific scanners).
+
+On Debugger Session:
+  Listen for debugger events (breakpoints, errors).
+  If bug is fixed (test passes):
+    AddXP(10, "bug_fixed")
+    CheckAchievements()
+
+On File Save:
+  If eco-tips enabled:
+    Scan code for language-specific inefficiencies.
+    For each detected issue:
+      Show eco tip in "Problems" pane.
+    If user applies tip (via Quick Fix):
+      AddXP(5, "eco_tip_applied")
+      CheckAchievements()
+
+On Manual Scan (Command Palette):
+  Trigger full codebase eco-tip scan.
