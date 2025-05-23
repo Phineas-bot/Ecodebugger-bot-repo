@@ -34,6 +34,9 @@ We adopted the Agile Scrum methodology for iterative development, with developme
 Eco-Debugger’s system requirements prioritizes both functionality (real-time code analysis, gamified feedback) and sustainability, ensuring the VS Code extension delivers an engaging, energy-conscious debugging experience without compromising developer productivity. Functional requirements include bug detection, XP rewards, and CO₂ emission estimates, while non-functional requirements enforce responsiveness, and minimal resource usage.
 
 
+## System Design
+This system is designed as a multi-layered architecture that integrates seamlessly with Visual Studio Code (VS Code) while providing real-time feedback on code efficiency and environmental impact. The architecture follows a model where the VS Code extension interacts with backend analysis tools and gamification services to deliver a responsive and engaging user experience. 
+
 ### Materials and Technologies Used
 The EcoDebugger extension is built using TypeScript as its primary language, leveraging  JavaScript programming methodologies and modern static typing features to enhance code reliability and prevent runtime bugs. The client-side debugging and code analysis functionalities are implemented in JavaScript, taking full advantage of VS Code's execution environment for real-time code analysis. The backend logic runs on Node.js, providing a robust runtime environment for energy profiling calculations,fixing bugs and gamification services.
 
@@ -43,9 +46,11 @@ The codebase employs Webpack as its module bundler, efficiently packaging our co
 We also used Live Share extension to facilitates real-time collaborative meetings and debugging sessions among team members.
 
 Data persistence is handled through a hybrid storage approach: Firebase serves as our cloud database for leaderboard data and user achievements, while SQLite/local JSON databases to manage data. 
-
 The project documentation is written in Markdown for .md files and pdf too. 
 
-## System Design
 
-This system is designed as a multi-layered architecture that integrates seamlessly with Visual Studio Code (VS Code) while providing real-time feedback on code efficiency and environmental impact. The architecture follows a model where the VS Code extension interacts with backend analysis tools and gamification services to deliver a responsive and engaging user experience. 
+## RESULTS AND DISCUSSIONS
+|API|purpose|
+-
+|vs..|dddd|
+## RECOMENDATIONS AND CONCLUSION
