@@ -1,0 +1,25 @@
+Core Data Structures:
+ User Profile
+User {
+  xp: number,
+  level: number,
+  bugs_fixed: number,
+  eco_tips_applied: number,
+  achievements: Achievement[],
+  classroom_id?: string
+}
+
+Achievement Definitions
+Achievement {
+  id: string,          // e.g., "green_coder"
+  name: string,        // e.g., "Green Coder"
+  unlocked: boolean,
+  target: number       // e.g., 10 eco tips
+}
+
+Classroom Leaderboard
+LeaderboardEntry {
+  user_id: string,
+  xp: number,
+  rank: number
+}
