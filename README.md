@@ -50,7 +50,5 @@ The project documentation is written in Markdown for .md files and pdf too.
 
 
 ## RESULTS AND DISCUSSIONS
-|API|purpose|
--
-|vs..|dddd|
+
 ## RECOMENDATIONS AND CONCLUSION
