@@ -1,0 +1,21 @@
+Achievement System:
+Function CheckAchievements():
+  achievements = [
+    { id: "green_coder", target: 10, type: "eco_tips" },
+    { id: "bug_slayer", target: 20, type: "bugs" },
+    { id: "efficient_thinker", target: 500, type: "xp" }
+  ]
+
+  For each achievement in achievements:
+    If not achievement.unlocked:
+      If achievement.type == "eco_tips" and user.eco_tips_applied >= achievement.target:
+        UnlockAchievement(achievement)
+      Else if achievement.type == "bugs" and user.bugs_fixed >= achievement.target:
+        UnlockAchievement(achievement)
+      Else if achievement.type == "xp" and user.xp >= achievement.target:
+        UnlockAchievement(achievement)
+
+Function UnlockAchievement(achievement: Achievement):
+  achievement.unlocked = true
+  ShowCelebrationModal("Achievement Unlocked: " + achievement.name)
+  UpdateSidePanelBadges()
