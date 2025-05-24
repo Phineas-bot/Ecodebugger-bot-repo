@@ -61,6 +61,12 @@ The Green Software Foundation’s SCI framework (2023) provides metrics for carb
 - IDE Extensions for Sustainability
 Existing VS Code extensions (e.g., CodeCarbon) track emissions passively. EcoDebugger innovates by proactively suggesting optimizations during debugging, bridging gamification and sustainability.
 
+### Review of Related Literature
+Gamified Debugging: Nunes et al. (2020) found that XP systems increase developer engagement by 40%, but their study omitted environmental impacts.
+- Energy Profiling: Research by Hindle (2012) established correlations between code patterns (e.g., recursion) and CPU load, informing EcoDebugger’s analysis rules.
+- Educational Tools: Code.org’s leaderboards (Grover et al., 2015) demonstrated competition’s efficacy in classrooms, directly inspiring EcoDebugger’s Classroom Mode.
+- Research Gap: No prior work combines real-time energy profiling, gamification, and classroom collaboration in a single IDE tool—EcoDebugger’s novel contribution.
+
 
 ## METHODOLOGY AND MATERIALS
 
