@@ -42,6 +42,25 @@ Comparative studies (Hoda et al., 2012; Dybå and Dingsøyr, 2008) conclude that
 - Moderate team sizes (e.g., 3–5 developers).
 
 EcoDebugger’s unique blend of experimental features (real-time CO₂ estimates + XP rewards) aligns precisely with Scrum’s strengths, while avoiding the rigidity of Waterfall and the operational bloat of DevOps.
+### Reason for the Choice of Scrum Methodology
+The selection of Scrum as the primary development methodology for the EcoDebugger project was driven by its unique alignment with the project’s core objectives: iterative refinement, user-centric design, and adaptive sustainability features. Below is a detailed justification for this choice, supported by empirical research and project-specific requirements.
+- Iterative Development
+Enables quick prototyping of features (XP rewards, CO₂ feedback) and continuous improvement through biweekly sprints.
+- User-Centric Design
+Feedback from developers ensures the tool remains practical and engaging.
+- Adaptability
+Allows seamless incorporation of new sustainability standards (e.g., updated energy-profiling metrics).
+- Proven Success
+Similar tools (e.g., Codecademy, VS Code extensions) use Scrum for efficient, incremental updates.
+
+### General Review of Related Concepts with Project
+- Gamification in Developer Tools
+Gamification techniques (Deterding et al., 2011) have been successfully applied to programming education (e.g., Codecademy’s badges). However, most tools focus solely on code correctness, neglecting energy efficiency—a gap EcoDebugger addresses.
+- Green Software Engineering
+The Green Software Foundation’s SCI framework (2023) provides metrics for carbon-aware coding, while studies (Pang et al., 2021) demonstrate that real-time feedback reduces energy waste by up to 23%. EcoDebugger extends this work by embedding SCI estimates directly into debugging workflows.
+- IDE Extensions for Sustainability
+Existing VS Code extensions (e.g., CodeCarbon) track emissions passively. EcoDebugger innovates by proactively suggesting optimizations during debugging, bridging gamification and sustainability.
+
 
 ## METHODOLOGY AND MATERIALS
 
