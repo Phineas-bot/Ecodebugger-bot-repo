@@ -14,8 +14,7 @@
     "onStartupFinished",
     "onLanguage:javascript",
     "onLanguage:python"
-  ],
-  "contributes": {
+  ],  "contributes": {
     "commands": [
       {
         "command": "Ecodebugger.helloWorld",
@@ -29,7 +28,22 @@
         "command": "ecoDebugger.provideEcoTips",
         "title": "EcoDebugger: Provide Eco Tips"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "EcoDebugger",
+      "properties": {
+        "ecoDebugger.openaiApiKey": {
+          "type": "string",
+          "default": "",
+          "description": "OpenAI API key for advanced code analysis"
+        },
+        "ecoDebugger.enableAiAnalysis": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable AI-powered code analysis"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
@@ -57,9 +71,9 @@
     "typescript": "^5.8.2",
     "webpack": "^5.98.0",
     "webpack-cli": "^6.0.1"
-  },
-  "dependencies": {
+  },  "dependencies": {
     "@babel/parser": "^7.27.2",
-    "@babel/traverse": "^7.27.1"
+    "@babel/traverse": "^7.27.1",
+    "axios": "^1.6.2"
   }
 }

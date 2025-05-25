@@ -1,10 +1,11 @@
 import * as vscode from 'vscode';
 import { execFile } from 'child_process';
 import * as path from 'path';
-import { CodeAnalysis } from './greenCode';
+import type { CodeAnalysis } from './greenCode';
 
-export async function analyzePythonGreenCode(text: string): Promise<CodeAnalysis> {
-    const scriptPath = path.join(__dirname, 'green_code_analyzer.py');
+export function analyzePythonGreenCode(text: string, context: vscode.ExtensionContext) {
+    // Always resolve the .py file from the extension's source directory
+    const scriptPath = path.join(context.extensionPath, 'src', 'utils', 'green_code_analyzer.py');
 
     return new Promise<CodeAnalysis>((resolve, reject) => {
         const suggestions: string[] = [];
@@ -50,7 +51,9 @@ export async function analyzePythonGreenCode(text: string): Promise<CodeAnalysis
             } catch (e) {
                 reject(e);
             }
-        });        if (process.stdin) {
+        });
+
+        if (process.stdin) {
             process.stdin.write(text);
             process.stdin.end();
         }

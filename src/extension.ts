@@ -4,6 +4,7 @@ import { provideEcoTips } from './utils/ecoTips';
 import { xpForNextLevel } from './utils/xp';
 import { updateStatusBar } from './utils/statusBar';
 import { detectNestedLoops } from './utils/bugs';
+import { OpenAICodeAnalyzer } from './utils/openAIAnalyzer';
 
 let xp = 0;
 let level = 1;
@@ -19,39 +20,36 @@ let classroom = {
     weeklyTop: 'Victory-1'
 };
 let ecoTipsEnabled = true;
+let openAIAnalyzer: OpenAICodeAnalyzer;
 
-function analyzeCodeInRealTime(event: vscode.TextDocumentChangeEvent): void {
+function analyzeCodeInRealTime(event: vscode.TextDocumentChangeEvent, context: vscode.ExtensionContext): void {
     if (debounceTimer) {
         clearTimeout(debounceTimer);
     }
 
-    debounceTimer = setTimeout(() => {
+    debounceTimer = setTimeout(async () => {
         const editor = vscode.window.activeTextEditor;
-
-        if (!editor) {
-            console.log('No active editor found');
+        if (!editor || !ecoTipsEnabled) {
             return;
         }
 
-        const text = editor.document.getText();
+        const document = editor.document;
+        const text = document.getText();
+        const languageId = document.languageId;
 
-        if (detectNestedLoops(text)) {
-            vscode.window.showWarningMessage(
-                '⚡ Eco Tip: Avoid nested loops when possible. Consider using more efficient algorithms or data structures.'
-            );
-        } else {
-            xp += 50;
-
-            if (xp >= xpForNextLevel(level)) {
-                xp -= xpForNextLevel(level);
-                level++;
-                vscode.window.showInformationMessage(`🎉 Congratulations! You reached Level ${level}!`);
+        if (["javascript", "typescript", "python"].includes(languageId)) {
+            try {
+                // Check if there are significant changes before running AI analysis
+                const hasSignificantChanges = text.length > 50 || text.includes("for") || text.includes("while");
+                
+                if (hasSignificantChanges) {
+                    await provideEcoTips(context);
+                }
+            } catch (error) {
+                console.error('Error in real-time analysis:', error);
             }
-
-            checkAchievements(xp, level);
-            updateStatusBar(statusBarItem, xp, level);
         }
-    }, 500);
+    }, 1000); // 1 second debounce
 }
 
 function awardXP(type: 'bug' | 'ecoTip') {
@@ -72,14 +70,25 @@ function awardXP(type: 'bug' | 'ecoTip') {
 }
 
 // Listen for file saves to trigger eco tips
-vscode.workspace.onDidSaveTextDocument((doc) => {
-    if (ecoTipsEnabled && (doc.languageId === 'javascript' || doc.languageId === 'typescript' || doc.languageId === 'python')) {
-        provideEcoTips();
-        awardXP('ecoTip');
-    }
-});
+// (Moved into activate to access the correct context)
 
-export function activate(context: vscode.ExtensionContext): void {
+export function activate(context: vscode.ExtensionContext) {
+    // Initialize OpenAI analyzer
+    openAIAnalyzer = new OpenAICodeAnalyzer();
+    
+    statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
+    // Listen for file saves to trigger eco tips (now has correct context)
+    const saveWatcher = vscode.workspace.onDidSaveTextDocument((doc) => {
+        if (ecoTipsEnabled && (doc.languageId === 'javascript' || doc.languageId === 'typescript' || doc.languageId === 'python')) {
+            provideEcoTips(context);
+            awardXP('ecoTip');
+        }
+    });
+    context.subscriptions.push(saveWatcher);
+
+    // Initialize OpenAI analyzer
+    openAIAnalyzer = new OpenAICodeAnalyzer();
+    
     statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
     context.subscriptions.push(statusBarItem);
     updateStatusBar(statusBarItem, xp, level);
@@ -90,11 +99,6 @@ export function activate(context: vscode.ExtensionContext): void {
     statusBarItem.show();
 
     console.log('Congratulations, your extension "Ecodebugger" is now active!');
-
-    const helloWorldCommand = vscode.commands.registerCommand('Ecodebugger.helloWorld', () => {
-        vscode.window.showInformationMessage('Welcome to EcoDebugger! Start coding clean and green!');
-    });
-    context.subscriptions.push(helloWorldCommand);
 
     // Add command to open the EcoDebugger Webview UI
     const openEcoDebuggerUI = vscode.commands.registerCommand('ecoDebugger.openUI', () => {
@@ -145,17 +149,32 @@ export function activate(context: vscode.ExtensionContext): void {
     context.subscriptions.push(openEcoDebuggerUI);
 
     const awardXPCommand = vscode.commands.registerCommand('ecoDebugger.awardXP', () => {
-        provideEcoTips();
-    });
+            provideEcoTips(context);
+        });
     context.subscriptions.push(awardXPCommand);
 
-    const ecoTipsCommand = vscode.commands.registerCommand('ecoDebugger.provideEcoTips', () => {
-        provideEcoTips();
+    // Register eco tips command
+    let ecoTipsCommand = vscode.commands.registerCommand('ecoDebugger.provideEcoTips', () => {
+        provideEcoTips(context);
     });
-    context.subscriptions.push(ecoTipsCommand);
 
-    const realTimeListener = vscode.workspace.onDidChangeTextDocument(analyzeCodeInRealTime);
-    context.subscriptions.push(realTimeListener);
+    // Watch for document changes
+    let changeWatcher = vscode.workspace.onDidChangeTextDocument((event) => {
+        analyzeCodeInRealTime(event, context);
+    });
+
+    // Register configuration change handler
+    let configWatcher = vscode.workspace.onDidChangeConfiguration(event => {
+        if (event.affectsConfiguration('ecoDebugger')) {
+            ecoTipsEnabled = vscode.workspace.getConfiguration('ecoDebugger').get('enableAiAnalysis', true);
+        }
+    });
+
+    context.subscriptions.push(
+        ecoTipsCommand,
+        changeWatcher,
+        configWatcher
+    );
 
     // Automatically open the EcoDebugger UI panel on activation
     vscode.commands.executeCommand('ecoDebugger.openUI');
