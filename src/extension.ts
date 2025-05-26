@@ -71,6 +71,19 @@ function awardXP(type: 'bug' | 'ecoTip') {
     updateStatusBar(statusBarItem, xp, level);
 }
 
+// Add logic to track XP when 'Replace Code in File' is clicked.
+function trackReplaceCodeXP() {
+    xp += 10; // Assign 10 XP points for replacing code
+    xpLog.push(`+10 XP for replacing code (${new Date().toLocaleTimeString()})`);
+    if (xp >= xpForNextLevel(level)) {
+        xp -= xpForNextLevel(level);
+        level++;
+        vscode.window.showInformationMessage(`🎉 Congratulations! You reached Level ${level}!`);
+    }
+    checkAchievements(xp, level);
+    updateStatusBar(statusBarItem, xp, level);
+}
+
 // Listen for file saves to trigger eco tips
 vscode.workspace.onDidSaveTextDocument((doc) => {
     if (ecoTipsEnabled && (doc.languageId === 'javascript' || doc.languageId === 'typescript' || doc.languageId === 'python')) {
@@ -157,6 +170,28 @@ export function activate(context: vscode.ExtensionContext): void {
     const realTimeListener = vscode.workspace.onDidChangeTextDocument(analyzeCodeInRealTime);
     context.subscriptions.push(realTimeListener);
 
+    // Register the `ecoDebugger.showEcoTips` command to update the Eco Tips panel.
+    const showEcoTipsCommand = vscode.commands.registerCommand('ecoDebugger.showEcoTips', (suggestions: any[]) => {
+        const panel = vscode.window.createWebviewPanel(
+            'ecoDebuggerUI',
+            'EcoDebugger',
+            vscode.ViewColumn.One,
+            { enableScripts: true }
+        );
+
+        panel.webview.html = getEcoDebuggerWebviewContent({
+            ecoTips: suggestions,
+            xp,
+            level,
+            xpLog,
+            achievements: [],
+            leaderboard: classroom.leaderboard,
+            classroom,
+            ecoTipsEnabled
+        });
+    });
+    context.subscriptions.push(showEcoTipsCommand);
+
     // Automatically open the EcoDebugger UI panel on activation
     vscode.commands.executeCommand('ecoDebugger.openUI');
 }
@@ -169,6 +204,34 @@ export function deactivate(): void {
 
 // Helper to provide the Webview HTML (to be replaced with actual UI)
 function getEcoDebuggerWebviewContent(state: any): string {
+    const escapeHtml = (unsafe: string): string => {
+        return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    };
+
+    const ecoTipsHtml = state.ecoTips.map((s: any) => {
+        const issue = escapeHtml(s.issue || "No issue provided");
+        const suggestion = escapeHtml(s.suggestion || "No suggestion provided");
+        const explanation = escapeHtml(s.explanation || "No explanation provided");
+        const snippet = escapeHtml(s.snippet || "");
+
+        return `
+            <div class="eco-tip">
+                <div class="eco-tip-header">${issue}</div>
+                <div class="eco-tip-body" style="display: none;">
+                    <p><b>Suggestion:</b> ${suggestion}</p>
+                    <p><b>Explanation:</b> ${explanation}</p>
+                    <pre>${snippet}</pre>
+                    <button class="replace-code">Replace Code</button>
+                </div>
+            </div>
+        `;
+    }).join("");
+
     return `
     <!DOCTYPE html>
     <html lang="en">
@@ -177,122 +240,39 @@ function getEcoDebuggerWebviewContent(state: any): string {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>EcoDebugger</title>
         <style>
-            body { font-family: 'Segoe UI', Arial, sans-serif; background: #181c24; color: #fff; margin: 0; }
-            .container { max-width: 500px; margin: 2rem auto; background: #23283a; border-radius: 12px; box-shadow: 0 2px 16px #0008; padding: 2rem; }
-            .tabs { display: flex; gap: 1rem; margin-bottom: 1.5rem; }
-            .tab { cursor: pointer; padding: 0.5rem 1rem; border-radius: 6px; background: #222a36; color: #fff; }
-            .tab.active { background: #2ecc71; color: #fff; }
-            .level { background: #2ecc71; color: #fff; border-radius: 8px; padding: 0.5rem 1rem; display: inline-block; margin-bottom: 1rem; font-weight: bold; }
-            .xp { color: #fff; margin-bottom: 1rem; }
-            .xp-bar-container { margin-bottom: 1rem; }
-            .xp-bar-bg { background: #333; border-radius: 8px; width: 100%; height: 16px; }
-            .xp-bar-fill { background: #2ecc71; height: 100%; border-radius: 8px; transition: width 0.3s; }
-            .xp-bar-label { font-size: 0.9rem; color: #fff; text-align: right; margin-top: 2px; }
-            .eco-tips, .achievements, .leaderboard, .xp-log, .settings { margin-bottom: 2rem; }
-            .eco-tip, .achievement, .leader, .xp-log-entry { background: #222a36; border-radius: 6px; padding: 0.5rem 1rem; margin-bottom: 0.5rem; }
-            .eco-tip { border-left: 4px solid #2ecc71; }
-            .achievement { border-left: 4px solid #f1c40f; display: flex; align-items: center; }
-            .achievement .badge-icon { font-size: 1.3rem; margin-right: 0.7rem; }
-            .achievement.locked { opacity: 0.5; filter: grayscale(1); }
-            .leader { border-left: 4px solid #3498db; }
-            .game-section { margin-top: 2rem; }
-            button { background: #2ecc71; color: #fff; border: none; border-radius: 6px; padding: 0.5rem 1rem; font-size: 1rem; cursor: pointer; margin-top: 1rem; }
-            button:hover { background: #27ae60; }
-            .settings label { display: flex; align-items: center; gap: 0.5rem; }
+            body { font-family: Arial, sans-serif; background: #f4f4f4; color: #333; margin: 0; padding: 0; }
+            .container { padding: 20px; }
+            .eco-tip { border: 1px solid #ddd; margin-bottom: 10px; padding: 10px; border-radius: 5px; background: #fff; }
+            .eco-tip-header { font-weight: bold; cursor: pointer; }
+            .eco-tip-body { margin-top: 10px; }
+            button { margin-top: 10px; padding: 5px 10px; background: #007acc; color: #fff; border: none; border-radius: 3px; cursor: pointer; }
         </style>
     </head>
     <body>
         <div class="container">
-            <div class="tabs">
-                <div class="tab active" id="tab-xp">XP/Level</div>
-                <div class="tab" id="tab-badges">Badges Earned</div>
-                <div class="tab" id="tab-eco">Eco Tips Log</div>
-                <div class="tab" id="tab-leader">Leaderboard</div>
-                <div class="tab" id="tab-settings">Settings</div>
-            </div>
-            <div id="tab-content-xp">
-                <div class="level">Level ${state.level}</div>
-                <div class="xp">${state.xp} XP</div>
-                <div class="xp-bar-container">
-                    <div class="xp-bar-bg">
-                        <div class="xp-bar-fill" style="width: ${Math.floor((state.xp / (state.level * 100)) * 100)}%"></div>
-                    </div>
-                    <div class="xp-bar-label">${state.xp} / ${state.level * 100} XP</div>
-                </div>
-            </div>
-            <div id="tab-content-badges" style="display:none;">
-                <h3>Achievements</h3>
-                ${state.achievements.map((a: any) => `
-                    <div class="achievement${a.unlocked ? '' : ' locked'}">
-                        <span class="badge-icon">${a.icon}</span>
-                        <span>${a.name}${a.unlocked ? '' : ' (locked)'}</span>
-                        <span style="margin-left:auto;font-size:0.9rem;color:#aaa;">${a.description}</span>
-                    </div>
-                `).join('')}
-            </div>
-            <div id="tab-content-eco" style="display:none;">
-                <h3>Eco Tips Log</h3>
-                <div class="xp-log">
-                    ${state.xpLog.map((entry: string) => `<div class="xp-log-entry">${entry}</div>`).join('')}
-                </div>
-            </div>
-            <div id="tab-content-leader" style="display:none;">
-                <h3>Classroom Mode</h3>
-                <div>Classroom Code: <b>${state.classroom.code}</b></div>
-                <div>Weekly Top: <b>${state.classroom.weeklyTop}</b></div>
-                ${state.leaderboard.map((l: any) => `<div class="leader">${l.name}: ${l.xp} XP</div>`).join('')}
-            </div>
-            <div id="tab-content-settings" style="display:none;">
-                <h3>Settings</h3>
-                <div class="settings">
-                    <label><input type="checkbox" id="eco-tips-toggle" ${state.ecoTipsEnabled ? 'checked' : ''}/> Enable Eco Tips</label>
-                    <button id="reset-xp">Reset XP/Achievements</button>
-                </div>
-            </div>
-            <div class="game-section">
-                <h3>Mini Game: Bug Fixer</h3>
-                <div id="game-instructions">Click the button to fix a bug!</div>
-                <button id="fix-bug-btn">Fix Bug</button>
-                <div id="game-feedback"></div>
+            <div id="eco-tips-list">
+                ${ecoTipsHtml || "No suggestions yet."}
             </div>
         </div>
         <script>
             const vscode = acquireVsCodeApi();
-            let bugsFixed = 0;
-            // Tab switching logic
-            const tabs = ['xp','badges','eco','leader','settings'];
-            tabs.forEach(tab => {
-                document.getElementById('tab-' + tab).onclick = function() {
-                    tabs.forEach(t => {
-                        document.getElementById('tab-' + t).classList.remove('active');
-                        document.getElementById('tab-content-' + t).style.display = 'none';
-                    });
-                    this.classList.add('active');
-                    document.getElementById('tab-content-' + tab).style.display = '';
-                };
+
+            document.querySelectorAll('.eco-tip-header').forEach(header => {
+                header.addEventListener('click', () => {
+                    const body = header.nextElementSibling;
+                    if (body) {
+                        body.style.display = body.style.display === 'none' ? 'block' : 'none';
+                    }
+                });
             });
-            document.getElementById('fix-bug-btn').onclick = function() {
-                bugsFixed++;
-                document.getElementById('game-feedback').textContent = 'Bugs fixed: ' + bugsFixed;
-                vscode.postMessage({ command: 'fixBug', bugsFixed: bugsFixed });
-                if (bugsFixed === 5) {
-                    document.getElementById('game-feedback').textContent = 'Level Up! You are a Bug Slayer!';
-                }
-            };
-            document.getElementById('eco-tips-toggle').onchange = function() {
-                vscode.postMessage({ command: 'toggleEcoTips', enabled: this.checked });
-            };
-            document.getElementById('reset-xp').onclick = function() {
-                vscode.postMessage({ command: 'resetXP' });
-            };
-            window.addEventListener('message', event => {
-                const message = event.data;
-                if (message.command === 'bugFixed') {
-                    // Optionally update UI based on extension state
-                }
+
+            document.querySelectorAll('.replace-code').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const snippet = event.target.closest('.eco-tip').querySelector('pre').textContent;
+                    vscode.postMessage({ command: 'replaceCode', snippet });
+                });
             });
         </script>
     </body>
-    </html>
-    `;
+    </html>`;
 }

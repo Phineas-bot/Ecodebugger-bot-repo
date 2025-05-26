@@ -29,7 +29,28 @@
         "command": "ecoDebugger.provideEcoTips",
         "title": "EcoDebugger: Provide Eco Tips"
       }
-    ]
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "EcoDebugger Configuration",
+      "properties": {
+        "ecoDebugger.openaiApiKey": {
+          "type": "string",
+          "default": "",
+          "description": "OpenAI API Key for Assistant integration."
+        },
+        "ecoDebugger.enableAiAnalysis": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable AI-powered code analysis using OpenAI Assistant."
+        },
+        "ecoDebugger.model": {
+          "type": "string",
+          "default": "gpt-4o",
+          "description": "OpenAI model to use for analysis (e.g., gpt-4o, gpt-4-turbo)."
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
