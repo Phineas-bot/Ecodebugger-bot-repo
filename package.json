@@ -1,6 +1,6 @@
 {
   "name": "ecodebugger",
-  "displayName": "eco-debugger",
+  "displayName": "EcoDebugger",
   "description": "A gamified extension for debugging with eco coding tips.",
   "version": "0.0.1",
   "engines": {
@@ -10,8 +10,17 @@
     "Other"
   ],
   "main": "./dist/extension.js",
+  "activationEvents": [
+    "onStartupFinished",
+    "onLanguage:javascript",
+    "onLanguage:python"
+  ],
   "contributes": {
     "commands": [
+      {
+        "command": "Ecodebugger.helloWorld",
+        "title": "EcoDebugger: Hello World"
+      },
       {
         "command": "ecoDebugger.awardXP",
         "title": "EcoDebugger: Award XP"
@@ -27,24 +36,30 @@
     "compile": "webpack",
     "watch": "webpack --watch",
     "package": "webpack --mode production --devtool hidden-source-map",
-    "compile-tests": "tsc -p . --outDir out",
-    "watch-tests": "tsc -p . -w --outDir out",
-    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "compile-tests": "tsc -p .",
+    "watch-tests": "tsc -p . -w",
+    "pretest": "npm run compile && npm run compile-tests",
     "lint": "eslint src",
-    "test": "vscode-test"
+    "test": "node ./out/test/runTest.js"
   },
   "devDependencies": {
-    "@types/vscode": "^1.99.0",
+    "@types/babel__traverse": "^7.20.7",
     "@types/mocha": "^10.0.10",
     "@types/node": "20.x",
+    "@types/vscode": "^1.99.0",
     "@typescript-eslint/eslint-plugin": "^8.28.0",
     "@typescript-eslint/parser": "^8.28.0",
-    "eslint": "^9.23.0",
-    "typescript": "^5.8.2",
-    "ts-loader": "^9.5.2",
-    "webpack": "^5.98.0",
-    "webpack-cli": "^6.0.1",
     "@vscode/test-cli": "^0.0.10",
-    "@vscode/test-electron": "^2.4.1"
+    "@vscode/test-electron": "^2.5.2",
+    "eslint": "^9.23.0",
+    "mocha": "^11.4.0",
+    "ts-loader": "^9.5.2",
+    "typescript": "^5.8.2",
+    "webpack": "^5.98.0",
+    "webpack-cli": "^6.0.1"
+  },
+  "dependencies": {
+    "@babel/parser": "^7.27.2",
+    "@babel/traverse": "^7.27.1"
   }
 }

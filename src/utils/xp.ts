@@ -1,4 +1,21 @@
   import { EcoTipManager, EcoTip } from './ecoTips';
+  import * as vscode from 'vscode';
+  import { analyzeGreenCode } from './greenCode';
+  import { analyzePythonGreenCode } from './greenCodePython';
+  
+  export async function provideEcoTips() {
+      const editor = vscode.window.activeTextEditor;
+      if (!editor) {
+          vscode.window.showInformationMessage('No active editor found. Open a file to analyze.');
+          return;
+      }
+      const text = editor.document.getText();
+      if (editor.document.languageId === 'python') {
+          await analyzePythonGreenCode(text);
+      } else {
+          analyzeGreenCode(text);
+      }
+  }
 
 type FixResult = {
     earnedXP: number;
@@ -24,10 +41,14 @@ class XpEngine {
 
     // Calculate XP needed for the next level - simplified to 100 XP per level
     private xpForNextLevel(): number {
-        return 100; // Fixed 100 XP per level
-    }
-
-    // Check if user leveled up and return level up info
+         function xpForNextLevel(level: number): number {
+            if (level <= 0)
+                 return 0;
+            return level * 100;
+        }
+        
+        return xpForNextLevel(this.currentLevel);
+    }    // Check if user leveled up and return level up info
     private checkLevelUp(oldXP: number, newXP: number): { oldLevel: number, newLevel: number } | null {
         const oldLevel = this.currentLevel;
         
@@ -37,6 +58,7 @@ class XpEngine {
         if (newLevel > oldLevel) {
             this.currentLevel = newLevel;
             return { oldLevel, newLevel };
+            vscode.window.showInformationMessage(`🎉 Congratulations! You reached Level ${newLevel}!`);
         }
         
         return null;
@@ -167,3 +189,9 @@ const thirdSaveResult = xpSystem.processCodeSave(`
     const x = 5;
 `);
 console.log(xpSystem.getFormattedReport(thirdSaveResult));
+
+
+export { XpEngine };
+
+// Also export the existing XpEngine instance if you want to use it globally
+export const globalXpEngine = new XpEngine();
