@@ -61,7 +61,8 @@
     "watch-tests": "tsc -p . -w",
     "pretest": "npm run compile && npm run compile-tests",
     "lint": "eslint src",
-    "test": "node ./out/test/runTest.js"
+    "test": "node ./out/test/runTest.js",
+    "build": "webpack"
   },
   "devDependencies": {
     "@types/babel__traverse": "^7.20.7",
