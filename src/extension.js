@@ -248,7 +248,7 @@ function getEcoDebuggerWebviewContent(state) {
                 <div>Weekly Top: <b>${state.classroom.weeklyTop}</b></div>
                 ${state.leaderboard.map((l) => `<div class="leader">${l.name}: ${l.xp} XP</div>`).join('')}
             </div>
-            <div id="tab-content-settings" style="display:none;">
+            <div id="tab-content-settings" style="display:none;"> 
                 <h3>Settings</h3>
                 <div class="settings">
                     <label><input type="checkbox" id="eco-tips-toggle" ${state.ecoTipsEnabled ? 'checked' : ''}/> Enable Eco Tips</label>

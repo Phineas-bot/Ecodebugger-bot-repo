@@ -232,6 +232,18 @@ function getEcoDebuggerWebviewContent(state: any): string {
         `;
     }).join("");
 
+    const achievementsHtml = state.achievements.map((a: any) => `
+        <div class="achievement${a.unlocked ? '' : ' locked'}">
+            <span class="badge-icon">${a.icon}</span>
+            <span>${a.name}${a.unlocked ? '' : ' (locked)'}</span>
+            <span style="margin-left:auto;font-size:0.9rem;color:#aaa;">${a.description}</span>
+        </div>
+    `).join("");
+
+    const leaderboardHtml = state.leaderboard.map((l: any) => `
+        <div class="leader">${l.name}: ${l.xp} XP</div>
+    `).join("");
+
     return `
     <!DOCTYPE html>
     <html lang="en">
@@ -242,20 +254,67 @@ function getEcoDebuggerWebviewContent(state: any): string {
         <style>
             body { font-family: Arial, sans-serif; background: #f4f4f4; color: #333; margin: 0; padding: 0; }
             .container { padding: 20px; }
-            .eco-tip { border: 1px solid #ddd; margin-bottom: 10px; padding: 10px; border-radius: 5px; background: #fff; }
+            .eco-tip, .achievement, .leader { border: 1px solid #ddd; margin-bottom: 10px; padding: 10px; border-radius: 5px; background: #fff; }
             .eco-tip-header { font-weight: bold; cursor: pointer; }
             .eco-tip-body { margin-top: 10px; }
+            .achievement.locked { opacity: 0.5; filter: grayscale(1); }
             button { margin-top: 10px; padding: 5px 10px; background: #007acc; color: #fff; border: none; border-radius: 3px; cursor: pointer; }
+            .tabs { display: flex; cursor: pointer; margin-bottom: 10px; }
+            .tab { flex: 1; padding: 10px; text-align: center; background: #007acc; color: white; border-radius: 3px 3px 0 0; }
+            .tab.active { background: #005fa3; }
+            [id^="tab-content-"] { display: none; }
         </style>
     </head>
     <body>
         <div class="container">
-            <div id="eco-tips-list">
+            <div class="tabs">
+                <div class="tab" id="tab-xp">XP/Level</div>
+                <div class="tab" id="tab-badges">Achievements</div>
+                <div class="tab" id="tab-eco">Eco Tips Log</div>
+                <div class="tab" id="tab-leader">Leaderboard</div>
+                <div class="tab" id="tab-settings">Settings</div>
+            </div>
+            <div id="tab-content-xp">
+                <div class="level">Level ${state.level}</div>
+                <div class="xp">${state.xp} XP</div>
+            </div>
+            <div id="tab-content-badges" style="display:none;">
+                <h3>Achievements</h3>
+                ${achievementsHtml || "No achievements yet."}
+            </div>
+            <div id="tab-content-eco" style="display:none;">
+                <h3>Eco Tips Log</h3>
                 ${ecoTipsHtml || "No suggestions yet."}
+            </div>
+            <div id="tab-content-leader" style="display:none;">
+                <h3>Leaderboard</h3>
+                ${leaderboardHtml || "No leaderboard data available."}
+            </div>
+            <div id="tab-content-settings" style="display:none;">
+                <h3>Settings</h3>
+                <label><input type="checkbox" id="eco-tips-toggle" ${state.ecoTipsEnabled ? 'checked' : ''}/> Enable Eco Tips</label>
+                <button id="reset-xp">Reset XP/Achievements</button>
             </div>
         </div>
         <script>
             const vscode = acquireVsCodeApi();
+
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('[id^="tab-content-"]').forEach(content => content.style.display = 'none');
+                    tab.classList.add('active');
+                    document.getElementById('tab-content-' + tab.id.split('-')[1]).style.display = 'block';
+                });
+            });
+
+            document.getElementById('eco-tips-toggle').addEventListener('change', (event) => {
+                vscode.postMessage({ command: 'toggleEcoTips', enabled: event.target.checked });
+            });
+
+            document.getElementById('reset-xp').addEventListener('click', () => {
+                vscode.postMessage({ command: 'resetXP' });
+            });
 
             document.querySelectorAll('.eco-tip-header').forEach(header => {
                 header.addEventListener('click', () => {

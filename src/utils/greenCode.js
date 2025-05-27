@@ -30,7 +30,7 @@ function analyzeGreenCode(text) {
             const code = path.toString();
             calculationMap.set(code, (calculationMap.get(code) || 0) + 1);
         },
-        VariableDeclarator(path) {
+        VariableDeclarator(path) { 
             if (path.node.id.type === 'Identifier') {
                 declaredVariables.add(path.node.id.name);
             }

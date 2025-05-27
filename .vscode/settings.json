@@ -10,5 +10,9 @@
 	},
 	// Turn off tsc task auto detection since we have the necessary tasks as npm scripts
 	"typescript.tsc.autoDetect": "off",
-	"json.schemaDownload.enable": false
+	"json.schemaDownload.enable": false,
+	"ecoDebugger.openaiApiKey": "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"
+	
 }
+
+
