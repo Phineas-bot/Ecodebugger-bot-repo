@@ -4,6 +4,7 @@ import { provideEcoTips } from './utils/ecoTips';
 import { xpForNextLevel } from './utils/xp';
 import { updateStatusBar } from './utils/statusBar';
 import { detectNestedLoops } from './utils/bugs';
+import { createEcoDebuggerDashboard } from './dashboardPanel';
 
 let xp = 0;
 let level = 1;
@@ -191,6 +192,12 @@ export function activate(context: vscode.ExtensionContext): void {
         });
     });
     context.subscriptions.push(showEcoTipsCommand);
+
+    const dashboardCommand = vscode.commands.registerCommand('ecoDebugger.showDashboard', () => {
+        createEcoDebuggerDashboard(context);
+    });
+
+    context.subscriptions.push(dashboardCommand);
 
     // Automatically open the EcoDebugger UI panel on activation
     vscode.commands.executeCommand('ecoDebugger.openUI');
