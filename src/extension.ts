@@ -3,7 +3,7 @@ import { checkAchievements } from './utils/achievements';
 import { provideEcoTips } from './utils/ecoTips';
 import { xpForNextLevel } from './utils/xp';
 import { updateStatusBar } from './utils/statusBar';
-import { detectNestedLoops } from './utils/bugs';
+import { detectNestedLoops, detectUnusedVariables } from './utils/bugs';
 import { createEcoDebuggerDashboard } from './dashboardPanel';
 import { getEcoDebuggerWebviewContent } from './utils/webviewContent';
 
@@ -39,6 +39,8 @@ function gainXP(amount: number, reason: string) {
     updateStatusBar(statusBarItem, xp, level);
 }
 
+let lastBugState = { nestedLoops: false, unusedVars: false };
+
 // Real-time code analysis
 function analyzeCodeInRealTime(event: vscode.TextDocumentChangeEvent): void {
     if (debounceTimer) {
@@ -53,13 +55,25 @@ function analyzeCodeInRealTime(event: vscode.TextDocumentChangeEvent): void {
 
         const text = editor.document.getText();
 
-        if (detectNestedLoops(text)) {
-            vscode.window.showWarningMessage(
-                '⚡ Eco Tip: Avoid nested loops when possible. Consider using more efficient algorithms or data structures.'
-            );
-        } else {
-            gainXP(50, 'writing efficient code');
+        // Detect bugs in current text
+        const hasNestedLoops = detectNestedLoops(text);
+        const hasUnusedVars = detectUnusedVariables(text);
+
+        // Give feedback if issues are detected
+        if (hasNestedLoops && !lastBugState.nestedLoops) {
+            vscode.window.showWarningMessage('EcoDebugger: Nested loops detected! Consider refactoring for efficiency.');
         }
+        if (hasUnusedVars && !lastBugState.unusedVars) {
+            vscode.window.showWarningMessage('EcoDebugger: Unused variable detected! Remove it for cleaner code.');
+        }
+
+        // Award XP only if a bug or unused variable was fixed
+        if ((lastBugState.nestedLoops && !hasNestedLoops) || (lastBugState.unusedVars && !hasUnusedVars)) {
+            gainXP(10, 'fixing a bug or removing unused variable');
+        }
+
+        // Update last bug state
+        lastBugState = { nestedLoops: hasNestedLoops, unusedVars: hasUnusedVars };
     }, 500);
 }
 
