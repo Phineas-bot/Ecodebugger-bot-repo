@@ -51,6 +51,23 @@
         }
       }
     }
+    "viewsContainers": {
+  "activitybar": [
+    {
+      "id": "gamifyDebugger",
+      "title": "Gamify",
+      "icon": "media/icon.svg"
+    }
+  ]
+},
+"views": {
+  "gamifyDebugger": [
+    {
+      "id": "xpView",
+      "name": "XP Panel"
+    }
+  ]
+}
   },
   "scripts": {
     "vscode:prepublish": "npm run package",

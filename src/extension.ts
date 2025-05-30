@@ -4,6 +4,7 @@ import { provideEcoTips } from './utils/ecoTips';
 import { xpForNextLevel } from './utils/xp';
 import { updateStatusBar } from './utils/statusBar';
 import { detectNestedLoops } from './utils/bugs';
+import { XpViewProvider } from './xpViewProvider';
 
 let xp = 0;
 let level = 1;
@@ -101,6 +102,13 @@ export function activate(context: vscode.ExtensionContext): void {
     statusBarItem.command = 'ecoDebugger.openUI';
     statusBarItem.tooltip = 'Open EcoDebugger Panel';
     statusBarItem.show();
+    context.subscriptions.push(
+  vscode.window.registerWebviewViewProvider(
+    XpViewProvider.viewType,
+    new XpViewProvider(context)
+  )
+);
+
 
     console.log('Congratulations, your extension "Ecodebugger" is now active!');
 
