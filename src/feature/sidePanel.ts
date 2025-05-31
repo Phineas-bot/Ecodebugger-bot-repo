@@ -6,7 +6,7 @@ import { getEcoTipLog } from './ecoTips';
 import { ClassroomManager } from './classroom';
 
 export class EcoDebuggerPanelProvider implements vscode.WebviewViewProvider {
-    public static readonly viewType = 'ecodebugger.sidePanel';
+    public static readonly viewType = 'ecodebuggerPanel';
     private context: vscode.ExtensionContext;
 
     constructor(context: vscode.ExtensionContext) {
@@ -50,6 +50,8 @@ export class EcoDebuggerPanelProvider implements vscode.WebviewViewProvider {
                 .tab.active { background: #4caf50; color: white; }
                 .panel { display: none; }
                 .panel.active { display: block; }
+                .xp-bar { width: 100%; height: 20px; background: #e0e0e0; border-radius: 10px; overflow: hidden; margin: 10px 0; }
+                .xp-bar-inner { height: 100%; background: #4caf50; transition: width 0.3s; }
             </style>
             <div class="tabs">
                 <div class="tab active" data-tab="xp">XP/Level</div>
@@ -60,20 +62,21 @@ export class EcoDebuggerPanelProvider implements vscode.WebviewViewProvider {
             </div>
             <div class="panel active" id="xp">
                 <h3>XP: ${xpManager.getXP()} / Level: ${xpManager.getLevel()}</h3>
-                <progress value="${xpManager.getXPBar().current}" max="${xpManager.getXPBar().max}"></progress>
+                <div class="xp-bar"><div class="xp-bar-inner" style="width:${(xpManager.getXPBar().current / xpManager.getXPBar().max) * 100}%"></div></div>
+                <small>${xpManager.getXPBar().current} / ${xpManager.getXPBar().max} XP to next level</small>
             </div>
             <div class="panel" id="badges">
                 <h3>Badges Earned</h3>
-                <ul>${achievements.filter(a => a.unlocked).map(a => `<li>${a.name}</li>`).join('')}</ul>
+                <ul>${achievements.filter(a => a.unlocked).length ? achievements.filter(a => a.unlocked).map(a => `<li>🏅 ${a.name}</li>`).join('') : '<li>No badges earned yet.</li>'}</ul>
             </div>
             <div class="panel" id="eco">
                 <h3>Eco Tips Log</h3>
-                <ul>${ecoTipLog.map(t => `<li>${t.message}</li>`).join('')}</ul>
+                <ul>${ecoTipLog.length ? ecoTipLog.map(t => `<li>🌱 ${t.message}</li>`).join('') : '<li>No eco tips yet.</li>'}</ul>
             </div>
             <div class="panel" id="leaderboard">
                 <h3>Leaderboard</h3>
-                <ol>${leaderboard.map(l => `<li>${l.user}: ${l.xp} XP</li>`).join('')}</ol>
-                <p>Weekly Top Coder: <b>${weeklyTop}</b></p>
+                <ol>${leaderboard.length ? leaderboard.map(l => `<li>${l.user}: ${l.xp} XP</li>`).join('') : '<li>No leaderboard data.</li>'}</ol>
+                <p>Weekly Top Coder: <b>${weeklyTop || 'N/A'}</b></p>
             </div>
             <div class="panel" id="settings">
                 <h3>Settings</h3>
@@ -81,6 +84,7 @@ export class EcoDebuggerPanelProvider implements vscode.WebviewViewProvider {
                 <button id="resetBtn">Reset XP/achievements</button>
             </div>
             <script>
+                const vscode = acquireVsCodeApi();
                 const tabs = document.querySelectorAll('.tab');
                 const panels = document.querySelectorAll('.panel');
                 tabs.forEach(tab => {

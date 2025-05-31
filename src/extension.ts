@@ -26,11 +26,12 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(disposable);
 
-	// Register side panel
+	// Register side panel with retainContextWhenHidden for reliability
 	context.subscriptions.push(
 		vscode.window.registerWebviewViewProvider(
-			EcoDebuggerPanelProvider.viewType,
-			new EcoDebuggerPanelProvider(context)
+			'ecodebuggerPanel',
+			new EcoDebuggerPanelProvider(context),
+			{ webviewOptions: { retainContextWhenHidden: true } }
 		)
 	);
 

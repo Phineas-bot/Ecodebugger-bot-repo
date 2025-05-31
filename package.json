@@ -37,8 +37,9 @@
     "views": {
       "ecodebugger-container": [
         {
-          "id": "ecodebugger.sidePanel",
-          "name": "EcoDebugger"
+          "id": "ecodebuggerPanel",
+          "name": "EcoDebugger",
+          "icon": "media/leaf.svg"
         }
       ]
     }
