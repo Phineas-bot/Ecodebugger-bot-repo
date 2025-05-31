@@ -11,7 +11,8 @@ export class XpViewProvider implements vscode.WebviewViewProvider {
     _token: vscode.CancellationToken
   ) {
     webviewView.webview.options = {
-      enableScripts: true
+      enableScripts: true,
+      localResourceRoots: [this.context.extensionUri] 
     };
 
     webviewView.webview.html = this.getHtml();
