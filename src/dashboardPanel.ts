@@ -14,7 +14,7 @@ export function createEcoDebuggerDashboard(context: vscode.ExtensionContext) {
         issue: "Loop Inefficiency",
         suggestion: "Use list comprehension instead of traditional for-loops when filtering data.",
         snippet: "filtered = [x for x in items if x > 0]"
-      },
+      }, 
       {
         issue: "Redundant Computation",
         suggestion: "Store repeated calculations in a variable to save CPU cycles.",
