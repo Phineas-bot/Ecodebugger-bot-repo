@@ -1,11 +1,13 @@
 # EcoDebugger Feature Specifications
 
 ## Overview
+
 EcoDebugger is a VS Code extension that gamifies debugging and promotes eco-conscious coding.
 
 ---
 
 ## 🎮 XP System
+
 - Users earn XP when:
   - They fix bugs detected by the extension.
   - They apply eco tips suggested by the extension.
@@ -18,6 +20,7 @@ EcoDebugger is a VS Code extension that gamifies debugging and promotes eco-cons
 ---
 
 ## 🌱 Eco Tips Engine
+
 - Languages supported: Python, JavaScript, TypeScript.
 - Example tips:
   - Use `map()` instead of `for` loop when possible.
@@ -30,6 +33,7 @@ EcoDebugger is a VS Code extension that gamifies debugging and promotes eco-cons
 ---
 
 ## 🏆 Achievements
+
 - **Green Coder**: Apply 10 eco tips.
 - **Bug Slayer**: Fix 20 bugs.
 - **Efficient Thinker**: Reach 500 XP.
@@ -40,6 +44,7 @@ Each unlock shows a celebration modal and badge in the sidebar.
 ---
 
 ## 👩‍🏫 Classroom Mode
+
 - Leaderboard of XP earned by users.
 - Classrooms joined by code or shared ID.
 - Syncs to cloud or local server (depending on implementation).
@@ -48,6 +53,7 @@ Each unlock shows a celebration modal and badge in the sidebar.
 ---
 
 ## ⚙️ Extension Side Panel
+
 - Tabs:
   - XP/Level
   - Badges Earned

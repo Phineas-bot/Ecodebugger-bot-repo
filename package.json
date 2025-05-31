@@ -1,5 +1,5 @@
 {
-  "name": "Ecodebugger",
+  "name": "ecodebugger-bot-repo",
   "displayName": "eco-debugger",
   "description": "A gamified extension for debugging with eco coding tips.",
   "version": "0.0.1",
@@ -9,15 +9,39 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": ["onCommand:Ecodebugger.helloWorld"],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
         "command": "Ecodebugger.helloWorld",
         "title": "Hello World"
+      },
+      {
+        "command": "Ecodebugger.scanEcoTips",
+        "title": "Scan for Eco Tips"
+      },
+      {
+        "command": "Ecodebugger.resetProgress",
+        "title": "Reset XP/Achievements"
       }
-    ]
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "ecodebugger-container",
+          "title": "EcoDebugger",
+          "icon": "media/leaf.svg"
+        }
+      ]
+    },
+    "views": {
+      "ecodebugger-container": [
+        {
+          "id": "ecodebugger.sidePanel",
+          "name": "EcoDebugger"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",

@@ -1,6 +1,11 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import { XPManager } from './feature/xp';
+import { getTipsForLanguage, logEcoTip } from './feature/ecoTips';
+import { getAchievements, unlockAchievement } from './feature/achievements';
+import { ClassroomManager } from './feature/classroom';
+import { EcoDebuggerPanelProvider } from './feature/sidePanel';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -20,6 +25,50 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	context.subscriptions.push(disposable);
+
+	// Register side panel
+	context.subscriptions.push(
+		vscode.window.registerWebviewViewProvider(
+			EcoDebuggerPanelProvider.viewType,
+			new EcoDebuggerPanelProvider(context)
+		)
+	);
+
+	// Register command: Manual scan for eco tips
+	context.subscriptions.push(
+		vscode.commands.registerCommand('Ecodebugger.scanEcoTips', async () => {
+			const editor = vscode.window.activeTextEditor;
+			if (!editor) { return; }
+			const lang = editor.document.languageId;
+			const tips = getTipsForLanguage(lang);
+			if (tips.length) {
+				logEcoTip(tips[0], context); // Log first tip for demo
+				vscode.window.showInformationMessage(`Eco Tip: ${tips[0].message}`);
+			}
+		})
+	);
+
+	// Register on save event for eco tips
+	context.subscriptions.push(
+		vscode.workspace.onDidSaveTextDocument(doc => {
+			const tips = getTipsForLanguage(doc.languageId);
+			if (tips.length) {
+				logEcoTip(tips[0], context);
+				vscode.window.showInformationMessage(`Eco Tip: ${tips[0].message}`);
+			}
+		})
+	);
+
+	// Register command: Reset XP/achievements
+	context.subscriptions.push(
+		vscode.commands.registerCommand('Ecodebugger.resetProgress', () => {
+			const xpManager = new XPManager(context);
+			xpManager.resetXP();
+			context.globalState.update('ecodebugger.achievements', undefined);
+			context.globalState.update('ecodebugger.ecotiplog', undefined);
+			vscode.window.showInformationMessage('EcoDebugger progress reset.');
+		})
+	);
 }
 
 // This method is called when your extension is deactivated
