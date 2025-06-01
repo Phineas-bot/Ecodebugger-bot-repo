@@ -1,4 +1,6 @@
 // Eco Tips Engine: tip list, get tips for language, trigger on save/manual, log tips
+import { getEcoTipFromOllama } from '../utils/ollama';
+
 export type EcoTip = { id: string; message: string; language: string };
 
 export const ecoTips: EcoTip[] = [
@@ -22,4 +24,12 @@ export function logEcoTip(tip: EcoTip, context: import('vscode').ExtensionContex
 
 export function getEcoTipLog(context: import('vscode').ExtensionContext): EcoTip[] {
     return context.globalState.get<EcoTip[]>('ecodebugger.ecotiplog', []) || [];
+}
+
+export async function getEcoTipForCodeWithLLM(code: string, language: string): Promise<EcoTip | null> {
+    const tip = await getEcoTipFromOllama(code, language);
+    if (tip) {
+        return { id: 'llama3-ollama', message: tip, language };
+    }
+    return null;
 }

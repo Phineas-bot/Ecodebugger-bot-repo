@@ -2,7 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { XPManager } from './feature/xp';
-import { getTipsForLanguage, logEcoTip } from './feature/ecoTips';
+import { getTipsForLanguage, logEcoTip, getEcoTipForCodeWithLLM } from './feature/ecoTips';
 import { getAchievements, unlockAchievement } from './feature/achievements';
 import { ClassroomManager } from './feature/classroom';
 import { EcoDebuggerPanelProvider } from './feature/sidePanel';
@@ -41,6 +41,15 @@ export function activate(context: vscode.ExtensionContext) {
 			const editor = vscode.window.activeTextEditor;
 			if (!editor) { return; }
 			const lang = editor.document.languageId;
+			const code = editor.document.getText();
+			// Try LLM first
+			const llmTip = await getEcoTipForCodeWithLLM(code, lang);
+			if (llmTip) {
+				logEcoTip(llmTip, context);
+				vscode.window.showInformationMessage(`Eco Tip (AI): ${llmTip.message}`);
+				return;
+			}
+			// Fallback to static tips
 			const tips = getTipsForLanguage(lang);
 			if (tips.length) {
 				logEcoTip(tips[0], context); // Log first tip for demo
@@ -51,8 +60,16 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// Register on save event for eco tips
 	context.subscriptions.push(
-		vscode.workspace.onDidSaveTextDocument(doc => {
-			const tips = getTipsForLanguage(doc.languageId);
+		vscode.workspace.onDidSaveTextDocument(async doc => {
+			const lang = doc.languageId;
+			const code = doc.getText();
+			const llmTip = await getEcoTipForCodeWithLLM(code, lang);
+			if (llmTip) {
+				logEcoTip(llmTip, context);
+				vscode.window.showInformationMessage(`Eco Tip (AI): ${llmTip.message}`);
+				return;
+			}
+			const tips = getTipsForLanguage(lang);
 			if (tips.length) {
 				logEcoTip(tips[0], context);
 				vscode.window.showInformationMessage(`Eco Tip: ${tips[0].message}`);
