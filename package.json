@@ -32,18 +32,17 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "ecodebugger-container",
+          "id": "ecodebugger-custom-container",
           "title": "EcoDebugger",
           "icon": "media/leaf.svg"
         }
       ]
     },
     "views": {
-      "ecodebugger-container": [
+      "ecodebugger-custom-container": [
         {
-          "id": "ecodebuggerPanel",
-          "name": "EcoDebugger",
-          "icon": "media/leaf.svg"
+          "id": "ecodebuggerCustomPanel",
+          "name": "EcoDebugger"
         }
       ]
     }

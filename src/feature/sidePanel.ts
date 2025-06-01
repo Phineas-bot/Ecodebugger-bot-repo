@@ -29,6 +29,16 @@ export class EcoDebuggerPanelProvider implements vscode.WebviewViewProvider {
                 this.context.globalState.update('ecodebugger.achievements', undefined);
                 this.context.globalState.update('ecodebugger.ecotiplog', undefined);
                 vscode.window.showInformationMessage('EcoDebugger progress reset.');
+            } else if (msg.command === 'insertReplacement' && typeof msg.text === 'string') {
+                const editor = vscode.window.activeTextEditor;
+                if (editor) {
+                    editor.edit(editBuilder => {
+                        const selection = editor.selection;
+                        editBuilder.replace(selection, msg.text);
+                    });
+                } else {
+                    vscode.window.showWarningMessage('No active editor to insert replacement.');
+                }
             }
         });
     }
@@ -71,7 +81,52 @@ export class EcoDebuggerPanelProvider implements vscode.WebviewViewProvider {
             </div>
             <div class="panel" id="eco">
                 <h3>Eco Tips Log</h3>
-                <ul>${ecoTipLog.length ? ecoTipLog.map(t => `<li>🌱 ${t.message}</li>`).join('') : '<li>No eco tips yet.</li>'}</ul>
+                <ul>
+                    ${ecoTipLog.length ? ecoTipLog.map((t, idx) => {
+                        const anyTip = t as any;
+                        const isDetailed = anyTip.issue && anyTip.suggestion && anyTip.cpuSaved && anyTip.replacement;
+                        return '<li style="margin-bottom:1em;">' +
+                            '<div style="background:#f4fff4;padding:8px;border-radius:6px;">' +
+                                `<b>🌱 Tip ${idx + 1}</b><br/>` +
+                                (isDetailed ? (
+                                    `<b>Issue:</b> ${anyTip.issue}<br/>` +
+                                    `<b>Suggestion:</b> ${anyTip.suggestion}<br/>` +
+                                    `<b>CPU Saved:</b> ${anyTip.cpuSaved}<br/>` +
+                                    `<button onclick="showReplacement(${idx})">Show Replacement</button> ` +
+                                    `<button onclick="copyReplacement(${idx})">Copy Replacement</button> ` +
+                                    `<button onclick="insertReplacement(${idx})">Insert Replacement</button>` +
+                                    `<pre id="replacement-${idx}" style="display:none;background:#e8e8e8;padding:6px;border-radius:4px;">${anyTip.replacement}</pre>`
+                                ) : (
+                                    `<b>Message:</b> ${t.message}`
+                                )) +
+                            '</div>' +
+                        '</li>';
+                    }).join('') : '<li>No eco tips yet.</li>'}
+                </ul>
+                <script>
+                    function showReplacement(idx) {
+                        const pre = document.getElementById('replacement-' + idx);
+                        if (pre.style.display === 'none') {
+                            pre.style.display = 'block';
+                        } else {
+                            pre.style.display = 'none';
+                        }
+                    }
+                    function copyReplacement(idx) {
+                        const pre = document.getElementById('replacement-' + idx);
+                        if (pre) {
+                            const text = pre.textContent;
+                            navigator.clipboard.writeText(text);
+                        }
+                    }
+                    function insertReplacement(idx) {
+                        const pre = document.getElementById('replacement-' + idx);
+                        if (pre) {
+                            const text = pre.textContent;
+                            vscode.postMessage({ command: 'insertReplacement', text });
+                        }
+                    }
+                </script>
             </div>
             <div class="panel" id="leaderboard">
                 <h3>Leaderboard</h3>

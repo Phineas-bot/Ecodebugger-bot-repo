@@ -1,7 +1,8 @@
 // Eco Tips Engine: tip list, get tips for language, trigger on save/manual, log tips
-import { getEcoTipFromOllama } from '../utils/ollama';
+import { getEcoTipFromOllama, getDetailedEcoTipFromOllama, LLMAnalysisResult } from '../utils/ollama';
 
 export type EcoTip = { id: string; message: string; language: string };
+export type DetailedEcoTip = EcoTip & LLMAnalysisResult;
 
 export const ecoTips: EcoTip[] = [
     { id: 'map-for', message: 'Use map() instead of for loop when possible.', language: 'javascript' },
@@ -30,6 +31,19 @@ export async function getEcoTipForCodeWithLLM(code: string, language: string): P
     const tip = await getEcoTipFromOllama(code, language);
     if (tip) {
         return { id: 'llama3-ollama', message: tip, language };
+    }
+    return null;
+}
+
+export async function getDetailedEcoTipForCodeWithLLM(code: string, language: string): Promise<DetailedEcoTip | null> {
+    const result = await getDetailedEcoTipFromOllama(code, language);
+    if (result) {
+        return {
+            id: 'llama3-ollama',
+            message: result.suggestion,
+            language,
+            ...result
+        };
     }
     return null;
 }
