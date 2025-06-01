@@ -27,6 +27,10 @@
       {
         "command": "Ecodebugger.openPanel",
         "title": "Open EcoDebugger Panel"
+      },
+      {
+        "command": "Ecodebugger.analyzeWithAIEcoTips",
+        "title": "Analyze with AI Eco Tips"
       }
     ],
     "viewsContainers": {

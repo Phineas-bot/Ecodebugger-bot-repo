@@ -6,6 +6,7 @@ import { getTipsForLanguage, logEcoTip } from './feature/ecoTips';
 import { getAchievements, unlockAchievement } from './feature/achievements';
 import { ClassroomManager } from './feature/classroom';
 import { EcoDebuggerPanelProvider } from './feature/sidePanel';
+import { getEcoTipsFromAI } from './feature/ecoTips';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -81,6 +82,44 @@ export function activate(context: vscode.ExtensionContext) {
 				{ enableScripts: true }
 			);
 			panel.webview.html = getEcoDebuggerPanelHtml(context);
+		})
+	);
+
+	// Register command: Analyze code with AI for eco tips
+	context.subscriptions.push(
+		vscode.commands.registerCommand('Ecodebugger.analyzeWithAIEcoTips', async () => {
+			const editor = vscode.window.activeTextEditor;
+			if (!editor) {
+				vscode.window.showWarningMessage('No active editor.');
+				return;
+			}
+			const code = editor.document.getText();
+			const language = editor.document.languageId;
+			// Prompt user for OpenAI API key (in production, use secret storage)
+			const apiKey = await vscode.window.showInputBox({
+				prompt: 'Enter your OpenAI API key to get AI-powered eco tips',
+				ignoreFocusOut: true,
+				password: true
+			});
+			if (!apiKey) {
+				vscode.window.showWarningMessage('OpenAI API key is required.');
+				return;
+			}
+			try {
+				const tips = await getEcoTipsFromAI(code, language, apiKey);
+				if (tips.length) {
+					vscode.window.showInformationMessage('AI Eco Tips:\n' + tips.join('\n'));
+					// Optionally log tips for later display
+					const contextAny = context as any;
+					tips.forEach((tip: string) => {
+						logEcoTip({ id: 'ai', message: tip, language }, contextAny);
+					});
+				} else {
+					vscode.window.showInformationMessage('No eco tips found by AI.');
+				}
+			} catch (err: any) {
+				vscode.window.showErrorMessage('AI Eco Tip error: ' + err.message);
+			}
 		})
 	);
 }
