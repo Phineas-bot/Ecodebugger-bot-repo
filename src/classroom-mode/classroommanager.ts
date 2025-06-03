@@ -125,8 +125,6 @@ this._userName = name && name.trim() !== '' ? name : 'Anonymous';
 
      await setDoc(doc(db, "users",), {
         name: this._userName,
-            xp: this._xpEngine.currentXp,
-            level: this._xpEngine.currentLevel,
             avatar: this._getRandomAvatar(),
             lastActive: new Date(),
              updatedAt: serverTimestamp()
