@@ -134,11 +134,13 @@ class EcoDebuggerViewProvider implements vscode.WebviewViewProvider {
     resolveWebviewView(webviewView: vscode.WebviewView): void {
         ecoDebuggerWebviewView = webviewView;
         this.view = webviewView;
+        
         webviewView.webview.options = {
             enableScripts: true,
-            localResourceRoots: [vscode.Uri.file(path.join(this.context.extensionPath, 'media'))],
+            localResourceRoots: [vscode.Uri.file(path.join(this.context.extensionPath, 'media'))]
         };
-        // Initial state
+
+        // Get latest state
         const state = {
             xp,
             level,
@@ -151,9 +153,7 @@ class EcoDebuggerViewProvider implements vscode.WebviewViewProvider {
                 { name: 'Green Coder', unlocked: true, icon: '🌱', description: 'Apply 10 eco tips.' },
                 { name: 'Bug Slayer', unlocked: true, icon: '🪲', description: 'Fix 20 bugs.' },
                 { name: 'Efficient Thinker', unlocked: false, icon: '⚡', description: 'Reach 500 XP.' },
-                { name: 'Team Leader', unlocked: false, icon: '👑', description: 'Top leaderboard in classroom mode.' },
-                { name: 'XP Novice', unlocked: true, icon: '⭐', description: 'Earn your first XP.' },
-                { name: 'Eco Streak', unlocked: false, icon: '🔥', description: 'Apply eco tips 5 times in a row.' }
+                { name: 'Team Leader', unlocked: false, icon: '👑', description: 'Top leaderboard in classroom mode.' }
             ],
             leaderboard: classroom.leaderboard,
             classroom,
@@ -163,41 +163,80 @@ class EcoDebuggerViewProvider implements vscode.WebviewViewProvider {
 
         webviewView.webview.html = getWebviewContent(state, webviewView.webview, this.context.extensionPath);
 
-        // Handle messages from the Webview (e.g., for the mini-game)
+        // Handle messages from the Webview
         webviewView.webview.onDidReceiveMessage(
             (message: any) => {
-                if (message.command === 'fixBug') {
-                    this.view?.webview.postMessage({ command: 'bugFixed', bugsFixed: message.bugsFixed });
-                }
-                if (message.command === 'toggleEcoTips') {
-                    ecoTipsEnabled = message.enabled;
-                }
-                if (message.command === 'toggleGroqAI') {
-                    groqAIEnabled = message.enabled;
-                }
-                if (message.command === 'resetXP') {
-                    xp = 0;
-                    level = 1;
-                    xpLog = [];
-                    if (!statusBarItem) {
-                        statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
-                    }
-                    updateStatusBar(statusBarItem, xp, level);
-                    vscode.window.showInformationMessage('XP and achievements have been reset.');
-                    saveState();
-                }
-                if (message.command === 'joinClassroom') {
-                    joinClassroom(message.code);
+                switch (message.command) {
+                    case 'getState':
+                        // Send current state when webview requests it
+                        webviewView.webview.postMessage({ command: 'updateXP', state });
+                        break;
+                    case 'fixBug':
+                        this.view?.webview.postMessage({ command: 'bugFixed', bugsFixed: message.bugsFixed });
+                        break;
+                    case 'toggleEcoTips':
+                        ecoTipsEnabled = message.enabled;
+                        break;
+                    case 'toggleGroqAI':
+                        groqAIEnabled = message.enabled;
+                        break;
+                    case 'resetXP':
+                        xp = 0;
+                        level = 1;
+                        xpLog = [];
+                        if (!statusBarItem) {
+                            statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
+                        }
+                        updateStatusBar(statusBarItem, xp, level);
+                        vscode.window.showInformationMessage('XP and achievements have been reset.');
+                        saveState();
+                        // Update webview with new state
+                        webviewView.webview.postMessage({ command: 'updateXP', state: { xp, level, xpLog }});
+                        break;
+                    case 'joinClassroom':
+                        joinClassroom(message.code);
+                        break;
                 }
             },
             undefined,
             []
         );
+
+        // Also send initial state
+        webviewView.onDidChangeVisibility(() => {
+            if (webviewView.visible) {
+                // Send current state when webview becomes visible
+                const currentState = {
+                    xp,
+                    level,
+                    xpLog,
+                    ecoTips: [
+                        { tip: 'This loop wastes CPU → try map()!' },
+                        { tip: 'Use list comprehensions for efficiency.' }
+                    ],
+                    achievements: [
+                        { name: 'Green Coder', unlocked: true, icon: '🌱', description: 'Apply 10 eco tips.' },
+                        { name: 'Bug Slayer', unlocked: true, icon: '🪲', description: 'Fix 20 bugs.' },
+                        { name: 'Efficient Thinker', unlocked: false, icon: '⚡', description: 'Reach 500 XP.' },
+                        { name: 'Team Leader', unlocked: false, icon: '👑', description: 'Top leaderboard in classroom mode.' }
+                    ],
+                    leaderboard: classroom.leaderboard,
+                    classroom,
+                    ecoTipsEnabled,
+                    groqAIEnabled
+                };
+                webviewView.webview.postMessage({ command: 'updateXP', state: currentState });
+            }
+        });
     }
 }
 
 function updateEcoDebuggerWebview() {
     if (ecoDebuggerWebviewView) {
+        // Reveal the webview if not visible
+        if (ecoDebuggerWebviewView.visible === false && ecoDebuggerWebviewView.show) {
+            ecoDebuggerWebviewView.show(true);
+        }
         const state = {
             xp,
             level,
@@ -331,8 +370,15 @@ function awardXP(type: 'bug' | 'ecoTip') {
     xpLog.push(`${type === 'bug' ? 'Fixed a bug' : 'Applied eco tip'} (+${xpAwarded} XP)`);
     checkAchievements(xp, level, classroom.leaderboard[0]?.name === 'You');
     updateStatusBar(statusBarItem, xp, level);
+    
+    // Force sync with webview
+    console.log('Updating webview with new state:', { xp, level });
     updateEcoDebuggerWebview();
-    saveState(); // Persist after XP change
+    
+    // Wait for webview update before saving state
+    setTimeout(() => {
+        saveState();
+    }, 100);
 }
 
 function joinClassroom(code: string) {
@@ -355,10 +401,8 @@ function getWebviewContent(state: any, webview: vscode.Webview, extensionPath: s
             .tab.active { background: #2ecc71; color: #fff; }
             .level { background: #2ecc71; color: #fff; border-radius: 8px; padding: 0.5rem 1rem; display: inline-block; margin-bottom: 1rem; font-weight: bold; }
             .xp { color: #fff; margin-bottom: 1rem; }
-            .xp-bar-container { margin-bottom: 1rem; }
-            .xp-bar-bg { background: #333; border-radius: 8px; width: 100%; height: 16px; }
-            .xp-bar-fill { background: #2ecc71; height: 100%; border-radius: 8px; transition: width 0.3s; }
-            .xp-bar-label { font-size: 0.9rem; color: #fff; text-align: right; margin-top: 2px; }
+            .progress-bar { background: #333; border-radius: 8px; width: 100%; height: 16px; margin-bottom: 1rem; }
+            #progress-fill { background: #2ecc71; height: 100%; border-radius: 8px; transition: width 0.3s ease-in-out; }
             .eco-tips, .achievements, .leaderboard, .xp-log, .settings { margin-bottom: 2rem; }
             .eco-tip, .achievement, .leader, .xp-log-entry { background: #222a36; border-radius: 6px; padding: 0.5rem 1rem; margin-bottom: 0.5rem; }
             .eco-tip { border-left: 4px solid #2ecc71; }
@@ -371,105 +415,123 @@ function getWebviewContent(state: any, webview: vscode.Webview, extensionPath: s
             button:hover { background: #27ae60; }
             .settings label { display: flex; align-items: center; gap: 0.5rem; }
         </style>
-    </head>
-    <body>
-        <div class="container">
-            <div class="tabs">
-                <div class="tab active" id="tab-xp">XP/Level</div>
-                <div class="tab" id="tab-badges">Badges Earned</div>
-                <div class="tab" id="tab-eco">Eco Tips Log</div>
-                <div class="tab" id="tab-leader">Leaderboard</div>
-                <div class="tab" id="tab-settings">Settings</div>
-            </div>
-            <div id="tab-content-xp">
-                <div class="level">Level ${state.level}</div>
-                <div class="xp">${state.xp} XP</div>
-                <div class="xp-bar-container">
-                    <div class="xp-bar-bg">
-                        <div class="xp-bar-fill" style="width: ${Math.floor((state.xp / (state.level * 100)) * 100)}%"></div>
+        <body>
+            <div class="container">
+                <div class="tabs">
+                    <div class="tab active" id="tab-xp">XP/Level</div>
+                    <div class="tab" id="tab-badges">Badges Earned</div>
+                    <div class="tab" id="tab-eco">Eco Tips Log</div>
+                    <div class="tab" id="tab-leader">Leaderboard</div>
+                    <div class="tab" id="tab-settings">Settings</div>
+                </div>
+                <div id="tab-content-xp">
+                    <div class="level">Level <span id="level">${state.level}</span></div>
+                    <div class="xp"><span id="current-xp">${state.xp}</span> XP</div>
+                    <div class="progress-bar">
+                        <div id="progress-fill" style="width: ${Math.floor((state.xp / (state.level * 100)) * 100)}%"></div>
                     </div>
-                    <div class="xp-bar-label">${state.xp} / ${state.level * 100} XP</div>
                 </div>
-            </div>
-            <div id="tab-content-badges" style="display:none;">
-                <h3>Achievements</h3>
-                ${state.achievements.map((a: any) => `
-                    <div class="achievement${a.unlocked ? '' : ' locked'}">
-                        <span class="badge-icon">${a.icon}</span>
-                        <span>${a.name}${a.unlocked ? '' : ' (locked)'}</span>
-                        <span style="margin-left:auto;font-size:0.9rem;color:#aaa;">${a.description}</span>
+                <div id="tab-content-badges" style="display:none;">
+                    <h3>Achievements</h3>
+                    ${state.achievements.map((a: any) => `
+                        <div class="achievement${a.unlocked ? '' : ' locked'}">
+                            <span class="badge-icon">${a.icon}</span>
+                            <span>${a.name}${a.unlocked ? '' : ' (locked)'}</span>
+                            <span style="margin-left:auto;font-size:0.9rem;color:#aaa;">${a.description}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                <div id="tab-content-eco" style="display:none;">
+                    <h3>Eco Tips Log</h3>
+                    <div class="xp-log">
+                        ${state.xpLog.map((entry: string) => `<div class="xp-log-entry">${entry}</div>`).join('')}
                     </div>
-                `).join('')}
-            </div>
-            <div id="tab-content-eco" style="display:none;">
-                <h3>Eco Tips Log</h3>
-                <div class="xp-log">
-                    ${state.xpLog.map((entry: string) => `<div class="xp-log-entry">${entry}</div>`).join('')}
+                </div>
+                <div id="tab-content-leader" style="display:none;">
+                    <h3>Classroom Mode</h3>
+                    <div>Classroom Code: <b>${state.classroom.code}</b></div>
+                    <div>Weekly Top: <b>${state.classroom.weeklyTop}</b></div>
+                    ${state.leaderboard.map((l: any) => `<div class="leader">${l.name}: ${l.xp} XP</div>`).join('')}
+                </div>
+                <div id="tab-content-settings" style="display:none;">
+                    <h3>Settings</h3>
+                    <div class="settings">
+                        <label><input type="checkbox" id="eco-tips-toggle" ${state.ecoTipsEnabled ? 'checked' : ''}/> Enable Eco Tips</label>
+                        <label><input type="checkbox" id="groq-ai-toggle" ${state.groqAIEnabled ? 'checked' : ''}/> Enable Groq AI Analysis</label>
+                        <button id="reset-xp">Reset XP/Achievements</button>
+                    </div>
+                </div>
+                <div class="game-section">
+                    <h3>Mini Game: Bug Fixer</h3>
+                    <div id="game-instructions">Click the button to fix a bug!</div>
+                    <button id="fix-bug-btn">Fix Bug</button>
+                    <div id="game-feedback"></div>
                 </div>
             </div>
-            <div id="tab-content-leader" style="display:none;">
-                <h3>Classroom Mode</h3>
-                <div>Classroom Code: <b>${state.classroom.code}</b></div>
-                <div>Weekly Top: <b>${state.classroom.weeklyTop}</b></div>
-                ${state.leaderboard.map((l: any) => `<div class="leader">${l.name}: ${l.xp} XP</div>`).join('')}
-            </div>
-            <div id="tab-content-settings" style="display:none;">
-                <h3>Settings</h3>
-                <div class="settings">
-                    <label><input type="checkbox" id="eco-tips-toggle" ${state.ecoTipsEnabled ? 'checked' : ''}/> Enable Eco Tips</label>
-                    <label><input type="checkbox" id="groq-ai-toggle" ${state.groqAIEnabled ? 'checked' : ''}/> Enable Groq AI Analysis</label>
-                    <button id="reset-xp">Reset XP/Achievements</button>
-                </div>
-            </div>
-            <div class="game-section">
-                <h3>Mini Game: Bug Fixer</h3>
-                <div id="game-instructions">Click the button to fix a bug!</div>
-                <button id="fix-bug-btn">Fix Bug</button>
-                <div id="game-feedback"></div>
-            </div>
-        </div>
-        <script>
-            const vscode = acquireVsCodeApi();
-            let bugsFixed = 0;
-            // Tab switching logic
-            const tabs = ['xp','badges','eco','leader','settings'];
-            tabs.forEach(tab => {
-                document.getElementById('tab-' + tab).onclick = function() {
-                    tabs.forEach(t => {
-                        document.getElementById('tab-' + t).classList.remove('active');
-                        document.getElementById('tab-content-' + t).style.display = 'none';
-                    });
-                    this.classList.add('active');
-                    document.getElementById('tab-content-' + tab).style.display = '';
+            <script>
+                const vscode = acquireVsCodeApi();
+                
+                // Handle message from extension to update XP
+                window.addEventListener('message', (event) => {
+                    const message = event.data;
+                    if (message.command === 'updateXP' && message.state) {
+                        console.log('Received updateXP message:', message.state);
+                        const { xp, level } = message.state;
+                        
+                        // Update level and XP display
+                        document.getElementById('level').textContent = level;
+                        document.getElementById('current-xp').textContent = xp;
+                        
+                        // Update progress bar
+                        const progressFill = document.getElementById('progress-fill');
+                        if (progressFill) {
+                            const percent = Math.floor((xp / (level * 100)) * 100);
+                            progressFill.style.width = percent + '%';
+                            console.log('Updated progress bar width:', percent + '%');
+                        } else {
+                            console.error('Progress fill element not found');
+                        }
+                    }
+                });
+                
+                // Tab switching logic
+                const tabs = ['xp','badges','eco','leader','settings'];
+                tabs.forEach(tab => {
+                    document.getElementById('tab-' + tab).onclick = function() {
+                        tabs.forEach(t => {
+                            document.getElementById('tab-' + t).classList.remove('active');
+                            document.getElementById('tab-content-' + t).style.display = 'none';
+                        });
+                        this.classList.add('active');
+                        document.getElementById('tab-content-' + tab).style.display = '';
+                    };
+                });
+                document.getElementById('fix-bug-btn').onclick = function() {
+                    bugsFixed++;
+                    document.getElementById('game-feedback').textContent = 'Bugs fixed: ' + bugsFixed;
+                    vscode.postMessage({ command: 'fixBug', bugsFixed: bugsFixed });
+                    if (bugsFixed === 5) {
+                        document.getElementById('game-feedback').textContent = 'Level Up! You are a Bug Slayer!';
+                    }
                 };
-            });
-            document.getElementById('fix-bug-btn').onclick = function() {
-                bugsFixed++;
-                document.getElementById('game-feedback').textContent = 'Bugs fixed: ' + bugsFixed;
-                vscode.postMessage({ command: 'fixBug', bugsFixed: bugsFixed });
-                if (bugsFixed === 5) {
-                    document.getElementById('game-feedback').textContent = 'Level Up! You are a Bug Slayer!';
-                }
-            };
-            document.getElementById('eco-tips-toggle').onchange = function() {
-                vscode.postMessage({ command: 'toggleEcoTips', enabled: this.checked });
-            };
-            document.getElementById('groq-ai-toggle').onchange = function() {
-                vscode.postMessage({ command: 'toggleGroqAI', enabled: this.checked });
-            };
-            document.getElementById('reset-xp').onclick = function() {
-                vscode.postMessage({ command: 'resetXP' });
-            };
-            window.addEventListener('message', event => {
-                const message = event.data;
-                if (message.command === 'bugFixed') {
-                    // Optionally update UI based on extension state
-                }
-            });
-        </script>
-    </body>
-    </html>
-    `;
+                document.getElementById('eco-tips-toggle').onchange = function() {
+                    vscode.postMessage({ command: 'toggleEcoTips', enabled: this.checked });
+                };
+                document.getElementById('groq-ai-toggle').onchange = function() {
+                    vscode.postMessage({ command: 'toggleGroqAI', enabled: this.checked });
+                };
+                document.getElementById('reset-xp').onclick = function() {
+                    vscode.postMessage({ command: 'resetXP' });
+                };
+                window.addEventListener('message', event => {
+                    const message = event.data;
+                    if (message.command === 'bugFixed') {
+                        // Optionally update UI based on extension state
+                    }
+                });
+            </script>
+        </body>
+    </html>`;
 }
 
 export function deactivate(): void {

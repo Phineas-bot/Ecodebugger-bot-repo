@@ -1,3 +1,6 @@
+// Initialize vscode API
+const vscode = acquireVsCodeApi();
+
 let currentXP = 0; // Initial XP
 let level = 1; // Initial level
 const xpToNextLevel = 200; // XP required to level up
@@ -5,24 +8,6 @@ const xpToNextLevel = 200; // XP required to level up
 const levelElement = document.getElementById("level");
 const currentXPElement = document.getElementById("current-xp");
 const progressFill = document.getElementById("progress-fill");
-
-function updateXP(newXP) {
-  currentXP += newXP;
-
-  // Check if level up is needed
-  while (currentXP >= xpToNextLevel) {
-    currentXP -= xpToNextLevel; // Carry over extra XP
-    level++;
-    levelElement.textContent = level; // Update level in UI
-  }
-
-  // Update progress bar
-  const progressPercentage = (currentXP / xpToNextLevel) * 100;
-  progressFill.style.width = `${progressPercentage}%`;
-
-  // Update XP display
-  currentXPElement.textContent = currentXP;
-}
 
 // achievement: level up
 const modal = document.getElementById("achievement-modal");
@@ -74,15 +59,55 @@ document.getElementById("copy-code-btn").addEventListener("click", () => {
   vscode.postMessage({ command: "getSelectedCode" });
 });
 
-// Listen for messages from the VS Code extension
-window.addEventListener("message", (event) => {
-  const message = event.data;
+// Helper function to update the UI with XP state
+function updateXPDisplay(xp, level) {
+    console.log('Updating XP display:', { xp, level });
+    
+    // Update level
+    const levelElement = document.getElementById('level');
+    if (levelElement) {
+        levelElement.textContent = level;
+    }
+    
+    // Update XP
+    const currentXPElement = document.getElementById('current-xp');
+    if (currentXPElement) {
+        currentXPElement.textContent = xp;
+    }
+    
+    // Update progress bar
+    const progressFill = document.getElementById('progress-fill');
+    if (progressFill) {
+        const percent = Math.floor((xp / (level * 100)) * 100);
+        progressFill.style.width = percent + '%';
+        console.log('Set progress width to:', percent + '%');
+    }
+}
 
-  if (message.command === "setSelectedCode") {
-    // Update the analysis text with the selected code
-    const analysisText = document.getElementById("analysis-text");
-    analysisText.textContent = message.selectedCode;
-  }
+// Request initial state when the webview loads
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('Webview loaded, requesting state...');
+    vscode.postMessage({ command: 'getState' });
+});
+
+// Listen for visibility changes
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+        console.log('Webview became visible, requesting state...');
+        vscode.postMessage({ command: 'getState' });
+    }
+});
+
+// Listen for messages from the extension
+window.addEventListener('message', (event) => {
+    const message = event.data;
+    console.log('Received message:', message);
+    
+    if (message.command === 'updateXP' && message.state) {
+        console.log('Processing updateXP message:', message.state);
+        const { xp, level } = message.state;
+        updateXPDisplay(xp, level);
+    }
 });
 
 // Mock function to simulate fetching player data
@@ -144,16 +169,3 @@ groqAIToggle.onchange = function () {
 document.getElementById("reset-xp").onclick = function () {
   vscode.postMessage({ command: "resetXP" });
 };
-
-window.addEventListener('message', (event) => {
-  const message = event.data;
-  if (message.command === 'updateXP' && message.state) {
-    // Update XP, level, and progress bar in the UI
-    const { xp, level } = message.state;
-    document.getElementById('level').textContent = level;
-    document.getElementById('current-xp').textContent = xp;
-    const progressFill = document.getElementById('progress-fill');
-    const percent = Math.floor((xp / (level * 100)) * 100);
-    progressFill.style.width = percent + '%';
-  }
-});
