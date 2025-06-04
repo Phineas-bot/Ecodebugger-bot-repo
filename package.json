@@ -1,0 +1,90 @@
+{
+  "name": "ecodebugger",
+  "displayName": "EcoDebugger",
+  "description": "A gamified extension for debugging with eco coding tips.",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.99.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onStartupFinished",
+    "onLanguage:javascript",
+    "onLanguage:python",
+    "onCommand:ecodebugger.openPanel"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "Ecodebugger.helloWorld",
+        "title": "EcoDebugger: Hello World"
+      },
+      {
+        "command": "ecoDebugger.awardXP",
+        "title": "EcoDebugger: Award XP"
+      },
+      {
+        "command": "ecoDebugger.provideEcoTips",
+        "title": "EcoDebugger: Provide Eco Tips"
+      },
+      {
+        "command": "ecodebugger.openPanel",
+        "title": "Open EcoDebugger"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "ecodebugger",
+          "title": "EcoDebugger",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "ecodebugger": [
+        {
+          "id": "ecodebuggerView",
+          "name": "EcoDebugger",
+          "type": "webview"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/babel__traverse": "^7.20.7",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "@types/vscode": "^1.100.0",
+    "@typescript-eslint/eslint-plugin": "^8.28.0",
+    "@typescript-eslint/parser": "^8.28.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1",
+    "css-loader": "^7.1.2",
+    "eslint": "^9.23.0",
+    "file-loader": "^6.2.0",
+    "style-loader": "^4.0.0",
+    "ts-loader": "^9.5.2",
+    "typescript": "^5.8.2",
+    "webpack": "^5.99.8",
+    "webpack-cli": "^6.0.1"
+  },
+  "dependencies": {
+    "@babel/parser": "^7.27.2",
+    "@babel/traverse": "^7.27.1"
+  }
+}

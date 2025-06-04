@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EcoDebugger UI</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+      <!-- ...sidebar content stays the same... -->
+    
+    <div class="sidebar">
+<div class="level-box">
+  <span class="level">Level <span id="level">1</span></span>
+  <span class="xp"><span id="current-xp">0</span> XP</span>
+  <div class="progress-bar">
+    <div id="progress-fill" style="width: 60%;"></div>
+  </div>
+</div>
+
+<h4>Eco Tips</h4>
+<div class="eco-tip">
+  <p id="analysis-text">🌱 This loop wastes CPU → try map()</p>
+  <p class="carbon">Et: 0.4 g</p>
+  <button id="copy-code-btn">Copy Selected Code</button>
+</div>
+
+      <h4>Achievements</h4>
+
+      <div class="achievements">
+        <button id="green-coder">✅ Green Coder</button>
+        <button id="bug-slayer">🚫 Bug Slayer</button>
+        <button id="efficient-thinker">⚡ Efficient Thinker</button>
+        <button id="team-leader">👑 Team Leader</button>
+      </div>
+      <!-- Modal -->
+      <div id="achievement-modal" class="modal hidden">
+        <div class="modal-content">
+          <span id="close-modal">&times;</span>
+          <h3 id="achievement-title"></h3>
+          <p id="achievement-description"></p>
+        </div>
+      </div>
+      <h4>Classroom Mode</h4>
+      <div class="classroom">
+        <input id="class-code-input" type="text" placeholder="Enter class code or link" />
+        <button id="join-class-btn">Join</button>
+        <ul id="player-list">
+          <!-- Players will be dynamically added here -->
+        </ul>
+        <div id="weekly-top"></div>
+      </div>
+      <h4>Settings</h4>
+      <div class="settings">
+        <label><input type="checkbox" id="eco-tips-toggle" checked /> Enable Eco Tips</label>
+        <label><input type="checkbox" id="groq-ai-toggle" checked /> Enable Groq AI</label>
+        <button id="reset-xp">Reset XP/Achievements</button>
+      </div>
+    </div>
+  </div>
+<script src="../out/main.js"></script>
+</body>
+</html>
