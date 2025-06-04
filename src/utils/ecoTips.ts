@@ -170,6 +170,7 @@ export class EcoTipManager {
             isEcoTip: true
         }
     ];
+    static getInstance: any;
 
     // Get all eco tips
     getAllTips(): EcoTip[] {

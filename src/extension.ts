@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { checkAchievements } from './utils/achievements';
-import { provideEcoTips } from './utils/ecoTips';
+import { provideEcoTips, EcoTipManager } from './utils/ecoTips';
 import { globalXpEngine } from './utils/xp';
 ;import { updateStatusBar } from './utils/statusBar';
 import { detectNestedLoops } from './utils/bugs';
@@ -50,55 +50,38 @@ function analyzeCodeInRealTime(event: vscode.TextDocumentChangeEvent): void {
 
         const text = editor.document.getText();
 
+        // Detect nested loops warning
         if (detectNestedLoops(text)) {
             vscode.window.showWarningMessage(
                 '⚡ Eco Tip: Avoid nested loops when possible. Consider using more efficient algorithms or data structures.'
             );
-        } else {
-            // Process the code through the XP engine instead of manually adding XP
-            const result = globalXpEngine.processCodeSave(text);
-            
-            // Update local variables from globalXpEngine
-            xp = globalXpEngine.getCurrentXP();
-            level = globalXpEngine.getCurrentLevel();
-
-            // Show level up message if applicable
-            if (result.levelUp) {
-                vscode.window.showInformationMessage(`🎉 Congratulations! You reached Level ${result.levelUp.newLevel}!`);
-            }
-
-            // Show XP earned message if any XP was gained
-            if (result.earnedXP > 0) {
-                vscode.window.showInformationMessage(`+${result.earnedXP} XP earned!`);
-            }
         }
 
-        // Always update achievements and status bar (moved outside the if/else)
+        // Show eco tips messages based on current code
+        showEcoTipsMessages(text);
+
+        // Process the code through the XP engine
+        const result = globalXpEngine.processCodeSave(text);
+        
+        // Update local variables from globalXpEngine
+        xp = globalXpEngine.getCurrentXP();
+        level = globalXpEngine.getCurrentLevel();
+
+        // Show level up message if applicable
+        if (result.levelUp) {
+            vscode.window.showInformationMessage(`🎉 Congratulations! You reached Level ${result.levelUp.newLevel}!`);
+        }
+
+        // Show XP earned message if any XP was gained
+        if (result.earnedXP > 0) {
+            vscode.window.showInformationMessage(`+${result.earnedXP} XP earned!`);
+        }
+
+        // Always update achievements and status bar
         checkAchievements(xp, level);
         updateStatusBar(statusBarItem, xp, level);
     }, 500);
 }
-
-
-function awardXP(type: 'bug' | 'ecoTip') {
-    if (type === 'bug') {
-        xp += 10;
-        xpLog.push(`+10 XP for fixing a bug (${new Date().toLocaleTimeString()})`);
-    } else if (type === 'ecoTip') {
-        xp += 5;
-        xpLog.push(`+5 XP for applying an eco tip (${new Date().toLocaleTimeString()})`);
-    }
-     // Use globalXpEngine's method to check for level up
-     const xpNeeded = globalXpEngine.getXPForNextLevel();
-     if (xp >= xpNeeded) {
-         xp -= xpNeeded;
-         level++;
-         vscode.window.showInformationMessage(`🎉 Congratulations! You reached Level ${level}!`);
-     }
-     checkAchievements(xp, level);
-     updateStatusBar(statusBarItem, xp, level);
-}
-
 
 // Listen for file saves to trigger eco tips
 vscode.workspace.onDidSaveTextDocument((doc) => {
@@ -221,6 +204,13 @@ export function deactivate(): void {
     if (statusBarItem) {
         statusBarItem.dispose();
     }
+}
+
+function showEcoTipsMessages(code: string): void {
+    const tips = EcoTipManager.getInstance().scanForIssues(code);
+    tips.forEach((message: string) => {
+        vscode.window.showWarningMessage(`⚡ Eco Tip: ${message}`);
+    });
 }
 
 // Helper to provide the Webview HTML (to be replaced with actual UI)
