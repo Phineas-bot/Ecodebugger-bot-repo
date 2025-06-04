@@ -4,11 +4,14 @@ const achievements: { [key: string]: boolean } = {};
 
 // Expanded achievements logic for all badges in FEATURES.md
 const achievementDefs = [
-    { key: 'Green Coder', desc: 'Apply 10 eco tips.' },
-    { key: 'Bug Slayer', desc: 'Fix 20 bugs.' },
-    { key: 'Efficient Thinker', desc: 'Reach 500 XP.' },
-    { key: 'Team Leader', desc: 'Top leaderboard in classroom mode.' },
+    { key: 'Green Coder', desc: 'Apply 10 eco tips.', icon: '🌱', unlocked: false },
+    { key: 'Bug Slayer', desc: 'Fix 20 bugs.', icon: '🪲', unlocked: false },
+    { key: 'Efficient Thinker', desc: 'Reach 500 XP.', icon: '⚡', unlocked: false },
+    { key: 'Team Leader', desc: 'Top leaderboard in classroom mode.', icon: '👑', unlocked: false },
+    { key: 'XP Novice', desc: 'Earn your first XP.', icon: '⭐', unlocked: false },
+    { key: 'Eco Streak', desc: 'Apply eco tips 5 times in a row.', icon: '🔥', unlocked: false }
 ];
+
 let ecoTipsApplied = 0;
 let bugsFixed = 0;
 
@@ -19,6 +22,7 @@ export function trackEcoTip() {
         vscode.window.showInformationMessage('🎉 Achievement Unlocked: Green Coder!');
     }
 }
+
 export function trackBugFix() {
     bugsFixed++;
     if (!achievements['Bug Slayer'] && bugsFixed >= 20) {
@@ -26,6 +30,7 @@ export function trackBugFix() {
         vscode.window.showInformationMessage('🎉 Achievement Unlocked: Bug Slayer!');
     }
 }
+
 export function checkAchievements(xp: number, level: number, leaderboardTop = false): void {
     if (!achievements['First 100 XP'] && xp >= 100) {
         achievements['First 100 XP'] = true;
@@ -45,10 +50,12 @@ export function checkAchievements(xp: number, level: number, leaderboardTop = fa
         vscode.window.showInformationMessage('🎉 Achievement Unlocked: Team Leader!');
     }
 }
+
 export function getAchievements() {
     return achievementDefs.map(a => ({
         name: a.key,
-        unlocked: !!achievements[a.key],
-        description: a.desc
+        description: a.desc,
+        icon: a.icon,
+        unlocked: !!achievements[a.key]
     }));
 }

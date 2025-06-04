@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import { checkAchievements } from './utils/achievements';
+import { checkAchievements, getAchievements } from './utils/achievements';
 import { provideEcoTips } from './utils/ecoTips';
 import { xpForNextLevel } from './utils/xp';
 import { updateStatusBar } from './utils/statusBar';
@@ -137,210 +137,284 @@ function analyzeCodeInRealTime(_: vscode.TextDocumentChangeEvent): void {
 
 let ecoDebuggerWebviewView: vscode.WebviewView | undefined;
 
+function getWebviewContent(state: any, webview: vscode.Webview, extensionPath: string): string {
+    const styleUri = webview.asWebviewUri(vscode.Uri.file(
+        path.join(extensionPath, 'media', 'style.css')
+    ));
+    const mainJsUri = webview.asWebviewUri(vscode.Uri.file(
+        path.join(extensionPath, 'out', 'main.js')
+    ));
+
+    // Read the HTML template
+    const htmlPath = path.join(extensionPath, 'media', 'webview.html');
+    let html = fs.readFileSync(htmlPath, 'utf8');
+
+    // Replace resource URIs
+    return html
+        .replace(/\{\{styleUri\}\}/g, styleUri.toString())
+        .replace(/\{\{mainJsUri\}\}/g, mainJsUri.toString());
+}
+
 class EcoDebuggerViewProvider implements vscode.WebviewViewProvider {
     private readonly context: vscode.ExtensionContext;
+    private view?: vscode.WebviewView;
+    private viewState: {
+        xp: number;
+        level: number;
+        xpLog: string[];
+        ecoTips: any[];
+        achievements: any[];
+        leaderboard: any[];
+        settings: {
+            ecoTipsEnabled: boolean;
+            groqAIEnabled: boolean;
+        };
+    };
 
     constructor(context: vscode.ExtensionContext) {
         this.context = context;
+        this.viewState = {
+            xp: 0,
+            level: 1,
+            xpLog: [],
+            ecoTips: [],
+            achievements: [],
+            leaderboard: [],
+            settings: {
+                ecoTipsEnabled: true,
+                groqAIEnabled: true
+            }
+        };
     }
 
-    resolveWebviewView(webviewView: vscode.WebviewView): void {
-        ecoDebuggerWebviewView = webviewView;
+    public resolveWebviewView(webviewView: vscode.WebviewView): void {
+        this.view = webviewView;
         webviewView.webview.options = {
             enableScripts: true,
-            localResourceRoots: [vscode.Uri.file(path.join(this.context.extensionPath, 'media'))],
+            localResourceRoots: [
+                vscode.Uri.file(path.join(this.context.extensionPath, 'media')),
+                vscode.Uri.file(path.join(this.context.extensionPath, 'out'))
+            ],
         };
-        // Initial state
-        const state = {
+
+        // Initialize view state
+        this.viewState = {
             xp,
             level,
             xpLog,
-            ecoTips: [
-                { tip: 'This loop wastes CPU → try map()!' },
-                { tip: 'Use list comprehensions for efficiency.' }
-            ],
-            achievements: [
-                { name: 'Green Coder', unlocked: true, icon: '🌱', description: 'Apply 10 eco tips.' },
-                { name: 'Bug Slayer', unlocked: true, icon: '🪲', description: 'Fix 20 bugs.' },
-                { name: 'Efficient Thinker', unlocked: false, icon: '⚡', description: 'Reach 500 XP.' },
-                { name: 'Team Leader', unlocked: false, icon: '👑', description: 'Top leaderboard in classroom mode.' },
-                { name: 'XP Novice', unlocked: true, icon: '⭐', description: 'Earn your first XP.' },
-                { name: 'Eco Streak', unlocked: false, icon: '🔥', description: 'Apply eco tips 5 times in a row.' }
-            ],
+            ecoTips: [],
+            achievements: getAchievements(),
             leaderboard: classroom.leaderboard,
-            classroom,
-            ecoTipsEnabled,
-            groqAIEnabled
+            settings: {
+                ecoTipsEnabled,
+                groqAIEnabled
+            }
         };
 
-        webviewView.webview.html = getWebviewContent(state, webviewView.webview, this.context.extensionPath);
+        // Set initial webview content
+        webviewView.webview.html = getWebviewContent(this.viewState, webviewView.webview, this.context.extensionPath);
 
-        // Handle messages from the Webview (e.g., for the mini-game)
-        webviewView.webview.onDidReceiveMessage(
-            message => {
-                if (message.command === 'fixBug') {
-                    // Optionally update XP, achievements, etc. here
-                    webviewView.webview.postMessage({ command: 'bugFixed', bugsFixed: message.bugsFixed });
-                }
-                // You can handle other commands here, e.g., toggleEcoTips, resetXP, etc.
-                if (message.command === 'toggleEcoTips') {
+        // Send initial state immediately after setting HTML
+        this.notifyStateUpdate();
+
+        // Handle messages from the webview
+        webviewView.webview.onDidReceiveMessage(async message => {
+            switch (message.command) {
+                case 'fixBug':
+                    this.handleBugFix();
+                    break;
+
+                case 'toggleEcoTips':
                     ecoTipsEnabled = message.enabled;
-                }
-                if (message.command === 'toggleGroqAI') {
+                    this.viewState.settings.ecoTipsEnabled = message.enabled;
+                    this.notifyStateUpdate();
+                    break;
+
+                case 'toggleGroqAI':
                     groqAIEnabled = message.enabled;
-                }
-                if (message.command === 'resetXP') {
-                    xp = 0;
-                    level = 1;
-                    xpLog = [];
-                    updateStatusBar(statusBarItem, xp, level);
-                    vscode.window.showInformationMessage('XP and achievements have been reset.');
-                }
-                if (message.command === 'joinClassroom') {
-                    joinClassroom(message.code);
-                }
-            },
-            undefined,
-            []
-        );
-    }
-}
+                    this.viewState.settings.groqAIEnabled = message.enabled;
+                    this.notifyStateUpdate();
+                    break;
 
-function updateEcoDebuggerWebview() {
-    if (ecoDebuggerWebviewView) {
-        const state = {
-            xp,
-            level,
-            xpLog,
-            ecoTips: [
-                { tip: 'This loop wastes CPU → try map()!' },
-                { tip: 'Use list comprehensions for efficiency.' }
-            ],
-            achievements: [
-                { name: 'Green Coder', unlocked: true, icon: '🌱', description: 'Apply 10 eco tips.' },
-                { name: 'Bug Slayer', unlocked: true, icon: '🪲', description: 'Fix 20 bugs.' },
-                { name: 'Efficient Thinker', unlocked: false, icon: '⚡', description: 'Reach 500 XP.' },
-                { name: 'Team Leader', unlocked: false, icon: '👑', description: 'Top leaderboard in classroom mode.' },
-                { name: 'XP Novice', unlocked: true, icon: '⭐', description: 'Earn your first XP.' },
-                { name: 'Eco Streak', unlocked: false, icon: '🔥', description: 'Apply eco tips 5 times in a row.' }
-            ],
-            leaderboard: classroom.leaderboard,
-            classroom,
-            ecoTipsEnabled,
-            groqAIEnabled
+                case 'resetXP':
+                    this.handleReset();
+                    break;
+
+                case 'joinClassroom':
+                    await this.joinClassroom(message.code);
+                    break;
+
+                case 'copyCode':
+                    await vscode.env.clipboard.writeText(message.code);
+                    vscode.window.showInformationMessage('Code copied to clipboard!');
+                    break;
+            }
+        });
+    }
+
+    private notifyStateUpdate(): void {
+        if (this.view) {
+            this.view.webview.postMessage({ 
+                command: 'updateState', 
+                state: this.viewState 
+            });
+        }
+    }
+
+    public updateXPState(newXP: number, newLevel: number, newXPLog: string[]): void {
+        if (this.view) {
+            // Update internal state
+            this.viewState = {
+                ...this.viewState,
+                xp: newXP,
+                level: newLevel,
+                xpLog: newXPLog,
+                achievements: getAchievements() // Always refresh achievements
+            };
+
+            // Send both the full state update and the XP animation trigger
+            this.notifyStateUpdate();
+            
+            this.view.webview.postMessage({ 
+                command: 'updateXP', 
+                state: { 
+                    xp: newXP, 
+                    level: newLevel,
+                    xpLog: newXPLog
+                } 
+            });
+        }
+    }
+
+    public addEcoTip(tip: string, code?: string): void {
+        if (this.view) {
+            const newTip = {
+                tip,
+                code,
+                timestamp: new Date().toISOString()
+            };
+            
+            this.viewState.ecoTips.unshift(newTip);
+            if (this.viewState.ecoTips.length > 50) {
+                this.viewState.ecoTips.pop();
+            }
+            
+            this.view.webview.postMessage({
+                command: 'newEcoTip',
+                tip: newTip
+            });
+        }
+    }
+
+    public notifyAchievement(achievement: any): void {
+        if (this.view) {
+            this.viewState.achievements = getAchievements();
+            this.view.webview.postMessage({
+                command: 'achievementUnlocked',
+                achievement
+            });
+            this.notifyStateUpdate();
+        }
+    }
+
+    private handleBugFix(): void {
+        awardXP('bug');
+        updateStatusBar(statusBarItem, xp, level);
+    }
+
+    private handleReset(): void {
+        xp = 0;
+        level = 1;
+        xpLog = [];
+        updateStatusBar(statusBarItem, xp, level);
+        
+        this.viewState = {
+            ...this.viewState,
+            xp: 0,
+            level: 1,
+            xpLog: []
         };
-        ecoDebuggerWebviewView.webview.postMessage({ command: 'updateXP', state });
+        
+        this.notifyStateUpdate();
+        vscode.window.showInformationMessage('XP and achievements have been reset.');
     }
-}
 
-// Track previous issues per file
-const fileIssueState: {
-    [filePath: string]: {
-        bugs: Set<string>,
-        ecoTips: Set<string>
-    }
-} = {};
-
-function extractBugsAndTips(analysis: any): { bugs: Set<string>, ecoTips: Set<string> } {
-    return {
-        bugs: new Set(analysis.bugs || []),
-        ecoTips: new Set(analysis.ecoTips || [])
-    };
-}
-
-// Listen for file saves to trigger eco tips and AI bug/eco analysis
-vscode.workspace.onDidSaveTextDocument(async (doc) => {
-    if (!(ecoTipsEnabled || groqAIEnabled) || !['javascript', 'typescript', 'python'].includes(doc.languageId)) {
-        return;
-    }
-    const filePath = doc.uri.fsPath;
-    let prev = fileIssueState[filePath] || { bugs: new Set(), ecoTips: new Set() };
-    // --- Local Eco Tips Analysis ---
-    let localEcoTips = new Set<string>();
-    let localAnalysis: any = { ecoTips: [] };
-    if (ecoTipsEnabled) {
-        localAnalysis = await require('./utils/ecoTips').provideEcoTips();
-        localEcoTips = new Set(localAnalysis.ecoTips || []);
-    }
-    // --- AI Bug/Eco Analysis ---
-    let aiBugs = new Set<string>();
-    let aiEcoTips = new Set<string>();
-    let aiAnalysis: any = { bugs: [], ecoTips: [] };
-    if (groqAIEnabled) {
+    private async joinClassroom(code: string): Promise<void> {
         try {
-            aiAnalysis = await queueGroqRequest(doc.getText());
-            aiBugs = new Set(aiAnalysis.bugs || []);
-            aiEcoTips = new Set(aiAnalysis.ecoTips || []);
-        } catch (err) {
-            vscode.window.showWarningMessage('Groq AI error: ' + err);
+            joinClassroom(code);
+            this.viewState.leaderboard = classroom.leaderboard;
+            this.notifyStateUpdate();
+            vscode.window.showInformationMessage(`Successfully joined classroom ${code}!`);
+        } catch (error) {
+            vscode.window.showErrorMessage(`Failed to join classroom: ${error}`);
         }
     }
-    // --- Compare with previous state and award XP only for resolved issues ---
-    const fixedBugs = [...prev.bugs].filter(bug => !aiBugs.has(bug));
-    const appliedTips = [...prev.ecoTips].filter(tip => !localEcoTips.has(tip) && !aiEcoTips.has(tip));
-    fixedBugs.forEach(() => awardXP('bug'));
-    appliedTips.forEach(() => awardXP('ecoTip'));
-    // --- Update state for next save ---
-    fileIssueState[filePath] = {
-        bugs: aiBugs,
-        ecoTips: new Set([...localEcoTips, ...aiEcoTips])
-    };
-    // --- Show notifications for current issues (user feedback) ---
-    if (ecoTipsEnabled) {
-        if (doc.languageId === 'python') {
-            await require('./utils/greenCodePython').analyzePythonGreenCode(doc.getText());
-        } else {
-            require('./utils/greenCode').analyzeGreenCode(doc.getText());
-        }
-    }
-    // Optionally, show AI bug/eco notifications here if needed
-});
+}
 
+// Keep track of the webview provider
+let ecoDebuggerProvider: EcoDebuggerViewProvider;
 
 export function activate(context: vscode.ExtensionContext): void {
+    // Create status bar item
     statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
     context.subscriptions.push(statusBarItem);
     updateStatusBar(statusBarItem, xp, level);
 
-    console.log('Congratulations, your extension "Ecodebugger" is now active!');
-
-    // Register the webview view provider
+    // Create and register webview provider
+    ecoDebuggerProvider = new EcoDebuggerViewProvider(context);
     context.subscriptions.push(
-        vscode.window.registerWebviewViewProvider('ecodebuggerView', new EcoDebuggerViewProvider(context))
+        vscode.window.registerWebviewViewProvider('ecodebuggerView', ecoDebuggerProvider)
     );
-}
 
-function getWebviewContent(state: any, webview: vscode.Webview, extensionPath: string): string {
-    // Read the HTML template from media/webview.html
-    const htmlPath = path.join(extensionPath, 'media', 'webview.html');
-    let html = fs.readFileSync(htmlPath, 'utf8');
-    // Compute XP bar percent
-    const xpBarPercent = Math.floor((state.xp / (state.level * 100)) * 100);
-    // Replace placeholders with actual state values
-    html = html.replace(/\{\{level\}\}/g, state.level)
-        .replace(/\{\{xp\}\}/g, state.xp)
-        .replace(/\{\{xpBarPercent\}\}/g, String(xpBarPercent))
-        .replace(/\{\{xpLog\}\}/g, state.xpLog.map((entry: string) => `<div class='xp-log-entry'>${entry}</div>`).join(''))
-        .replace(/\{\{classroomCode\}\}/g, state.classroom.code)
-        .replace(/\{\{weeklyTop\}\}/g, state.classroom.weeklyTop);
-    // You can add more replacements for achievements, leaderboard, etc. as needed
-    return html;
+    // Register commands
+    context.subscriptions.push(
+        vscode.commands.registerCommand('ecoDebugger.awardXP', () => {
+            awardXP('bug');
+        }),
+        vscode.commands.registerCommand('ecoDebugger.provideEcoTips', async () => {
+            const tips = await provideEcoTips();
+            tips.ecoTips.forEach(tip => ecoDebuggerProvider.addEcoTip(tip));
+        })
+    );
+
+    // Watch for text document changes
+    context.subscriptions.push(
+        vscode.workspace.onDidChangeTextDocument(analyzeCodeInRealTime)
+    );
+
+    console.log('Congratulations, your extension "Ecodebugger" is now active!');
 }
 
 function awardXP(type: 'bug' | 'ecoTip') {
     let xpAwarded = type === 'bug' ? 10 : 5;
+    let oldLevel = level; // Store old level to check for level up
     xp += xpAwarded;
-    let leveledUp = false;
+
     while (xp >= xpForNextLevel(level)) {
         xp -= xpForNextLevel(level);
         level++;
-        leveledUp = true;
+    }
+
+    // Add XP log entry
+    xpLog.unshift(`${type === 'bug' ? 'Fixed a bug' : 'Applied eco tip'} (+${xpAwarded} XP)`);
+    if (xpLog.length > 50) {
+        xpLog.pop(); // Keep only the last 50 entries
+    }
+
+    // Check for level up notification
+    if (level > oldLevel) {
         vscode.window.showInformationMessage(`🎉 Congratulations! You reached Level ${level}!`);
     }
-    xpLog.push(`${type === 'bug' ? 'Fixed a bug' : 'Applied eco tip'} (+${xpAwarded} XP)`);
+
+    // Update achievements and status bar
     checkAchievements(xp, level, classroom.leaderboard[0]?.name === 'You');
     updateStatusBar(statusBarItem, xp, level);
-    updateEcoDebuggerWebview();
+    
+    // Update webview with all changes
+    if (ecoDebuggerProvider) {
+        // Make sure to pass the latest values
+        ecoDebuggerProvider.updateXPState(xp, level, xpLog);
+    }
 }
 
 export function deactivate(): void {
