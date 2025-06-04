@@ -24,9 +24,6 @@ function updateXP(newXP) {
   currentXPElement.textContent = currentXP;
 }
 
-// Example: Add 50 XP
-updateXP(600);
-
 // achievement: level up
 const modal = document.getElementById("achievement-modal");
 const title = document.getElementById("achievement-title");
@@ -60,18 +57,6 @@ const achievementData = {
   });
 });
 
-document.getElementById("green-coder").addEventListener("click", () => {
-  title.textContent = "Green Coder";
-  description.textContent = "Awarded for writing energy-efficient code using best practices like map(), filter(), and async/await.";
-  modal.classList.remove("hidden");
-});
-
-document.getElementById("bug-slayer").addEventListener("click", () => {
-  title.textContent = "Bug Slayer";
-  description.textContent = "Earned by identifying and resolving multiple logical errors or anti-patterns in your code.";
-  modal.classList.remove("hidden");
-});
-
 closeBtn.addEventListener("click", () => {
   modal.classList.add("hidden");
 });
@@ -99,14 +84,6 @@ window.addEventListener("message", (event) => {
     analysisText.textContent = message.selectedCode;
   }
 });
-
-// Example function to fetch player data from a database (replace with your API endpoint)
-async function fetchPlayerData() {
-  // Replace with your actual API endpoint
-  const response = await fetch("https://example.com/api/players");
-  const players = await response.json();
-  return players;
-}
 
 // Mock function to simulate fetching player data
 async function fetchPlayerData() {

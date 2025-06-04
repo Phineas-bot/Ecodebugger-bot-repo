@@ -22,7 +22,7 @@ let classroom = {
 let ecoTipsEnabled = true;
 
 // --- API Key Handling and Groq Integration ---
-const SHARED_GROQ_API_KEY = 'YOUR_SHARED_GROQ_API_KEY'; // TODO: Replace with actual key or load from secure config
+const SHARED_GROQ_API_KEY = 'YOUR_SHARED_GROQ_API_KEY'; // TODO: Replace with a real key or secure config before production
 let groqRateLimit = { count: 0, lastReset: Date.now() };
 const GROQ_RATE_LIMIT = 60; // max 60 requests per hour
 let groqBatchQueue: { code: string, resolve: Function, reject: Function }[] = [];
@@ -77,19 +77,6 @@ async function fakeGroqApiCall(codes: string[]): Promise<any[]> {
     }));
 }
 
-// --- Classroom Mode (Stub for join, persistence, weekly badge) ---
-function joinClassroom(code: string) {
-    classroom.code = code;
-    // TODO: Add cloud/local persistence
-    vscode.window.showInformationMessage(`Joined classroom: ${code}`);
-}
-function saveClassroomData() {
-    // TODO: Implement cloud/local persistence
-}
-function awardWeeklyTopBadge() {
-    // TODO: Implement logic to award badge
-}
-
 // --- Settings Integration ---
 function updateSettings(newSettings: { ecoTipsEnabled?: boolean, groqAIEnabled?: boolean }) {
     if (typeof newSettings.ecoTipsEnabled === 'boolean') {
@@ -138,6 +125,7 @@ let ecoDebuggerWebviewView: vscode.WebviewView | undefined;
 
 class EcoDebuggerViewProvider implements vscode.WebviewViewProvider {
     private readonly context: vscode.ExtensionContext;
+    private view?: vscode.WebviewView;
 
     constructor(context: vscode.ExtensionContext) {
         this.context = context;
@@ -145,6 +133,7 @@ class EcoDebuggerViewProvider implements vscode.WebviewViewProvider {
 
     resolveWebviewView(webviewView: vscode.WebviewView): void {
         ecoDebuggerWebviewView = webviewView;
+        this.view = webviewView;
         webviewView.webview.options = {
             enableScripts: true,
             localResourceRoots: [vscode.Uri.file(path.join(this.context.extensionPath, 'media'))],
@@ -176,12 +165,10 @@ class EcoDebuggerViewProvider implements vscode.WebviewViewProvider {
 
         // Handle messages from the Webview (e.g., for the mini-game)
         webviewView.webview.onDidReceiveMessage(
-            message => {
+            (message: any) => {
                 if (message.command === 'fixBug') {
-                    // Optionally update XP, achievements, etc. here
-                    webviewView.webview.postMessage({ command: 'bugFixed', bugsFixed: message.bugsFixed });
+                    this.view?.webview.postMessage({ command: 'bugFixed', bugsFixed: message.bugsFixed });
                 }
-                // You can handle other commands here, e.g., toggleEcoTips, resetXP, etc.
                 if (message.command === 'toggleEcoTips') {
                     ecoTipsEnabled = message.enabled;
                 }
@@ -192,8 +179,12 @@ class EcoDebuggerViewProvider implements vscode.WebviewViewProvider {
                     xp = 0;
                     level = 1;
                     xpLog = [];
+                    if (!statusBarItem) {
+                        statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
+                    }
                     updateStatusBar(statusBarItem, xp, level);
                     vscode.window.showInformationMessage('XP and achievements have been reset.');
+                    saveState();
                 }
                 if (message.command === 'joinClassroom') {
                     joinClassroom(message.code);
@@ -296,23 +287,63 @@ vscode.workspace.onDidSaveTextDocument(async (doc) => {
 });
 
 
+let contextGlobal: vscode.ExtensionContext; // Store context for globalState access
+
 export function activate(context: vscode.ExtensionContext): void {
+    contextGlobal = context;
+    // Restore state from globalState if available
+    const saved = context.globalState.get('ecodebuggerState') as any;
+    if (saved) {
+        xp = saved.xp || 0;
+        level = saved.level || 1;
+        xpLog = saved.xpLog || [];
+    }
     statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
     context.subscriptions.push(statusBarItem);
     updateStatusBar(statusBarItem, xp, level);
-
     console.log('Congratulations, your extension "Ecodebugger" is now active!');
-
     // Register the webview view provider
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider('ecodebuggerView', new EcoDebuggerViewProvider(context))
     );
 }
 
-function getWebviewContent(state: any, webview: vscode.Webview, extensionPath: string): string {
-    // const styleUri = webview.asWebviewUri(vscode.Uri.file(path.join(extensionPath, 'media', 'style.css')));
-    // const scriptUri = webview.asWebviewUri(vscode.Uri.file(path.join(extensionPath, 'out', 'main.js')));
+function saveState() {
+    if (contextGlobal) {
+        contextGlobal.globalState.update('ecodebuggerState', {
+            xp,
+            level,
+            xpLog
+        });
+    }
+}
 
+function awardXP(type: 'bug' | 'ecoTip') {
+    let xpAwarded = type === 'bug' ? 10 : 5;
+    xp += xpAwarded;
+    let leveledUp = false;
+    while (xp >= xpForNextLevel(level)) {
+        xp -= xpForNextLevel(level);
+        level++;
+        leveledUp = true;
+        vscode.window.showInformationMessage(`🎉 Congratulations! You reached Level ${level}!`);
+    }
+    xpLog.push(`${type === 'bug' ? 'Fixed a bug' : 'Applied eco tip'} (+${xpAwarded} XP)`);
+    checkAchievements(xp, level, classroom.leaderboard[0]?.name === 'You');
+    updateStatusBar(statusBarItem, xp, level);
+    updateEcoDebuggerWebview();
+    saveState(); // Persist after XP change
+}
+
+function joinClassroom(code: string) {
+    classroom.code = code;
+    // TODO: Add cloud/local persistence
+    vscode.window.showInformationMessage(`Joined classroom: ${code}`);
+}
+
+// Removed duplicate webviewView.webview.onDidReceiveMessage at the bottom of the file
+
+function getWebviewContent(state: any, webview: vscode.Webview, extensionPath: string): string {
     return `
         <!DOCTYPE html>
         <title>EcoDebugger</title>
@@ -439,22 +470,6 @@ function getWebviewContent(state: any, webview: vscode.Webview, extensionPath: s
     </body>
     </html>
     `;
-}
-
-function awardXP(type: 'bug' | 'ecoTip') {
-    let xpAwarded = type === 'bug' ? 10 : 5;
-    xp += xpAwarded;
-    let leveledUp = false;
-    while (xp >= xpForNextLevel(level)) {
-        xp -= xpForNextLevel(level);
-        level++;
-        leveledUp = true;
-        vscode.window.showInformationMessage(`🎉 Congratulations! You reached Level ${level}!`);
-    }
-    xpLog.push(`${type === 'bug' ? 'Fixed a bug' : 'Applied eco tip'} (+${xpAwarded} XP)`);
-    checkAchievements(xp, level, classroom.leaderboard[0]?.name === 'You');
-    updateStatusBar(statusBarItem, xp, level);
-    updateEcoDebuggerWebview();
 }
 
 export function deactivate(): void {
