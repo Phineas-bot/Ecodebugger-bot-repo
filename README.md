@@ -36,6 +36,7 @@ A gamified VS Code extension for debugging with eco coding tips.
 - Save work	`git add .` then `git commit -m "Message"`
 - Push branch to GitHub	`git push origin feature/branch-name`
 - Pull latest main branch	`git pull origin main`
+-
 
 ## License
 [MIT](LICENSE)
