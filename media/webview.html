@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EcoDebugger Webview</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="tabs">
+      <div class="tab active" id="tab-xp">XP/Level</div>
+      <div class="tab" id="tab-badges">Badges Earned</div>
+      <div class="tab" id="tab-eco">Eco Tips Log</div>
+      <div class="tab" id="tab-leader">Leaderboard</div>
+      <div class="tab" id="tab-settings">Settings</div>
+    </div>
+    <div id="tab-content-xp">
+      <div class="level">Level {{level}}</div>
+      <div class="xp">{{xp}} XP</div>
+      <div class="xp-bar-container">
+        <div class="xp-bar-bg">
+          <div class="xp-bar-fill" style="width: '{{xpBarPercent}}%'"></div>
+        </div>
+        <div class="xp-bar-label">{{xp}} / {{level}}00 XP</div>
+      </div>
+    </div>
+    <div id="tab-content-badges" style="display:none;">
+      <h3>Achievements</h3>
+      <!-- Achievements will be injected here by JS or extension -->
+    </div>
+    <div id="tab-content-eco" style="display:none;">
+      <h3>Eco Tips Log</h3>
+      <div class="xp-log">{{xpLog}}</div>
+    </div>
+    <div id="tab-content-leader" style="display:none;">
+      <h3>Classroom Mode</h3>
+      <div>Classroom Code: <b>{{classroomCode}}</b></div>
+      <div>Weekly Top: <b>{{weeklyTop}}</b></div>
+      <!-- Leaderboard will be injected here by JS or extension -->
+    </div>
+    <div id="tab-content-settings" style="display:none;">
+      <h3>Settings</h3>
+      <div class="settings">
+        <label><input type="checkbox" id="eco-tips-toggle" checked /> Enable Eco Tips</label>
+        <label><input type="checkbox" id="groq-ai-toggle" checked /> Enable Groq AI Analysis</label>
+        <button id="reset-xp">Reset XP/Achievements</button>
+      </div>
+    </div>
+    <div class="game-section">
+      <h3>Mini Game: Bug Fixer</h3>
+      <div id="game-instructions">Click the button to fix a bug!</div>
+      <button id="fix-bug-btn">Fix Bug</button>
+      <div id="game-feedback"></div>
+    </div>
+  </div>
+  <script src="../out/main.js"></script>
+</body>
+</html>

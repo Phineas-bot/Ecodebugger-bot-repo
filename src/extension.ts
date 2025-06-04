@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as fs from 'fs';
 import { checkAchievements } from './utils/achievements';
 import { provideEcoTips } from './utils/ecoTips';
 import { xpForNextLevel } from './utils/xp';
@@ -310,135 +311,20 @@ export function activate(context: vscode.ExtensionContext): void {
 }
 
 function getWebviewContent(state: any, webview: vscode.Webview, extensionPath: string): string {
-    // const styleUri = webview.asWebviewUri(vscode.Uri.file(path.join(extensionPath, 'media', 'style.css')));
-    // const scriptUri = webview.asWebviewUri(vscode.Uri.file(path.join(extensionPath, 'out', 'main.js')));
-
-    return `
-        <!DOCTYPE html>
-        <title>EcoDebugger</title>
-        <style>
-            body { font-family: 'Segoe UI', Arial, sans-serif; background: #181c24; color: #fff; margin: 0; }
-            .container { max-width: 500px; margin: 2rem auto; background: #23283a; border-radius: 12px; box-shadow: 0 2px 16px #0008; padding: 2rem; }
-            .tabs { display: flex; gap: 1rem; margin-bottom: 1.5rem; }
-            .tab { cursor: pointer; padding: 0.5rem 1rem; border-radius: 6px; background: #222a36; color: #fff; }
-            .tab.active { background: #2ecc71; color: #fff; }
-            .level { background: #2ecc71; color: #fff; border-radius: 8px; padding: 0.5rem 1rem; display: inline-block; margin-bottom: 1rem; font-weight: bold; }
-            .xp { color: #fff; margin-bottom: 1rem; }
-            .xp-bar-container { margin-bottom: 1rem; }
-            .xp-bar-bg { background: #333; border-radius: 8px; width: 100%; height: 16px; }
-            .xp-bar-fill { background: #2ecc71; height: 100%; border-radius: 8px; transition: width 0.3s; }
-            .xp-bar-label { font-size: 0.9rem; color: #fff; text-align: right; margin-top: 2px; }
-            .eco-tips, .achievements, .leaderboard, .xp-log, .settings { margin-bottom: 2rem; }
-            .eco-tip, .achievement, .leader, .xp-log-entry { background: #222a36; border-radius: 6px; padding: 0.5rem 1rem; margin-bottom: 0.5rem; }
-            .eco-tip { border-left: 4px solid #2ecc71; }
-            .achievement { border-left: 4px solid #f1c40f; display: flex; align-items: center; }
-            .achievement .badge-icon { font-size: 1.3rem; margin-right: 0.7rem; }
-            .achievement.locked { opacity: 0.5; filter: grayscale(1); }
-            .leader { border-left: 4px solid #3498db; }
-            .game-section { margin-top: 2rem; }
-            button { background: #2ecc71; color: #fff; border: none; border-radius: 6px; padding: 0.5rem 1rem; font-size: 1rem; cursor: pointer; margin-top: 1rem; }
-            button:hover { background: #27ae60; }
-            .settings label { display: flex; align-items: center; gap: 0.5rem; }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <div class="tabs">
-                <div class="tab active" id="tab-xp">XP/Level</div>
-                <div class="tab" id="tab-badges">Badges Earned</div>
-                <div class="tab" id="tab-eco">Eco Tips Log</div>
-                <div class="tab" id="tab-leader">Leaderboard</div>
-                <div class="tab" id="tab-settings">Settings</div>
-            </div>
-            <div id="tab-content-xp">
-                <div class="level">Level ${state.level}</div>
-                <div class="xp">${state.xp} XP</div>
-                <div class="xp-bar-container">
-                    <div class="xp-bar-bg">
-                        <div class="xp-bar-fill" style="width: ${Math.floor((state.xp / (state.level * 100)) * 100)}%"></div>
-                    </div>
-                    <div class="xp-bar-label">${state.xp} / ${state.level * 100} XP</div>
-                </div>
-            </div>
-            <div id="tab-content-badges" style="display:none;">
-                <h3>Achievements</h3>
-                ${state.achievements.map((a: any) => `
-                    <div class="achievement${a.unlocked ? '' : ' locked'}">
-                        <span class="badge-icon">${a.icon}</span>
-                        <span>${a.name}${a.unlocked ? '' : ' (locked)'}</span>
-                        <span style="margin-left:auto;font-size:0.9rem;color:#aaa;">${a.description}</span>
-                    </div>
-                `).join('')}
-            </div>
-            <div id="tab-content-eco" style="display:none;">
-                <h3>Eco Tips Log</h3>
-                <div class="xp-log">
-                    ${state.xpLog.map((entry: string) => `<div class="xp-log-entry">${entry}</div>`).join('')}
-                </div>
-            </div>
-            <div id="tab-content-leader" style="display:none;">
-                <h3>Classroom Mode</h3>
-                <div>Classroom Code: <b>${state.classroom.code}</b></div>
-                <div>Weekly Top: <b>${state.classroom.weeklyTop}</b></div>
-                ${state.leaderboard.map((l: any) => `<div class="leader">${l.name}: ${l.xp} XP</div>`).join('')}
-            </div>
-            <div id="tab-content-settings" style="display:none;">
-                <h3>Settings</h3>
-                <div class="settings">
-                    <label><input type="checkbox" id="eco-tips-toggle" ${state.ecoTipsEnabled ? 'checked' : ''}/> Enable Eco Tips</label>
-                    <label><input type="checkbox" id="groq-ai-toggle" ${state.groqAIEnabled ? 'checked' : ''}/> Enable Groq AI Analysis</label>
-                    <button id="reset-xp">Reset XP/Achievements</button>
-                </div>
-            </div>
-            <div class="game-section">
-                <h3>Mini Game: Bug Fixer</h3>
-                <div id="game-instructions">Click the button to fix a bug!</div>
-                <button id="fix-bug-btn">Fix Bug</button>
-                <div id="game-feedback"></div>
-            </div>
-        </div>
-        <script>
-            const vscode = acquireVsCodeApi();
-            let bugsFixed = 0;
-            // Tab switching logic
-            const tabs = ['xp','badges','eco','leader','settings'];
-            tabs.forEach(tab => {
-                document.getElementById('tab-' + tab).onclick = function() {
-                    tabs.forEach(t => {
-                        document.getElementById('tab-' + t).classList.remove('active');
-                        document.getElementById('tab-content-' + t).style.display = 'none';
-                    });
-                    this.classList.add('active');
-                    document.getElementById('tab-content-' + tab).style.display = '';
-                };
-            });
-            document.getElementById('fix-bug-btn').onclick = function() {
-                bugsFixed++;
-                document.getElementById('game-feedback').textContent = 'Bugs fixed: ' + bugsFixed;
-                vscode.postMessage({ command: 'fixBug', bugsFixed: bugsFixed });
-                if (bugsFixed === 5) {
-                    document.getElementById('game-feedback').textContent = 'Level Up! You are a Bug Slayer!';
-                }
-            };
-            document.getElementById('eco-tips-toggle').onchange = function() {
-                vscode.postMessage({ command: 'toggleEcoTips', enabled: this.checked });
-            };
-            document.getElementById('groq-ai-toggle').onchange = function() {
-                vscode.postMessage({ command: 'toggleGroqAI', enabled: this.checked });
-            };
-            document.getElementById('reset-xp').onclick = function() {
-                vscode.postMessage({ command: 'resetXP' });
-            };
-            window.addEventListener('message', event => {
-                const message = event.data;
-                if (message.command === 'bugFixed') {
-                    // Optionally update UI based on extension state
-                }
-            });
-        </script>
-    </body>
-    </html>
-    `;
+    // Read the HTML template from media/webview.html
+    const htmlPath = path.join(extensionPath, 'media', 'webview.html');
+    let html = fs.readFileSync(htmlPath, 'utf8');
+    // Compute XP bar percent
+    const xpBarPercent = Math.floor((state.xp / (state.level * 100)) * 100);
+    // Replace placeholders with actual state values
+    html = html.replace(/\{\{level\}\}/g, state.level)
+        .replace(/\{\{xp\}\}/g, state.xp)
+        .replace(/\{\{xpBarPercent\}\}/g, String(xpBarPercent))
+        .replace(/\{\{xpLog\}\}/g, state.xpLog.map((entry: string) => `<div class='xp-log-entry'>${entry}</div>`).join(''))
+        .replace(/\{\{classroomCode\}\}/g, state.classroom.code)
+        .replace(/\{\{weeklyTop\}\}/g, state.classroom.weeklyTop);
+    // You can add more replacements for achievements, leaderboard, etc. as needed
+    return html;
 }
 
 function awardXP(type: 'bug' | 'ecoTip') {
