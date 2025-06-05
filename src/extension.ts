@@ -396,7 +396,23 @@ function getWebviewContent(state: any, webview: vscode.Webview, extensionPath: s
         <style>
             body { font-family: 'Segoe UI', Arial, sans-serif; background: #181c24; color: #fff; margin: 0; }
             .container { max-width: 500px; margin: 2rem auto; background: #23283a; border-radius: 12px; box-shadow: 0 2px 16px #0008; padding: 2rem; }
-            .tabs { display: flex; gap: 1rem; margin-bottom: 1.5rem; }
+            .tabs {
+                display: flex;
+                gap: 1rem;
+                margin-bottom: 1.5rem;
+                flex-wrap: wrap; /* Allow tabs to wrap to the next line */
+                overflow-x: auto; /* Enable horizontal scrolling if needed */
+            }
+            .tabs::-webkit-scrollbar {
+                height: 8px;
+            }
+            .tabs::-webkit-scrollbar-thumb {
+                background: #2ecc71;
+                border-radius: 4px;
+            }
+            .tabs::-webkit-scrollbar-track {
+                background: #222a36;
+            }
             .tab { cursor: pointer; padding: 0.5rem 1rem; border-radius: 6px; background: #222a36; color: #fff; }
             .tab.active { background: #2ecc71; color: #fff; }
             .level { background: #2ecc71; color: #fff; border-radius: 8px; padding: 0.5rem 1rem; display: inline-block; margin-bottom: 1rem; font-weight: bold; }
