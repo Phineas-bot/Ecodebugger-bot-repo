@@ -13,8 +13,7 @@
   "activationEvents": [
     "onStartupFinished",
     "onLanguage:javascript",
-    "onLanguage:python",
-    "onCommand:ecodebugger.openPanel"
+    "onLanguage:python"
   ],
   "contributes": {
     "commands": [

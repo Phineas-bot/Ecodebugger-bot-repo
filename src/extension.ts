@@ -5,6 +5,7 @@ import { provideEcoTips } from './utils/ecoTips';
 import { xpForNextLevel } from './utils/xp';
 import { updateStatusBar } from './utils/statusBar';
 import { detectNestedLoops } from './utils/bugs';
+import { queueGroqRequest, canSendGroqRequest, sendGroqRequestBatch, fakeGroqApiCall } from './utils/groqApi';
 
 let xp = 0;
 let level = 1;
@@ -20,64 +21,8 @@ let classroom = {
     weeklyTop: 'Victory-1'
 };
 let ecoTipsEnabled = true;
-
-// --- API Key Handling and Groq Integration ---
-const SHARED_GROQ_API_KEY = 'YOUR_SHARED_GROQ_API_KEY'; // TODO: Replace with a real key or secure config before production
-let groqRateLimit = { count: 0, lastReset: Date.now() };
-const GROQ_RATE_LIMIT = 60; // max 60 requests per hour
-let groqBatchQueue: { code: string, resolve: Function, reject: Function }[] = [];
-let groqBatchTimer: NodeJS.Timeout | undefined;
 let groqAIEnabled = true;
 
-function canSendGroqRequest() {
-    const now = Date.now();
-    if (now - groqRateLimit.lastReset > 60 * 60 * 1000) {
-        groqRateLimit = { count: 0, lastReset: now };
-    }
-    return groqRateLimit.count < GROQ_RATE_LIMIT;
-}
-
-async function sendGroqRequestBatch() {
-    if (!canSendGroqRequest()) {
-        groqBatchQueue.forEach(({ reject }) => reject('Rate limit exceeded'));
-        groqBatchQueue = [];
-        return;
-    }
-    const batch = groqBatchQueue.splice(0, groqBatchQueue.length);
-    const codes = batch.map(item => item.code);
-    try {
-        // Simulate Groq API call (replace with real fetch)
-        const response = await fakeGroqApiCall(codes);
-        batch.forEach(({ resolve }, i) => resolve(response[i]));
-        groqRateLimit.count += batch.length;
-    } catch (err) {
-        batch.forEach(({ reject }) => reject(err));
-    }
-}
-
-function queueGroqRequest(code: string): Promise<any> {
-    return new Promise((resolve, reject) => {
-        groqBatchQueue.push({ code, resolve, reject });
-        if (!groqBatchTimer) {
-            groqBatchTimer = setTimeout(() => {
-                sendGroqRequestBatch();
-                groqBatchTimer = undefined;
-            }, 1000); // batch every 1s
-        }
-    });
-}
-
-async function fakeGroqApiCall(codes: string[]): Promise<any[]> {
-    // Simulate AI bug/eco analysis
-    return codes.map(code => ({
-        bugs: ['Unused variable', 'Unreachable code'],
-        ecoTips: ['Use map() instead of for-loop'],
-        explanation: 'Sample AI analysis',
-        suggestions: ['Remove unused variable', 'Replace for-loop with map()']
-    }));
-}
-
-// --- Settings Integration ---
 function updateSettings(newSettings: { ecoTipsEnabled?: boolean, groqAIEnabled?: boolean }) {
     if (typeof newSettings.ecoTipsEnabled === 'boolean') {
         ecoTipsEnabled = newSettings.ecoTipsEnabled;
