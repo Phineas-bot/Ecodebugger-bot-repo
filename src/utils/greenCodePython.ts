@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { execFile } from 'child_process';
 import * as path from 'path';
+import { ecoDebuggerWebviewView } from '../extension';
 
 export async function analyzePythonGreenCode(text: string, returnTips?: boolean): Promise<{ ecoTips: string[] }> {
     const scriptPath = path.join(__dirname, 'green_code_analyzer.py');
@@ -37,6 +38,9 @@ export async function analyzePythonGreenCode(text: string, returnTips?: boolean)
             }
             if (!returnTips) {
                 ecoTips.forEach(tip => vscode.window.showWarningMessage('⚡ Eco Tip: ' + tip));
+            }
+            if (ecoDebuggerWebviewView) {
+                ecoDebuggerWebviewView.webview.postMessage({ command: 'updateEcoTips', tips: ecoTips });
             }
             resolve({ ecoTips });
         });

@@ -66,7 +66,7 @@ function analyzeCodeInRealTime(_: vscode.TextDocumentChangeEvent): void {
     }, 500);
 }
 
-let ecoDebuggerWebviewView: vscode.WebviewView | undefined;
+export let ecoDebuggerWebviewView: vscode.WebviewView | undefined;
 
 class EcoDebuggerViewProvider implements vscode.WebviewViewProvider {
     private readonly context: vscode.ExtensionContext;
@@ -332,56 +332,57 @@ function joinClassroom(code: string) {
     vscode.window.showInformationMessage(`Joined classroom: ${code}`);
 }
 
-// Removed duplicate webviewView.webview.onDidReceiveMessage at the bottom of the file
-
+// Add the Eco Tips tab to the webview content
 function getWebviewContent(state: any, webview: vscode.Webview, extensionPath: string): string {
     return `
         <!DOCTYPE html>
-        <title>EcoDebugger</title>
-        <style>
-            body { font-family: 'Segoe UI', Arial, sans-serif; background: #181c24; color: #fff; margin: 0; }
-            .container { max-width: 500px; margin: 2rem auto; background: #23283a; border-radius: 12px; box-shadow: 0 2px 16px #0008; padding: 2rem; }
-            .tabs {
-                display: flex;
-                gap: 1rem;
-                margin-bottom: 1.5rem;
-                flex-wrap: wrap; /* Allow tabs to wrap to the next line */
-                overflow-x: auto; /* Enable horizontal scrolling if needed */
-            }
-            .tabs::-webkit-scrollbar {
-                height: 8px;
-            }
-            .tabs::-webkit-scrollbar-thumb {
-                background: #2ecc71;
-                border-radius: 4px;
-            }
-            .tabs::-webkit-scrollbar-track {
-                background: #222a36;
-            }
-            .tab { cursor: pointer; padding: 0.5rem 1rem; border-radius: 6px; background: #222a36; color: #fff; }
-            .tab.active { background: #2ecc71; color: #fff; }
-            .level { background: #2ecc71; color: #fff; border-radius: 8px; padding: 0.5rem 1rem; display: inline-block; margin-bottom: 1rem; font-weight: bold; }
-            .xp { color: #fff; margin-bottom: 1rem; }
-            .progress-bar { background: #333; border-radius: 8px; width: 100%; height: 16px; margin-bottom: 1rem; }
-            #progress-fill { background: #2ecc71; height: 100%; border-radius: 8px; transition: width 0.3s ease-in-out; }
-            .eco-tips, .achievements, .leaderboard, .xp-log, .settings { margin-bottom: 2rem; }
-            .eco-tip, .achievement, .leader, .xp-log-entry { background: #222a36; border-radius: 6px; padding: 0.5rem 1rem; margin-bottom: 0.5rem; }
-            .eco-tip { border-left: 4px solid #2ecc71; }
-            .achievement { border-left: 4px solid #f1c40f; display: flex; align-items: center; }
-            .achievement .badge-icon { font-size: 1.3rem; margin-right: 0.7rem; }
-            .achievement.locked { opacity: 0.5; filter: grayscale(1); }
-            .leader { border-left: 4px solid #3498db; }
-            .game-section { margin-top: 2rem; }
-            button { background: #2ecc71; color: #fff; border: none; border-radius: 6px; padding: 0.5rem 1rem; font-size: 1rem; cursor: pointer; margin-top: 1rem; }
-            button:hover { background: #27ae60; }
-            .settings label { display: flex; align-items: center; gap: 0.5rem; }
-        </style>
+        <html>
+        <head>
+            <style>
+                body { font-family: 'Segoe UI', Arial, sans-serif; background: #181c24; color: #fff; margin: 0; }
+                .container { max-width: 500px; margin: 2rem auto; background: #23283a; border-radius: 12px; box-shadow: 0 2px 16px #0008; padding: 2rem; }
+                .tabs {
+                    display: flex;
+                    gap: 1rem;
+                    margin-bottom: 1.5rem;
+                    flex-wrap: wrap; /* Allow tabs to wrap to the next line */
+                    overflow-x: auto; /* Enable horizontal scrolling if needed */
+                }
+                .tabs::-webkit-scrollbar {
+                    height: 8px;
+                }
+                .tabs::-webkit-scrollbar-thumb {
+                    background: #2ecc71;
+                    border-radius: 4px;
+                }
+                .tabs::-webkit-scrollbar-track {
+                    background: #222a36;
+                }
+                .tab { cursor: pointer; padding: 0.5rem 1rem; border-radius: 6px; background: #222a36; color: #fff; }
+                .tab.active { background: #2ecc71; color: #fff; }
+                .level { background: #2ecc71; color: #fff; border-radius: 8px; padding: 0.5rem 1rem; display: inline-block; margin-bottom: 1rem; font-weight: bold; }
+                .xp { color: #fff; margin-bottom: 1rem; }
+                .progress-bar { background: #333; border-radius: 8px; width: 100%; height: 16px; margin-bottom: 1rem; }
+                #progress-fill { background: #2ecc71; height: 100%; border-radius: 8px; transition: width 0.3s ease-in-out; }
+                .eco-tips, .achievements, .leaderboard, .xp-log, .settings { margin-bottom: 2rem; }
+                .eco-tip, .achievement, .leader, .xp-log-entry { background: #222a36; border-radius: 6px; padding: 0.5rem 1rem; margin-bottom: 0.5rem; }
+                .eco-tip { border-left: 4px solid #2ecc71; }
+                .achievement { border-left: 4px solid #f1c40f; display: flex; align-items: center; }
+                .achievement .badge-icon { font-size: 1.3rem; margin-right: 0.7rem; }
+                .achievement.locked { opacity: 0.5; filter: grayscale(1); }
+                .leader { border-left: 4px solid #3498db; }
+                .game-section { margin-top: 2rem; }
+                button { background: #2ecc71; color: #fff; border: none; border-radius: 6px; padding: 0.5rem 1rem; font-size: 1rem; cursor: pointer; margin-top: 1rem; }
+                button:hover { background: #27ae60; }
+                .settings label { display: flex; align-items: center; gap: 0.5rem; }
+            </style>
+        </head>
         <body>
             <div class="container">
                 <div class="tabs">
                     <div class="tab active" id="tab-xp">XP/Level</div>
                     <div class="tab" id="tab-badges">Badges Earned</div>
-                    <div class="tab" id="tab-eco">Eco Tips Log</div>
+                    <div class="tab" id="tab-eco">Eco Tips</div>
                     <div class="tab" id="tab-leader">Leaderboard</div>
                     <div class="tab" id="tab-settings">Settings</div>
                 </div>
@@ -403,9 +404,9 @@ function getWebviewContent(state: any, webview: vscode.Webview, extensionPath: s
                     `).join('')}
                 </div>
                 <div id="tab-content-eco" style="display:none;">
-                    <h3>Eco Tips Log</h3>
-                    <div class="xp-log">
-                        ${state.xpLog.map((entry: string) => `<div class="xp-log-entry">${entry}</div>`).join('')}
+                    <h3>Eco Tips</h3>
+                    <div id="eco-tips-container">
+                        ${state.ecoTips.map((tip: any) => `<div class="eco-tip">${tip.tip}</div>`).join('')}
                     </div>
                 </div>
                 <div id="tab-content-leader" style="display:none;">
@@ -452,6 +453,15 @@ function getWebviewContent(state: any, webview: vscode.Webview, extensionPath: s
                         } else {
                             console.error('Progress fill element not found');
                         }
+                    } else if (message.command === 'updateEcoTips') {
+                        const container = document.getElementById('eco-tips-container');
+                        container.innerHTML = '';
+                        message.tips.forEach(tip => {
+                            const div = document.createElement('div');
+                            div.className = 'eco-tip';
+                            div.textContent = tip;
+                            container.appendChild(div);
+                        });
                     }
                 });
                 
@@ -492,7 +502,7 @@ function getWebviewContent(state: any, webview: vscode.Webview, extensionPath: s
                 });
             </script>
         </body>
-    </html>`;
+        </html>`;
 }
 
 export function deactivate(): void {
