@@ -335,6 +335,10 @@ function joinClassroom(code: string) {
 // Removed duplicate webviewView.webview.onDidReceiveMessage at the bottom of the file
 
 function getWebviewContent(state: any, webview: vscode.Webview, extensionPath: string): string {
+     // const styleUri = webview.asWebviewUri(vscode.Uri.file(path.join(extensionPath, 'media', 'style.css')));
+    // const scriptUri = webview.asWebviewUri(vscode.Uri.file(path.join(extensionPath, 'out', 'main.js')));
+
+    
     return `
         <!DOCTYPE html>
         <title>EcoDebugger</title>
