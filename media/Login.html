@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EcoDebugger Login</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body { background: #181c24; color: #fff; font-family: 'Segoe UI', Arial, sans-serif; }
+    .login-container { max-width: 350px; margin: 5rem auto; background: #23283a; border-radius: 12px; box-shadow: 0 2px 16px #0008; padding: 2rem; }
+    .login-title { font-size: 1.5rem; margin-bottom: 1.5rem; text-align: center; color: #2ecc71; }
+    .login-form { display: flex; flex-direction: column; gap: 1rem; }
+    .login-form input { padding: 0.7rem; border-radius: 6px; border: none; font-size: 1rem; }
+    .login-form button { background: #2ecc71; color: #fff; border: none; border-radius: 6px; padding: 0.7rem; font-size: 1rem; cursor: pointer; }
+    .login-form button:hover { background: #27ae60; }
+    .login-form .remember-me {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.95rem;
+      color: #b2ffb2;
+      margin-top: -0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .signup-link {
+      color: #2ecc71;
+      text-align: center;
+      margin-top: 1.2rem;
+      display: block;
+      text-decoration: underline;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    .signup-link:hover {
+      color: #27ae60;
+    }
+    .login-error { color: #e74c3c; text-align: center; margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-title">EcoDebugger Login</div>
+    <form class="login-form" id="loginForm">
+      <input type="text" id="username" placeholder="Username" required />
+      <input type="password" id="password" placeholder="Password" required />
+      <div class="remember-me">
+        <input type="checkbox" id="rememberMe" />
+        <label for="rememberMe">Remember me</label>
+      </div>
+      <button type="submit">Login</button>
+    </form>
+    <a class="signup-link" id="signupLink">Sign up if you don't have an account</a>
+    <div class="login-error" id="loginError"></div>
+  </div>
+  <script>
+    // Simulate user data storage (replace with real backend or VS Code API integration)
+    function saveUserData(username, data) {
+      localStorage.setItem('ecodebugger_user_' + username, JSON.stringify(data));
+    }
+    function getUserData(username) {
+      const data = localStorage.getItem('ecodebugger_user_' + username);
+      return data ? JSON.parse(data) : null;
+    }
+    document.getElementById('loginForm').onsubmit = function(e) {
+      e.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const rememberMe = document.getElementById('rememberMe').checked;
+      const errorDiv = document.getElementById('loginError');
+      errorDiv.textContent = '';
+      if (!username || !password) {
+        errorDiv.textContent = 'Please enter both username and password.';
+        return;
+      }
+      let userData = getUserData(username);
+      if (!userData) {
+        errorDiv.textContent = 'No account found. Please sign up.';
+        return;
+      }
+      localStorage.setItem('ecodebugger_current_user', username);
+      if (rememberMe) {
+        localStorage.setItem('ecodebugger_remember_me', '1');
+      } else {
+        localStorage.removeItem('ecodebugger_remember_me');
+      }
+      window.location.href = 'index.html';
+    };
+    document.getElementById('signupLink').onclick = function() {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const errorDiv = document.getElementById('loginError');
+      if (!username || !password) {
+        errorDiv.textContent = 'Enter username and password to sign up.';
+        return;
+      }
+      if (getUserData(username)) {
+        errorDiv.textContent = 'Account already exists. Please log in.';
+        return;
+      }
+      const userData = { xp: 0, achievements: [], badges: [] };
+      saveUserData(username, userData);
+      localStorage.setItem('ecodebugger_current_user', username);
+      errorDiv.style.color = '#2ecc71';
+      errorDiv.textContent = 'Account created! Logging in...';
+      setTimeout(() => { window.location.href = 'index.html'; }, 1000);
+    };
+  </script>
+</body>
+</html>
