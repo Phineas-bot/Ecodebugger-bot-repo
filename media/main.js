@@ -101,12 +101,34 @@ document.addEventListener('visibilitychange', () => {
 // Listen for messages from the extension
 window.addEventListener('message', (event) => {
     const message = event.data;
-    console.log('Received message:', message);
     
-    if (message.command === 'updateXP' && message.state) {
-        console.log('Processing updateXP message:', message.state);
-        const { xp, level } = message.state;
-        updateXPDisplay(xp, level);
+    switch (message.command) {
+        case 'updateXP':
+            if (message.state) {
+                updateXPDisplay(message.state.xp, message.state.level);
+            }
+            break;
+        
+        case 'updateState':
+            if (message.state) {
+                updateXPDisplay(message.state.xp, message.state.level);
+                updateClassroomSidebar(message.state);
+            }
+            break;
+            
+        case 'updateClassroom':
+            if (message.classroom) {
+                updateClassroomUI(message.classroom);
+            }
+            break;
+            
+        case 'showError':
+            vscode.window.showErrorMessage(message.message);
+            break;
+            
+        case 'showInfo':
+            vscode.window.showInformationMessage(message.message);
+            break;
     }
 });
 
@@ -123,39 +145,84 @@ async function fetchPlayerData() {
   return players;
 }
 
-// Function to render players in the "Classroom Mode" section
+// Function to render players and weekly summary in the "Classroom Mode" section
 async function renderClassroomMode() {
-  const playerList = document.getElementById("player-list");
+    const playerList = document.getElementById("player-list");
+    if (!playerList) {
+        return;
+    }
 
-  // Fetch player data
-  const players = await fetchPlayerData();
+    // Get parent container
+    const classroomContainer = playerList.closest('.classroom');
+    if (!classroomContainer) {
+        return;
+    }
 
-  // Sort players by XP in descending order
-  players.sort((a, b) => b.xp - a.xp);
+    // Add or update weekly summary before player list if not exists
+    let weeklySummary = classroomContainer.querySelector('.weekly-summary');
+    if (!weeklySummary) {
+        weeklySummary = document.createElement('div');
+        weeklySummary.className = 'weekly-summary';
+        classroomContainer.insertBefore(weeklySummary, playerList);
+    }
 
-  // Clear the existing list
-  playerList.innerHTML = "";
+    // Fetch player data
+    const players = await fetchPlayerData();
 
-  // Populate the list with player data
-  players.forEach((player) => {
-    const listItem = document.createElement("li");
-    listItem.innerHTML = `
-      <span>${player.name}</span>
-      <span>${player.xp} XP</span>
+    // Sort players by weekly XP
+    players.sort((a, b) => b.xp - a.xp);
+    
+    // Calculate weekly stats
+    const topWeeklyPlayer = players[0];
+    const totalWeeklyXP = players.reduce((sum, p) => sum + p.xp, 0);
+    const yourWeeklyXP = players.find(p => p.name === "👨 You")?.xp || 0;
+
+    // Update weekly summary
+    weeklySummary.innerHTML = `
+        <div style="margin-bottom: 12px;">
+            <div>🏆 Weekly Leader: ${topWeeklyPlayer?.name || 'No leader yet'}</div>
+            <div>📊 Your Weekly XP: ${yourWeeklyXP}</div>
+            <div>👥 Active Users: ${players.length}</div>
+            <div>💫 Total Team XP: ${totalWeeklyXP}</div>
+        </div>
     `;
-    playerList.appendChild(listItem);
-  });
+
+    // Clear the existing list
+    playerList.innerHTML = "";
+
+    // Populate the list with player data
+    players.forEach((player) => {
+        const listItem = document.createElement("li");
+        listItem.innerHTML = `
+            <span>${player.name}</span>
+            <span>${player.xp} XP</span>
+            <button class="report-btn" title="Report suspicious activity" style="margin-left: 8px; padding: 2px 6px; opacity: 0.6;">⚠️</button>
+        `;
+        
+        // Add click handler for report button
+        const reportBtn = listItem.querySelector('.report-btn');
+        if (reportBtn) {
+            reportBtn.onclick = async (e) => {
+                e.stopPropagation();
+                const reason = await vscode.window.showInputBox({
+                    prompt: 'Please provide a reason for reporting',
+                    placeHolder: 'e.g., Unusually rapid XP gain'
+                });
+                if (reason) {
+                    vscode.postMessage({
+                        command: 'reportUser',
+                        userId: player.id,
+                        reason
+                    });
+                }
+            };
+        }
+        playerList.appendChild(listItem);
+    });
 }
 
 // Call the function to render the classroom mode
 renderClassroomMode();
-
-// Classroom join logic
-const joinBtn = document.getElementById("join-class-btn");
-const classInput = document.getElementById("class-code-input");
-joinBtn.addEventListener("click", () => {
-  vscode.postMessage({ command: "joinClassroom", code: classInput.value });
-});
 
 // Settings toggles
 const ecoTipsToggle = document.getElementById("eco-tips-toggle");
@@ -172,21 +239,63 @@ document.getElementById("reset-xp").onclick = function () {
 
 // Function to render notifications
 function renderNotifications(notifications = []) {
-    const notificationsList = document.getElementById("notifications-list") || createNotificationsList();
-    notificationsList.innerHTML = notifications.map(n => `
-        <div class="notification">
-            <span class="timestamp">${new Date(n.timestamp).toLocaleTimeString()}</span>
-            <span class="message">${n.message}</span>
-        </div>
-    `).join('');
+    const container = document.querySelector('.notifications-container') || createNotificationsContainer();
+    container.innerHTML = '';
+
+    if (notifications.length === 0) {
+        container.innerHTML = '<div class="notification">No notifications</div>';
+        return;
+    }
+
+    notifications.forEach(notification => {
+        const notifElement = document.createElement('div');
+        notifElement.className = `notification ${notification.read ? '' : 'unread'}`;
+        
+        const time = new Date(notification.timestamp).toLocaleString();
+        
+        notifElement.innerHTML = `
+            <div class="notification-content">${notification.message}</div>
+            <div class="notification-time">${time}</div>
+            <span class="notification-close">×</span>
+        `;
+
+        // Add click handler to mark as read
+        notifElement.onclick = () => {
+            if (!notification.read) {
+                vscode.postMessage({
+                    command: 'markNotificationRead',
+                    id: notification.id
+                });
+                notifElement.classList.remove('unread');
+            }
+        };
+
+        // Add close button handler
+        const closeBtn = notifElement.querySelector('.notification-close');
+        if (closeBtn) {
+            closeBtn.onclick = (e) => {
+                e.stopPropagation();
+                notifElement.style.animation = 'slideOut 0.3s ease-out';
+                setTimeout(() => {
+                    notifElement.remove();
+                    vscode.postMessage({
+                        command: 'removeNotification',
+                        id: notification.id
+                    });
+                }, 300);
+            };
+        }
+
+        container.appendChild(notifElement);
+    });
 }
 
-function createNotificationsList() {
-    const container = document.querySelector('.classroom') || document.body;
-    const list = document.createElement('div');
-    list.id = 'notifications-list';
-    container.appendChild(list);
-    return list;
+function createNotificationsContainer() {
+    const container = document.createElement('div');
+    container.className = 'notifications-container';
+    const classroomSection = document.querySelector('.classroom') || document.body;
+    classroomSection.appendChild(container);
+    return container;
 }
 
 // Enhanced classroom leaderboard with badges
@@ -240,35 +349,91 @@ function updateClassroomSidebar(state) {
         sidebar.appendChild(classroomSettings);
     }
     classroomSettings.innerHTML = '';
+
+    // Create status display
     const classroomIdDisplay = document.createElement('div');
     classroomIdDisplay.id = 'classroom-id-display';
     classroomSettings.appendChild(classroomIdDisplay);
+    
+    // Create buttons container for better layout
+    const buttonsContainer = document.createElement('div');
+    buttonsContainer.className = 'classroom-controls';
+    
+    const joinInput = document.createElement('input');
+    joinInput.type = 'text';
+    joinInput.id = 'class-code-input';
+    joinInput.placeholder = 'Enter classroom ID';
+    
     const joinClassBtn = document.createElement('button');
-    joinClassBtn.textContent = 'Join Classroom';
+    joinClassBtn.id = 'join-class-btn';
+    joinClassBtn.textContent = 'Join';
+    
+    const createClassBtn = document.createElement('button');
+    createClassBtn.id = 'create-class-btn';
+    createClassBtn.textContent = 'Create New';
+    createClassBtn.style.backgroundColor = '#2ecc71';
+    
     const leaveClassBtn = document.createElement('button');
-    leaveClassBtn.textContent = 'Leave Classroom';
-    leaveClassBtn.style.marginLeft = '10px';
-    classroomSettings.appendChild(joinClassBtn);
-    classroomSettings.appendChild(leaveClassBtn);
-    if (state.classroom && state.classroom.code) {
-        classroomIdDisplay.textContent = 'Classroom ID: ' + state.classroom.code;
+    leaveClassBtn.id = 'leave-class-btn';
+    leaveClassBtn.textContent = 'Leave';
+
+    // Show/hide buttons based on classroom state
+    if (state.classroom && state.classroom.classroom_id) {
+        classroomIdDisplay.textContent = `Classroom ID: ${state.classroom.classroom_id}`;
+        joinInput.style.display = 'none';
         joinClassBtn.style.display = 'none';
+        createClassBtn.style.display = 'none';
         leaveClassBtn.style.display = '';
     } else {
         classroomIdDisplay.textContent = 'Not in a classroom';
+        joinInput.style.display = '';
         joinClassBtn.style.display = '';
+        createClassBtn.style.display = '';
         leaveClassBtn.style.display = 'none';
     }
+
+    // Set up button event handlers
     joinClassBtn.onclick = () => {
-        const id = prompt('Enter Classroom ID:');
-        const pin = prompt('Enter PIN (if required):');
-        vscode.postMessage({ command: 'joinClassroom', id, pin });
-    };
-    leaveClassBtn.onclick = () => {
-        vscode.postMessage({ command: 'leaveClassroom' });
+        const id = joinInput.value.trim();
+        if (id) {
+            vscode.postMessage({ 
+                command: 'joinClassroom', 
+                id: id,
+                pin: undefined // Optional PIN support
+            });
+        } else {
+            vscode.window.showErrorMessage('Please enter a classroom ID');
+        }
     };
 
-    // Weekly summary
+    createClassBtn.onclick = () => {
+        vscode.postMessage({ command: 'createClassroom' });
+    };
+
+    leaveClassBtn.onclick = () => {
+        if (confirm('Are you sure you want to leave this classroom?')) {
+            vscode.postMessage({ command: 'leaveClassroom' });
+        }
+    };
+
+    // Add elements to container
+    buttonsContainer.appendChild(joinInput);
+    buttonsContainer.appendChild(joinClassBtn);
+    buttonsContainer.appendChild(createClassBtn);
+    buttonsContainer.appendChild(leaveClassBtn);
+    classroomSettings.appendChild(buttonsContainer);
+
+    // Update leaderboard if available
+    if (state.classroom?.users) {
+        renderLeaderboard(state.classroom.users);
+    }
+
+    // Update notifications if available
+    if (state.classroom?.notifications) {
+        renderNotifications(state.classroom.notifications);
+    }
+
+    // Add weekly summary if available
     if (state.classroom?.weeklyTopUser) {
         const weeklySummary = document.createElement('div');
         weeklySummary.className = 'weekly-summary';
@@ -282,20 +447,49 @@ function updateClassroomSidebar(state) {
         `;
         classroomSettings.appendChild(weeklySummary);
     }
-
-    // Render enhanced leaderboard
-    renderLeaderboard(state.leaderboard);
-
-    // Render notifications
-    renderNotifications(state.classroom?.notifications);
 }
 
-// Listen for classroom state updates with enhanced state handling
-window.addEventListener('message', (event) => {
-    const message = event.data;
-    if (message.command === 'updateXP' && message.state) {
-        const { xp, level } = message.state;
-        updateXPDisplay(xp, level);
-        updateClassroomSidebar(message.state);
+// Add 'Sync Now' button next to join button (only if not already present)
+(function addSyncNowButton() {
+  const joinBtn = document.getElementById("join-class-btn");
+  if (joinBtn && !document.getElementById("sync-now-btn")) {
+    const syncBtn = document.createElement("button");
+    syncBtn.id = "sync-now-btn";
+    syncBtn.textContent = "Sync Now";
+    syncBtn.style.marginLeft = "8px";
+    syncBtn.onclick = () => {
+      vscode.postMessage({ command: "syncClassroom" });
+    };
+    joinBtn.parentElement.insertBefore(syncBtn, joinBtn.nextSibling);
+  }
+})();
+
+// Update the UI with classroom state
+function updateClassroomUI(state) {
+    // Update leaderboard
+    if (state.users && Array.isArray(state.users)) {
+        renderLeaderboard(state.users);
     }
-});
+
+    // Update notifications
+    if (Array.isArray(state.notifications)) {
+        renderNotifications(state.notifications);
+    }
+
+    // Update weekly summary
+    const weeklyDiv = document.getElementById('weekly-top');
+    if (weeklyDiv && state.weeklyTopUser) {
+        weeklyDiv.innerHTML = `
+            <h4>Weekly Top User</h4>
+            <div class="weekly-leader">${state.weeklyTopUser}</div>
+        `;
+    }
+
+    // Update classroom ID display
+    const idDisplay = document.getElementById('classroom-id-display');
+    if (idDisplay) {
+        idDisplay.textContent = state.classroom_id ? 
+            `Classroom ID: ${state.classroom_id}` : 
+            'Not in a classroom';
+    }
+}

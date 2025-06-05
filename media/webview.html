@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Test Webview</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="tabs">
+      <div class="tab active" id="tab-xp">XP/Level</div>
+      <div class="tab" id="tab-badges">Badges Earned</div>
+      <div class="tab" id="tab-eco">Eco Tips Log</div>
+      <div class="tab" id="tab-leader">Leaderboard</div>
+      <div class="tab" id="tab-settings">Settings</div>
+    </div>
+    <div id="tab-content-xp">
+      <div class="level">Level <span id="level">1</span></div>
+      <div class="xp"><span id="current-xp">0</span> XP</div>
+      <div class="progress-bar">
+        <div id="progress-fill" style="width: 0%"></div>
+      </div>
+    </div>
+    <div id="tab-content-badges" style="display:none;">
+      <h3>Achievements</h3>
+      <div id="achievements-list"></div>
+    </div>
+    <div id="tab-content-eco" style="display:none;">
+      <h3>Eco Tips Log</h3>
+      <div class="xp-log" id="eco-tips-log"></div>
+    </div>
+    <div id="tab-content-leader" style="display:none;">
+      <h3>Classroom Mode</h3>
+      <div class="classroom-controls">
+        <input id="class-code-input" type="text" placeholder="Enter class code" />
+        <button id="join-class-btn">Join</button>
+        <button id="create-class-btn">Create</button>
+        <button id="leave-class-btn" style="display:none;">Leave</button>
+      </div>
+      <div class="classroom-info" id="classroom-info"></div>
+      <div id="class-leaderboard">
+        <h4>Leaderboard</h4>
+        <div class="leaderboard-list" id="leaderboard-list"></div>
+      </div>
+      <div id="notifications-list"></div>
+    </div>
+    <div id="tab-content-settings" style="display:none;">
+      <h3>Settings</h3>
+      <div class="settings">
+        <label><input type="checkbox" id="eco-tips-toggle" checked /> Enable Eco Tips</label>
+        <label><input type="checkbox" id="groq-ai-toggle" checked /> Enable Groq AI Analysis</label>
+        <button id="reset-xp">Reset XP/Achievements</button>
+      </div>
+    </div>
+  </div>
+  <script src="main.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>

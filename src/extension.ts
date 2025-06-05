@@ -134,18 +134,68 @@ class EcoDebuggerViewProvider implements vscode.WebviewViewProvider {
                         saveState();
                         // Update webview with new state
                         webviewView.webview.postMessage({ command: 'updateXP', state: { xp, level, xpLog }});
-                        break;
-                    case 'joinClassroom':
+                        break;                    case 'joinClassroom':
                         if (classroomManager) {
-                            const ok = await classroomManager.joinClassroom(message.id, message.pin);
-                            vscode.window.showInformationMessage(ok ? 'Joined classroom!' : 'Failed to join classroom.');
-                            updateEcoDebuggerWebview();
+                            try {
+                                const ok = await classroomManager.joinClassroom(message.id, message.pin);
+                                if (ok) {
+                                    vscode.window.showInformationMessage('Successfully joined classroom!');
+                                } else {
+                                    vscode.window.showErrorMessage('Failed to join classroom. Please check the ID and PIN.');
+                                }
+                                updateEcoDebuggerWebview();
+                            } catch (error) {
+                                vscode.window.showErrorMessage('Error joining classroom: ' + (error instanceof Error ? error.message : String(error)));
+                            }
                         }
                         break;
                     case 'leaveClassroom':
                         if (classroomManager) {
-                            await classroomManager.leaveClassroom();
-                            vscode.window.showInformationMessage('Left classroom.');
+                            try {
+                                await classroomManager.leaveClassroom();
+                                vscode.window.showInformationMessage('Successfully left classroom');
+                                updateEcoDebuggerWebview();
+                            } catch (error) {
+                                vscode.window.showErrorMessage('Error leaving classroom: ' + (error instanceof Error ? error.message : String(error)));
+                            }
+                        }
+                        break;                    case 'createClassroom':
+                        if (classroomManager) {
+                            try {
+                                const classroom = await classroomManager.createClassroom(message.pin);
+                                if (classroom) {
+                                    vscode.window.showInformationMessage(`Classroom created! ID: ${classroom.classroom_id}`);
+                                } else {
+                                    vscode.window.showErrorMessage('Failed to create classroom');
+                                }
+                                updateEcoDebuggerWebview();
+                            } catch (error) {
+                                vscode.window.showErrorMessage('Error creating classroom: ' + (error instanceof Error ? error.message : String(error)));
+                            }
+                        }
+                        break;
+                    case 'reportUser':
+                        if (classroomManager) {
+                            await classroomManager.reportSuspiciousActivity(message.userId, message.reason);
+                        }
+                        break;
+                    case 'clearNotifications':
+                        if (classroomManager) {
+                            classroomManager.clearNotifications();
+                            updateEcoDebuggerWebview();
+                        }
+                        break;
+                    
+                    case 'markNotificationsRead':
+                        if (classroomManager) {
+                            classroomManager.markAllNotificationsRead();
+                            updateEcoDebuggerWebview();
+                        }
+                        break;
+
+                    case 'markNotificationRead':
+                        if (classroomManager && message.id) {
+                            classroomManager.markNotificationRead(message.id);
                             updateEcoDebuggerWebview();
                         }
                         break;
@@ -487,6 +537,7 @@ function getWebviewContent(state: any, webview: vscode.Webview, extensionPath: s
                     <div class="classroom-controls">
                         <input id="class-code-input" type="text" placeholder="Enter class code" />
                         <button id="join-class-btn">Join</button>
+                        <button id="create-class-btn">Create Classroom</button>
                         <button id="leave-class-btn" style="display:none;">Leave</button>
                     </div>
 
@@ -577,6 +628,9 @@ function getWebviewContent(state: any, webview: vscode.Webview, extensionPath: s
                 document.getElementById('join-class-btn').onclick = function() {
                     const classCode = document.getElementById('class-code-input').value;
                     vscode.postMessage({ command: 'joinClassroom', id: classCode });
+                };
+                document.getElementById('create-class-btn').onclick = function() {
+                    vscode.postMessage({ command: 'createClassroom' });
                 };
                 document.getElementById('leave-class-btn').onclick = function() {
                     vscode.postMessage({ command: 'leaveClassroom' });

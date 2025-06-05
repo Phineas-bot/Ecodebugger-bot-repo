@@ -278,21 +278,85 @@ h4 {
     margin-left: 8px;
 }
 
+.classroom-controls {
+    display: flex;
+    gap: 8px;
+    margin: 12px 0;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+#class-code-input {
+    flex: 1;
+    min-width: 150px;
+    padding: 6px 12px;
+    background: #031c25;
+    border: 1px solid #2ecc71;
+    border-radius: 4px;
+    color: #fff;
+    font-size: 14px;
+}
+
+#class-code-input:focus {
+    outline: none;
+    border-color: #27ae60;
+    box-shadow: 0 0 0 2px rgba(46, 204, 113, 0.2);
+}
+
+#join-class-btn,
+#leave-class-btn,
+#create-class-btn {
+    padding: 6px 12px;
+    background: #2ecc71;
+    border: none;
+    border-radius: 4px;
+    color: #fff;
+    cursor: pointer;
+    font-size: 14px;
+    min-width: 80px;
+    transition: background-color 0.2s;
+}
+
+#join-class-btn:hover,
+#leave-class-btn:hover,
+#create-class-btn:hover {
+    background: #27ae60;
+}
+
+#leave-class-btn {
+    background: #e74c3c;
+}
+
+#leave-class-btn:hover {
+    background: #c0392b;
+}
+
+#classroom-id-display {
+    font-size: 14px;
+    color: #2ecc71;
+    margin-bottom: 8px;
+}
+
 .weekly-summary {
-    background-color: #031c25;
+    margin-top: 16px;
     padding: 12px;
-    border-radius: 8px;
-    margin: 15px 0;
+    background: rgba(46, 204, 113, 0.1);
+    border-radius: 4px;
 }
 
 .weekly-stats {
-    display: flex;
-    flex-direction: column;
+    display: grid;
     gap: 8px;
-    color: #ddd;
+    margin-top: 8px;
 }
 
 /* Notifications */
+.notifications-container {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-top: 16px;
+}
+
 #notifications-list {
     margin-top: 15px;
     max-height: 200px;
@@ -300,14 +364,36 @@ h4 {
 }
 
 .notification {
-    background-color: #031c25;
-    padding: 8px 12px;
-    border-radius: 6px;
+    background: rgba(46, 204, 113, 0.1);
+    border-left: 3px solid #2ecc71;
+    padding: 12px;
     margin-bottom: 8px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    animation: fadeIn 0.3s ease-in-out;
+    border-radius: 0 4px 4px 0;
+    animation: slideIn 0.3s ease-out;
+    position: relative;
+}
+
+.notification.unread {
+    background: rgba(46, 204, 113, 0.2);
+}
+
+.notification-time {
+    font-size: 12px;
+    color: #666;
+    margin-top: 4px;
+}
+
+.notification-close {
+    position: absolute;
+    right: 8px;
+    top: 8px;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+.notification-close:hover {
+    opacity: 1;
 }
 
 .notification .timestamp {
@@ -324,6 +410,17 @@ h4 {
     to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
 /* Scrollbar Styling */
 #notifications-list::-webkit-scrollbar {
     width: 6px;
@@ -337,36 +434,4 @@ h4 {
 #notifications-list::-webkit-scrollbar-thumb {
     background: #2ecc71;
     border-radius: 3px;
-}
-
-/* Class Join/Leave Controls */
-.classroom-controls {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
-}
-
-#class-code-input {
-    flex: 1;
-    padding: 8px 12px;
-    background: #031c25;
-    border: 1px solid #2ecc71;
-    border-radius: 4px;
-    color: #fff;
-}
-
-#join-class-btn,
-#leave-class-btn {
-    padding: 8px 16px;
-    background: #2ecc71;
-    border: none;
-    border-radius: 4px;
-    color: #fff;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-#join-class-btn:hover,
-#leave-class-btn:hover {
-    background: #27ae60;
 }

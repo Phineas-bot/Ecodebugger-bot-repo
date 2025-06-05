@@ -15,8 +15,7 @@
     "onLanguage:javascript",
     "onLanguage:python"
   ],
-  "contributes": {
-    "commands": [
+  "contributes": {    "commands": [
       {
         "command": "Ecodebugger.helloWorld",
         "title": "EcoDebugger: Hello World"
@@ -32,6 +31,18 @@
       {
         "command": "ecodebugger.openPanel",
         "title": "Open EcoDebugger"
+      },
+      {
+        "command": "ecoDebugger.createClassroom",
+        "title": "EcoDebugger: Create Classroom"
+      },
+      {
+        "command": "ecoDebugger.joinClassroom",
+        "title": "EcoDebugger: Join Classroom"
+      },
+      {
+        "command": "ecoDebugger.leaveClassroom",
+        "title": "EcoDebugger: Leave Classroom"
       }
     ],
     "viewsContainers": {

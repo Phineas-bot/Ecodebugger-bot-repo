@@ -18,16 +18,28 @@ export type ClassroomUser = {
     lastActive: string;
 };
 
+export type ClassroomReport = {
+    reporterId: string;
+    reportedId: string;
+    reason: string;
+    timestamp: string;
+};
+
+export type ClassroomNotification = {
+    id: string;
+    message: string;
+    timestamp: string;
+    read?: boolean;
+};
+
 export type ClassroomData = {
     classroom_id: string;
     users: ClassroomUser[];
     last_updated: string;
     pin?: string;
     weeklyTopUser?: string;
-    notifications: Array<{
-        message: string;
-        timestamp: string;
-    }>;
+    notifications: ClassroomNotification[];
+    reports?: ClassroomReport[];
 };
 
 const LOCAL_CLASSROOM_FILE = path.join(
@@ -42,6 +54,10 @@ export class ClassroomManager {
     private username: string;
     private lastSync: number = 0;
     private syncInterval: NodeJS.Timeout | null = null;
+
+    private xpLimits: { [userId: string]: { date: string, xp: number, lastAction: { [key: string]: number } } } = {};
+    private static readonly MAX_DAILY_XP = 300;
+    private static readonly ACTION_COOLDOWN = 60000; // 1 minute cooldown between same actions
 
     constructor(userId: string, username: string) {
         this.userId = userId;
@@ -94,8 +110,10 @@ export class ClassroomManager {
         
         this.classroom.notifications = this.classroom.notifications || [];
         this.classroom.notifications.unshift({
+            id: Date.now().toString(),
             message,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            read: false
         });
 
         // Keep only last 50 notifications
@@ -103,6 +121,43 @@ export class ClassroomManager {
 
         // Show notification in VS Code
         vscode.window.showInformationMessage(`🎓 ${message}`);
+    }
+
+    clearNotifications() {
+        if (this.classroom) {
+            this.classroom.notifications = [];
+            this.saveState();
+        }
+    }
+
+    markAllNotificationsRead() {
+        if (this.classroom) {
+            this.classroom.notifications = this.classroom.notifications.map(n => ({
+                ...n,
+                read: true
+            }));
+            this.saveState();
+        }
+    }
+
+    markNotificationRead(id: string) {
+        if (this.classroom) {
+            const notification = this.classroom.notifications.find(n => n.id === id);
+            if (notification) {
+                notification.read = true;
+                this.saveState();
+            }
+        }
+    }
+
+    private async saveState() {
+        if (this.mode === 'cloud' && supabase && this.classroom) {
+            await supabase.from('classrooms')
+                .update(this.classroom)
+                .eq('classroom_id', this.classroom.classroom_id);
+        } else {
+            await this.saveLocal();
+        }
     }
 
     async setMode(mode: 'cloud' | 'local') {
@@ -272,7 +327,38 @@ export class ClassroomManager {
         fs.writeFileSync(LOCAL_CLASSROOM_FILE, JSON.stringify(this.classroom, null, 2));
     }
 
-    async syncXP(xp: number, achievements: string[]) {
+    private checkXPLimit(userId: string, amount: number, actionId?: string): boolean {
+        const today = new Date().toDateString();
+        if (!this.xpLimits[userId] || this.xpLimits[userId].date !== today) {
+            this.xpLimits[userId] = { date: today, xp: 0, lastAction: {} };
+        }
+
+        // Check daily limit
+        if (this.xpLimits[userId].xp + amount > ClassroomManager.MAX_DAILY_XP) {
+            vscode.window.showWarningMessage(`Daily XP limit (${ClassroomManager.MAX_DAILY_XP}) reached!`);
+            return false;
+        }
+
+        // Check duplicate action
+        if (actionId) {
+            const now = Date.now();
+            const lastActionTime = this.xpLimits[userId].lastAction[actionId] || 0;
+            if (now - lastActionTime < ClassroomManager.ACTION_COOLDOWN) {
+                vscode.window.showWarningMessage('Please wait before repeating the same action.');
+                return false;
+            }
+            this.xpLimits[userId].lastAction[actionId] = now;
+        }
+
+        this.xpLimits[userId].xp += amount;
+        return true;
+    }
+
+    async syncXP(xp: number, achievements: string[], actionId?: string): Promise<boolean> {
+        if (!this.checkXPLimit(this.userId, xp - (this.getCurrentUser()?.xp || 0), actionId)) {
+            return false;
+        }
+
         const prevXP = this.getCurrentUser()?.xp || 0;
         this.addOrUpdateUser(xp, achievements);
 
@@ -294,6 +380,43 @@ export class ClassroomManager {
             await this.saveLocal();
         }
         return true;
+    }    async reportSuspiciousActivity(reportedUserId: string, reason: string): Promise<void> {
+        if (!this.classroom) {
+            return;
+        }
+
+        const reportedUser = this.classroom.users.find(u => u.user_id === reportedUserId);
+        if (!reportedUser) {
+            return;
+        }
+
+        this.addNotification(`🚨 Suspicious activity reported for ${reportedUser.username}`);
+        
+        // Store the report in the classroom data
+        if (!this.classroom.reports) {
+            this.classroom.reports = [];
+        }
+        this.classroom.reports.push({
+            reporterId: this.userId,
+            reportedId: reportedUserId,
+            reason,
+            timestamp: new Date().toISOString()
+        });
+
+        try {
+            // Save the report
+            if (this.mode === 'cloud' && supabase) {
+                await supabase.from('classrooms').update(this.classroom)
+                    .eq('classroom_id', this.classroom.classroom_id);
+                vscode.window.showInformationMessage('Report submitted successfully');
+            } else {
+                this.saveLocal();
+                vscode.window.showInformationMessage('Report submitted successfully');
+            }
+        } catch (error) {
+            console.error('Failed to save report:', error);
+            vscode.window.showErrorMessage('Failed to submit report');
+        }
     }
 
     // Helper method to calculate weekly metrics
