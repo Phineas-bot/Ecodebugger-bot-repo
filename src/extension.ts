@@ -6,20 +6,14 @@ import { xpForNextLevel } from './utils/xp';
 import { updateStatusBar } from './utils/statusBar';
 import { detectNestedLoops } from './utils/bugs';
 import { queueGroqRequest, canSendGroqRequest, sendGroqRequestBatch, fakeGroqApiCall } from './utils/groqApi';
+import { ClassroomManager } from './utils/classroom';
 
 let xp = 0;
 let level = 1;
 let statusBarItem: vscode.StatusBarItem;
 let debounceTimer: NodeJS.Timeout | undefined;
 let xpLog: string[] = [];
-let classroom = {
-    code: 'ABC123',
-    leaderboard: [
-        { name: 'Victory-1', xp: 200 },
-        { name: 'Maria', xp: 120 }
-    ],
-    weeklyTop: 'Victory-1'
-};
+let classroomManager: ClassroomManager | undefined;
 let ecoTipsEnabled = true;
 let groqAIEnabled = true;
 
@@ -60,7 +54,7 @@ function analyzeCodeInRealTime(_: vscode.TextDocumentChangeEvent): void {
                 vscode.window.showInformationMessage(`🎉 Congratulations! You reached Level ${level}!`);
             }
 
-            checkAchievements(xp, level, classroom.leaderboard[0]?.name === 'You');
+            checkAchievements(xp, level, classroomManager?.getLeaderboard()[0]?.username === 'You');
             updateStatusBar(statusBarItem, xp, level);
         }
     }, 500);
@@ -100,8 +94,11 @@ class EcoDebuggerViewProvider implements vscode.WebviewViewProvider {
                 { name: 'Efficient Thinker', unlocked: false, icon: '⚡', description: 'Reach 500 XP.' },
                 { name: 'Team Leader', unlocked: false, icon: '👑', description: 'Top leaderboard in classroom mode.' }
             ],
-            leaderboard: classroom.leaderboard,
-            classroom,
+            leaderboard: classroomManager?.getLeaderboard() || [],
+            classroom: {
+                code: classroomManager?.getClassroomId() || '',
+                weeklyTop: classroomManager?.getLeaderboard()?.[0]?.username || '',
+            },
             ecoTipsEnabled,
             groqAIEnabled
         };
@@ -110,7 +107,7 @@ class EcoDebuggerViewProvider implements vscode.WebviewViewProvider {
 
         // Handle messages from the Webview
         webviewView.webview.onDidReceiveMessage(
-            (message: any) => {
+            async (message: any) => {
                 switch (message.command) {
                     case 'getState':
                         // Send current state when webview requests it
@@ -139,7 +136,18 @@ class EcoDebuggerViewProvider implements vscode.WebviewViewProvider {
                         webviewView.webview.postMessage({ command: 'updateXP', state: { xp, level, xpLog }});
                         break;
                     case 'joinClassroom':
-                        joinClassroom(message.code);
+                        if (classroomManager) {
+                            const ok = await classroomManager.joinClassroom(message.id, message.pin);
+                            vscode.window.showInformationMessage(ok ? 'Joined classroom!' : 'Failed to join classroom.');
+                            updateEcoDebuggerWebview();
+                        }
+                        break;
+                    case 'leaveClassroom':
+                        if (classroomManager) {
+                            await classroomManager.leaveClassroom();
+                            vscode.window.showInformationMessage('Left classroom.');
+                            updateEcoDebuggerWebview();
+                        }
                         break;
                 }
             },
@@ -165,8 +173,11 @@ class EcoDebuggerViewProvider implements vscode.WebviewViewProvider {
                         { name: 'Efficient Thinker', unlocked: false, icon: '⚡', description: 'Reach 500 XP.' },
                         { name: 'Team Leader', unlocked: false, icon: '👑', description: 'Top leaderboard in classroom mode.' }
                     ],
-                    leaderboard: classroom.leaderboard,
-                    classroom,
+                    leaderboard: classroomManager?.getLeaderboard() || [],
+                    classroom: {
+                        code: classroomManager?.getClassroomId() || '',
+                        weeklyTop: classroomManager?.getLeaderboard()?.[0]?.username || '',
+                    },
                     ecoTipsEnabled,
                     groqAIEnabled
                 };
@@ -198,8 +209,11 @@ function updateEcoDebuggerWebview() {
                 { name: 'XP Novice', unlocked: true, icon: '⭐', description: 'Earn your first XP.' },
                 { name: 'Eco Streak', unlocked: false, icon: '🔥', description: 'Apply eco tips 5 times in a row.' }
             ],
-            leaderboard: classroom.leaderboard,
-            classroom,
+            leaderboard: classroomManager?.getLeaderboard() || [],
+            classroom: {
+                code: classroomManager?.getClassroomId() || '',
+                weeklyTop: classroomManager?.getLeaderboard()?.[0]?.username || '',
+            },
             ecoTipsEnabled,
             groqAIEnabled
         };
@@ -273,6 +287,7 @@ vscode.workspace.onDidSaveTextDocument(async (doc) => {
 
 let contextGlobal: vscode.ExtensionContext; // Store context for globalState access
 
+// Initialize classroom manager on activate
 export function activate(context: vscode.ExtensionContext): void {
     contextGlobal = context;
     // Restore state from globalState if available
@@ -289,6 +304,51 @@ export function activate(context: vscode.ExtensionContext): void {
     // Register the webview view provider
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider('ecodebuggerView', new EcoDebuggerViewProvider(context))
+    );
+
+    // For demo, use VS Code user info or fallback
+    const userId = vscode.env.machineId;
+    const username = vscode.env.appName || 'You';
+    classroomManager = new ClassroomManager(userId, username);
+
+    // Add classroom commands
+    context.subscriptions.push(
+        vscode.commands.registerCommand('ecoDebugger.createClassroom', async () => {
+            const pin = await vscode.window.showInputBox({ prompt: 'Enter a PIN for your classroom (optional)' });
+            const classroom = await classroomManager?.createClassroom(pin);
+            vscode.window.showInformationMessage('Classroom created: ' + classroom?.classroom_id);
+            updateEcoDebuggerWebview();
+        })
+    );
+    context.subscriptions.push(
+        vscode.commands.registerCommand('ecoDebugger.joinClassroom', async () => {
+            const id = await vscode.window.showInputBox({ prompt: 'Enter Classroom ID' });
+            const pin = await vscode.window.showInputBox({ prompt: 'Enter PIN (if required)' });
+            const ok = await classroomManager?.joinClassroom(id || '', pin);
+            vscode.window.showInformationMessage(ok ? 'Joined classroom!' : 'Failed to join classroom.');
+            updateEcoDebuggerWebview();
+        })
+    );
+    context.subscriptions.push(
+        vscode.commands.registerCommand('ecoDebugger.leaveClassroom', async () => {
+            await classroomManager?.leaveClassroom();
+            vscode.window.showInformationMessage('Left classroom.');
+            updateEcoDebuggerWebview();
+        })
+    );
+
+    // Add test command for Groq API integration
+    context.subscriptions.push(
+        vscode.commands.registerCommand('ecoDebugger.testGroqApi', async () => {
+            try {
+                vscode.window.showInformationMessage('Testing Groq API integration...');
+                const codeSample = 'function foo() { return 42; }';
+                const result = await queueGroqRequest(codeSample);
+                vscode.window.showInformationMessage('Groq API result: ' + JSON.stringify(result));
+            } catch (err) {
+                vscode.window.showErrorMessage('Groq API error: ' + err);
+            }
+        })
     );
 }
 
@@ -313,21 +373,21 @@ function awardXP(type: 'bug' | 'ecoTip') {
         vscode.window.showInformationMessage(`🎉 Congratulations! You reached Level ${level}!`);
     }
     xpLog.push(`${type === 'bug' ? 'Fixed a bug' : 'Applied eco tip'} (+${xpAwarded} XP)`);
-    checkAchievements(xp, level, classroom.leaderboard[0]?.name === 'You');
+    checkAchievements(xp, level, classroomManager?.getLeaderboard()[0]?.username === 'You');
     updateStatusBar(statusBarItem, xp, level);
-    
+    // Sync with classroom
+    if (classroomManager) {
+        classroomManager.syncXP(xp, []); // TODO: pass real achievements
+    }
     // Force sync with webview
-    console.log('Updating webview with new state:', { xp, level });
     updateEcoDebuggerWebview();
-    
-    // Wait for webview update before saving state
     setTimeout(() => {
         saveState();
     }, 100);
 }
 
 function joinClassroom(code: string) {
-    classroom.code = code;
+    classroomManager?.joinClassroom(code);
     // TODO: Add cloud/local persistence
     vscode.window.showInformationMessage(`Joined classroom: ${code}`);
 }
@@ -375,6 +435,16 @@ function getWebviewContent(state: any, webview: vscode.Webview, extensionPath: s
             button { background: #2ecc71; color: #fff; border: none; border-radius: 6px; padding: 0.5rem 1rem; font-size: 1rem; cursor: pointer; margin-top: 1rem; }
             button:hover { background: #27ae60; }
             .settings label { display: flex; align-items: center; gap: 0.5rem; }
+            .classroom-controls { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+            .classroom-controls input { flex: 1; padding: 0.5rem; border: 1px solid #444; border-radius: 4px; background: #181c24; color: #fff; }
+            .classroom-controls button { flex: none; }
+            .classroom-info { background: #222a36; padding: 1rem; border-radius: 8px; margin-top: 1rem; }
+            .classroom-id { font-size: 1.2rem; font-weight: bold; margin-bottom: 0.5rem; }
+            .weekly-summary { margin-bottom: 1rem; }
+            .weekly-stats div { margin-bottom: 0.3rem; }
+            #class-leaderboard { margin-top: 1rem; }
+            .leaderboard-list { max-height: 150px; overflow-y: auto; }
+            .no-classroom { text-align: center; color: #aaa; font-style: italic; }
         </style>
         <body>
             <div class="container">
@@ -385,6 +455,7 @@ function getWebviewContent(state: any, webview: vscode.Webview, extensionPath: s
                     <div class="tab" id="tab-leader">Leaderboard</div>
                     <div class="tab" id="tab-settings">Settings</div>
                 </div>
+                
                 <div id="tab-content-xp">
                     <div class="level">Level <span id="level">${state.level}</span></div>
                     <div class="xp"><span id="current-xp">${state.xp}</span> XP</div>
@@ -392,28 +463,53 @@ function getWebviewContent(state: any, webview: vscode.Webview, extensionPath: s
                         <div id="progress-fill" style="width: ${Math.floor((state.xp / (state.level * 100)) * 100)}%"></div>
                     </div>
                 </div>
+
                 <div id="tab-content-badges" style="display:none;">
                     <h3>Achievements</h3>
                     ${state.achievements.map((a: any) => `
                         <div class="achievement${a.unlocked ? '' : ' locked'}">
                             <span class="badge-icon">${a.icon}</span>
                             <span>${a.name}${a.unlocked ? '' : ' (locked)'}</span>
-                            <span style="margin-left:auto;font-size:0.9rem;color:#aaa;">${a.description}</span>
+                            <span class="achievement-desc">${a.description}</span>
                         </div>
                     `).join('')}
                 </div>
+
                 <div id="tab-content-eco" style="display:none;">
                     <h3>Eco Tips Log</h3>
                     <div class="xp-log">
                         ${state.xpLog.map((entry: string) => `<div class="xp-log-entry">${entry}</div>`).join('')}
                     </div>
                 </div>
+
                 <div id="tab-content-leader" style="display:none;">
                     <h3>Classroom Mode</h3>
-                    <div>Classroom Code: <b>${state.classroom.code}</b></div>
-                    <div>Weekly Top: <b>${state.classroom.weeklyTop}</b></div>
-                    ${state.leaderboard.map((l: any) => `<div class="leader">${l.name}: ${l.xp} XP</div>`).join('')}
+                    <div class="classroom-controls">
+                        <input id="class-code-input" type="text" placeholder="Enter class code" />
+                        <button id="join-class-btn">Join</button>
+                        <button id="leave-class-btn" style="display:none;">Leave</button>
+                    </div>
+
+                    ${state.classroom?.code ? `
+                        <div class="classroom-info">
+                            <div class="classroom-id">Classroom: ${state.classroom.code}</div>
+                            <div class="weekly-summary">
+                                <h4>Weekly Progress</h4>
+                                <div class="weekly-stats">
+                                    <div>🏆 Top Coder: ${state.classroom.weeklyTopUser || 'No one yet'}</div>
+                                    <div>📊 Your Weekly XP: ${state.currentUser?.weeklyXP || 0}</div>
+                                    <div>👥 Active Users: ${state.classroom.users?.length || 0}</div>
+                                </div>
+                            </div>
+                            <div id="class-leaderboard">
+                                <h4>Leaderboard</h4>
+                                <div class="leaderboard-list"></div>
+                            </div>
+                            <div id="notifications-list"></div>
+                        </div>
+                    ` : '<div class="no-classroom">Join a classroom to see the leaderboard and notifications!</div>'}
                 </div>
+
                 <div id="tab-content-settings" style="display:none;">
                     <h3>Settings</h3>
                     <div class="settings">
@@ -421,12 +517,6 @@ function getWebviewContent(state: any, webview: vscode.Webview, extensionPath: s
                         <label><input type="checkbox" id="groq-ai-toggle" ${state.groqAIEnabled ? 'checked' : ''}/> Enable Groq AI Analysis</label>
                         <button id="reset-xp">Reset XP/Achievements</button>
                     </div>
-                </div>
-                <div class="game-section">
-                    <h3>Mini Game: Bug Fixer</h3>
-                    <div id="game-instructions">Click the button to fix a bug!</div>
-                    <button id="fix-bug-btn">Fix Bug</button>
-                    <div id="game-feedback"></div>
                 </div>
             </div>
             <script>
@@ -483,6 +573,13 @@ function getWebviewContent(state: any, webview: vscode.Webview, extensionPath: s
                 };
                 document.getElementById('reset-xp').onclick = function() {
                     vscode.postMessage({ command: 'resetXP' });
+                };
+                document.getElementById('join-class-btn').onclick = function() {
+                    const classCode = document.getElementById('class-code-input').value;
+                    vscode.postMessage({ command: 'joinClassroom', id: classCode });
+                };
+                document.getElementById('leave-class-btn').onclick = function() {
+                    vscode.postMessage({ command: 'leaveClassroom' });
                 };
                 window.addEventListener('message', event => {
                     const message = event.data;

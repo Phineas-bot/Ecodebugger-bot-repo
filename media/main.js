@@ -169,3 +169,133 @@ groqAIToggle.onchange = function () {
 document.getElementById("reset-xp").onclick = function () {
   vscode.postMessage({ command: "resetXP" });
 };
+
+// Function to render notifications
+function renderNotifications(notifications = []) {
+    const notificationsList = document.getElementById("notifications-list") || createNotificationsList();
+    notificationsList.innerHTML = notifications.map(n => `
+        <div class="notification">
+            <span class="timestamp">${new Date(n.timestamp).toLocaleTimeString()}</span>
+            <span class="message">${n.message}</span>
+        </div>
+    `).join('');
+}
+
+function createNotificationsList() {
+    const container = document.querySelector('.classroom') || document.body;
+    const list = document.createElement('div');
+    list.id = 'notifications-list';
+    container.appendChild(list);
+    return list;
+}
+
+// Enhanced classroom leaderboard with badges
+function renderLeaderboard(users = []) {
+    const leaderboardDiv = document.getElementById('class-leaderboard');
+    if (!leaderboardDiv) {
+        return;
+    }
+
+    let leaderboardHtml = '<h4>Leaderboard</h4><ul class="leaderboard-list">';
+    users.forEach((user, i) => {
+        const badges = getBadgeEmojis(user.achievements);
+        const medal = i < 3 ? ['🥇', '🥈', '🥉'][i] : '';
+        const weeklyBadge = user.weeklyXP > 100 ? '🔥' : '';
+        leaderboardHtml += `
+            <li class="leaderboard-item">
+                <div class="user-info">
+                    <span class="rank">${medal}</span>
+                    <span class="username">${user.username}</span>
+                    <span class="badges">${badges}</span>
+                    <span class="weekly-badge">${weeklyBadge}</span>
+                </div>
+                <div class="xp-info">
+                    <span class="total-xp">${user.xp} XP</span>
+                    <span class="weekly-xp">This week: ${user.weeklyXP}</span>
+                </div>
+            </li>`;
+    });
+    leaderboardHtml += '</ul>';
+    leaderboardDiv.innerHTML = leaderboardHtml;
+}
+
+function getBadgeEmojis(achievements = []) {
+    const badgeMap = {
+        'Green Coder': '🌱',
+        'Bug Slayer': '🐞',
+        'Efficient Thinker': '⚡',
+        'Team Leader': '👑'
+    };
+    return achievements.map(a => badgeMap[a] || '').join(' ');
+}
+
+// Update classroom sidebar with enhanced features
+function updateClassroomSidebar(state) {
+    // Classroom ID and join/leave
+    let classroomSettings = document.getElementById('classroom-settings');
+    if (!classroomSettings) {
+        classroomSettings = document.createElement('div');
+        classroomSettings.id = 'classroom-settings';
+        const sidebar = document.querySelector('.sidebar') || document.body;
+        sidebar.appendChild(classroomSettings);
+    }
+    classroomSettings.innerHTML = '';
+    const classroomIdDisplay = document.createElement('div');
+    classroomIdDisplay.id = 'classroom-id-display';
+    classroomSettings.appendChild(classroomIdDisplay);
+    const joinClassBtn = document.createElement('button');
+    joinClassBtn.textContent = 'Join Classroom';
+    const leaveClassBtn = document.createElement('button');
+    leaveClassBtn.textContent = 'Leave Classroom';
+    leaveClassBtn.style.marginLeft = '10px';
+    classroomSettings.appendChild(joinClassBtn);
+    classroomSettings.appendChild(leaveClassBtn);
+    if (state.classroom && state.classroom.code) {
+        classroomIdDisplay.textContent = 'Classroom ID: ' + state.classroom.code;
+        joinClassBtn.style.display = 'none';
+        leaveClassBtn.style.display = '';
+    } else {
+        classroomIdDisplay.textContent = 'Not in a classroom';
+        joinClassBtn.style.display = '';
+        leaveClassBtn.style.display = 'none';
+    }
+    joinClassBtn.onclick = () => {
+        const id = prompt('Enter Classroom ID:');
+        const pin = prompt('Enter PIN (if required):');
+        vscode.postMessage({ command: 'joinClassroom', id, pin });
+    };
+    leaveClassBtn.onclick = () => {
+        vscode.postMessage({ command: 'leaveClassroom' });
+    };
+
+    // Weekly summary
+    if (state.classroom?.weeklyTopUser) {
+        const weeklySummary = document.createElement('div');
+        weeklySummary.className = 'weekly-summary';
+        weeklySummary.innerHTML = `
+            <h4>Weekly Progress</h4>
+            <div class="weekly-stats">
+                <div>🏆 Top Coder: ${state.classroom.weeklyTopUser}</div>
+                <div>📊 Your Weekly XP: ${state.currentUser?.weeklyXP || 0}</div>
+                <div>👥 Active Users: ${state.classroom.users?.length || 0}</div>
+            </div>
+        `;
+        classroomSettings.appendChild(weeklySummary);
+    }
+
+    // Render enhanced leaderboard
+    renderLeaderboard(state.leaderboard);
+
+    // Render notifications
+    renderNotifications(state.classroom?.notifications);
+}
+
+// Listen for classroom state updates with enhanced state handling
+window.addEventListener('message', (event) => {
+    const message = event.data;
+    if (message.command === 'updateXP' && message.state) {
+        const { xp, level } = message.state;
+        updateXPDisplay(xp, level);
+        updateClassroomSidebar(message.state);
+    }
+});
