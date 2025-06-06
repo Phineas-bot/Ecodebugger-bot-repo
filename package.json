@@ -43,6 +43,18 @@
       {
         "command": "ecoDebugger.leaveClassroom",
         "title": "EcoDebugger: Leave Classroom"
+      },
+      {
+        "command": "ecodebugger.copyBug",
+        "title": "Copy Bug Description"
+      },
+      {
+        "command": "ecodebugger.markBugFixed",
+        "title": "Mark Bug as Fixed"
+      },
+      {
+        "command": "ecodebugger.showBadgeInfo",
+        "title": "Show Badge Info"
       }
     ],
     "viewsContainers": {
@@ -56,10 +68,29 @@
     },
     "views": {
       "ecodebugger": [
+        
         {
-          "id": "ecodebuggerView",
-          "name": "EcoDebugger",
-          "type": "webview"
+          "id": "ecodebuggerSidebar",
+          "name": "EcoDebugger Sidebar"
+        }
+      ]
+    },
+    "menus": {
+      "view/item/context": [
+        {
+          "command": "ecodebugger.copyBug",
+          "when": "view == ecodebuggerSidebar && viewItem == bugReports",
+          "group": "inline"
+        },
+        {
+          "command": "ecodebugger.markBugFixed",
+          "when": "view == ecodebuggerSidebar && viewItem == bugReports",
+          "group": "inline"
+        },
+        {
+          "command": "ecodebugger.showBadgeInfo",
+          "when": "view == ecodebuggerSidebar && viewItem == badges",
+          "group": "inline"
         }
       ]
     }

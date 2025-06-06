@@ -1,0 +1,203 @@
+import * as vscode from 'vscode';
+
+class EcoDebuggerTreeItem extends vscode.TreeItem {
+    constructor(
+        public readonly label: string,
+        public readonly collapsibleState: vscode.TreeItemCollapsibleState = vscode.TreeItemCollapsibleState.None,
+        public readonly contextValue?: string,
+        public readonly description?: string,
+        public readonly iconPath?: vscode.ThemeIcon | vscode.Uri,
+        public readonly command?: vscode.Command
+    ) {
+        super(label, collapsibleState);
+        if (description) { this.description = description; }
+        if (iconPath) { this.iconPath = iconPath; }
+        if (command) { this.command = command; }
+        if (contextValue) { this.contextValue = contextValue; }
+    }
+}
+
+export class EcoDebuggerTreeDataProvider implements vscode.TreeDataProvider<EcoDebuggerTreeItem> {
+    private _onDidChangeTreeData: vscode.EventEmitter<EcoDebuggerTreeItem | undefined | void> = new vscode.EventEmitter<EcoDebuggerTreeItem | undefined | void>();
+    readonly onDidChangeTreeData: vscode.Event<EcoDebuggerTreeItem | undefined | void> = this._onDidChangeTreeData.event;
+
+    private state: any = {
+        xp: 0,
+        level: 1,
+        achievements: [],
+        xpLog: [],
+        bugReports: [],
+        leaderboard: [],
+        classroom: {},
+        ecoTipsEnabled: true,
+        groqAIEnabled: true
+    };
+
+    setState(newState: any) {
+        this.state = { ...this.state, ...newState };
+        this.refresh();
+    }
+
+    getTreeItem(element: EcoDebuggerTreeItem): vscode.TreeItem {
+        return element;
+    }
+
+    getChildren(element?: EcoDebuggerTreeItem): Thenable<EcoDebuggerTreeItem[]> {
+        if (!element) {
+            return Promise.resolve([
+                new EcoDebuggerTreeItem('XP/Level', vscode.TreeItemCollapsibleState.Collapsed, 'xpLevel', undefined, new vscode.ThemeIcon('star')), // icon
+                new EcoDebuggerTreeItem('Badges', vscode.TreeItemCollapsibleState.Collapsed, 'badges', undefined, new vscode.ThemeIcon('trophy')), // icon
+                new EcoDebuggerTreeItem('Eco Tips', vscode.TreeItemCollapsibleState.Collapsed, 'ecoTips', undefined, new vscode.ThemeIcon('leaf')), // icon
+                new EcoDebuggerTreeItem('Bug Reports', vscode.TreeItemCollapsibleState.Collapsed, 'bugReports', undefined, new vscode.ThemeIcon('bug')), // icon
+                new EcoDebuggerTreeItem('Leaderboard', vscode.TreeItemCollapsibleState.Collapsed, 'leaderboard', undefined, new vscode.ThemeIcon('organization')), // icon
+                new EcoDebuggerTreeItem('Settings', vscode.TreeItemCollapsibleState.Collapsed, 'settings', undefined, new vscode.ThemeIcon('settings-gear')), // icon
+            ]);
+        }
+        switch (element.contextValue) {
+            case 'xpLevel':
+                return Promise.resolve([
+                    new EcoDebuggerTreeItem(`Level: ${this.state.level}`, vscode.TreeItemCollapsibleState.None, undefined, undefined, new vscode.ThemeIcon('star-empty')),
+                    new EcoDebuggerTreeItem(`XP: ${this.state.xp}`, vscode.TreeItemCollapsibleState.None, undefined, undefined, new vscode.ThemeIcon('symbol-number')),
+                ]);
+            case 'badges':
+                return Promise.resolve(
+                    (this.state.achievements || []).map((a: any) =>
+                        new EcoDebuggerTreeItem(`${a.icon || ''} ${a.name}${a.unlocked ? '' : ' (locked)'}`, vscode.TreeItemCollapsibleState.None, 'badges', a.description, new vscode.ThemeIcon(a.unlocked ? 'verified' : 'circle-outline'), {
+                            command: 'ecodebugger.showBadgeInfo',
+                            title: 'Show Badge Info',
+                            arguments: [new EcoDebuggerTreeItem(a.name, vscode.TreeItemCollapsibleState.None, 'badges', a.description)]
+                        })
+                    )
+                );
+            case 'ecoTips':
+                // Show all eco tip notifications
+                return Promise.resolve(
+                    (this.state.ecoTipNotifications || []).map((tip: string) =>
+                        new EcoDebuggerTreeItem(tip, vscode.TreeItemCollapsibleState.None, undefined, undefined, new vscode.ThemeIcon('lightbulb'))
+                    )
+                );
+            case 'bugReports':
+                return Promise.resolve(
+                    (this.state.bugReports || []).map((bug: any) =>
+                        new EcoDebuggerTreeItem(`🐞 ${bug.description}`, vscode.TreeItemCollapsibleState.None, 'bugReports', bug.suggestion ? `💡 ${bug.suggestion}` : undefined, new vscode.ThemeIcon('bug'), {
+                            command: 'ecodebugger.copyBug',
+                            title: 'Copy Bug',
+                            arguments: [new EcoDebuggerTreeItem(bug.description, vscode.TreeItemCollapsibleState.None, 'bugReports')]
+                        })
+                    )
+                );
+            case 'leaderboard': {
+                const leaderboard = this.state.leaderboard || [];
+                const weeklyTop = this.state.classroom?.weeklyTop;
+                // Add join/create classroom buttons as special items at the top
+                const joinBtn = new EcoDebuggerTreeItem('Join Classroom...', vscode.TreeItemCollapsibleState.None, 'joinClassroom', undefined, new vscode.ThemeIcon('sign-in'), {
+                    command: 'ecoDebugger.joinClassroom',
+                    title: 'Join Classroom',
+                    arguments: []
+                });
+                const createBtn = new EcoDebuggerTreeItem('Create Classroom...', vscode.TreeItemCollapsibleState.None, 'createClassroom', undefined, new vscode.ThemeIcon('add'), {
+                    command: 'ecoDebugger.createClassroom',
+                    title: 'Create Classroom',
+                    arguments: []
+                });
+                const userItems = leaderboard.map((user: any, i: number) => {
+                    const isTop = user.username === weeklyTop;
+                    const rankIcon = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1).toString();
+                    const badges = (user.achievements || []).map((a: any) => a.icon || '').join(' ');
+                    let label = `${rankIcon} ${user.username} (${user.xp} XP)`;
+                    if (isTop) { label += ' ⭐'; }
+                    return new EcoDebuggerTreeItem(
+                        label,
+                        vscode.TreeItemCollapsibleState.Collapsed,
+                        'leaderboardUser',
+                        badges ? `Badges: ${badges}` : undefined,
+                        new vscode.ThemeIcon(isTop ? 'star-full' : 'account')
+                    );
+                });
+                return Promise.resolve([joinBtn, createBtn, ...userItems]);
+            }
+            case 'leaderboardUser': {
+                // Show more stats for a user if needed
+                // Placeholder for future expansion
+                return Promise.resolve([]);
+            }
+            case 'settings':
+                return Promise.resolve([
+                    new EcoDebuggerTreeItem(`Enable Eco Tips: ${this.state.ecoTipsEnabled ? '✅' : '❌'}`, vscode.TreeItemCollapsibleState.None, 'settings', undefined, new vscode.ThemeIcon('leaf'), {
+                        command: 'ecodebugger.toggleEcoTips',
+                        title: 'Toggle Eco Tips',
+                        arguments: []
+                    }),
+                    new EcoDebuggerTreeItem(`Enable Groq AI: ${this.state.groqAIEnabled ? '✅' : '❌'}`, vscode.TreeItemCollapsibleState.None, 'settings', undefined, new vscode.ThemeIcon('rocket'), {
+                        command: 'ecodebugger.toggleGroqAI',
+                        title: 'Toggle Groq AI',
+                        arguments: []
+                    }),
+                    new EcoDebuggerTreeItem('Reset XP/Achievements', vscode.TreeItemCollapsibleState.None, 'settings', undefined, new vscode.ThemeIcon('refresh'), {
+                        command: 'ecodebugger.resetXP',
+                        title: 'Reset XP/Achievements',
+                        arguments: []
+                    })
+                ]);
+            default:
+                return Promise.resolve([]);
+        }
+    }
+
+    refresh(): void {
+        this._onDidChangeTreeData.fire();
+    }
+}
+
+export function registerEcoDebuggerTreeView(context: vscode.ExtensionContext, getState: () => any, setState: (s: any) => void) {
+    const treeDataProvider = new EcoDebuggerTreeDataProvider();
+    const treeView = vscode.window.createTreeView('ecodebuggerSidebar', {
+        treeDataProvider,
+        showCollapseAll: true,
+        canSelectMany: false
+    });
+    context.subscriptions.push(treeView);
+
+    // Context menu commands for settings and bug reports
+    context.subscriptions.push(
+        vscode.commands.registerCommand('ecodebugger.copyBug', (item: EcoDebuggerTreeItem) => {
+            vscode.env.clipboard.writeText(item.label);
+            vscode.window.showInformationMessage('Bug description copied!');
+        })
+    );
+    context.subscriptions.push(
+        vscode.commands.registerCommand('ecodebugger.markBugFixed', (item: EcoDebuggerTreeItem) => {
+            vscode.window.showInformationMessage('Marked as fixed: ' + item.label);
+            // Optionally update state here
+        })
+    );
+    context.subscriptions.push(
+        vscode.commands.registerCommand('ecodebugger.showBadgeInfo', (item: EcoDebuggerTreeItem) => {
+            vscode.window.showInformationMessage(item.description || 'No description');
+        })
+    );
+
+    // Tree item context menu support
+    context.subscriptions.push(
+        vscode.commands.registerCommand('ecodebugger.toggleEcoTips', () => {
+            setState({ ecoTipsEnabled: !getState().ecoTipsEnabled });
+        })
+    );
+    context.subscriptions.push(
+        vscode.commands.registerCommand('ecodebugger.toggleGroqAI', () => {
+            setState({ groqAIEnabled: !getState().groqAIEnabled });
+        })
+    );
+    context.subscriptions.push(
+        vscode.commands.registerCommand('ecodebugger.resetXP', () => {
+            setState({ xp: 0, level: 1, xpLog: [], achievements: [] });
+        })
+    );
+
+    // Poll for XP/level changes every 500ms to keep TreeView in sync
+    setInterval(() => {
+        treeDataProvider.setState(getState());
+    }, 500);
+
+    return treeDataProvider;
+}

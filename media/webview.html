@@ -3,15 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Test Webview</title>
+  <title>EcoDebugger Webview</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
     <div class="tabs">
       <div class="tab active" id="tab-xp">XP/Level</div>
-      <div class="tab" id="tab-badges">Badges Earned</div>
-      <div class="tab" id="tab-eco">Eco Tips Log</div>
+      <div class="tab" id="tab-badges">Badges</div>
+      <div class="tab" id="tab-eco">Eco Tips</div>
+      <div class="tab" id="tab-bugs">Bug Reports</div>
       <div class="tab" id="tab-leader">Leaderboard</div>
       <div class="tab" id="tab-settings">Settings</div>
     </div>
@@ -30,10 +31,14 @@
       <h3>Eco Tips Log</h3>
       <div class="xp-log" id="eco-tips-log"></div>
     </div>
+    <div id="tab-content-bugs" style="display:none;">
+      <h3>Bug Reports</h3>
+      <div id="bug-reports-list"></div>
+    </div>
     <div id="tab-content-leader" style="display:none;">
       <h3>Classroom Mode</h3>
       <div class="classroom-controls">
-        <input id="class-code-input" type="text" placeholder="Enter class code" />
+        <input id="class-code-input" type="text" placeholder="Enter class code or link" />
         <button id="join-class-btn">Join</button>
         <button id="create-class-btn">Create</button>
         <button id="leave-class-btn" style="display:none;">Leave</button>
@@ -55,6 +60,51 @@
     </div>
   </div>
   <script src="main.js"></script>
-  <script src="main.js"></script>
+  <script>
+    // VS Code API
+    const vscode = acquireVsCodeApi();
+
+    // Tab switching logic
+    const tabs = ['xp','badges','eco','bugs','leader','settings'];
+    tabs.forEach(tab => {
+      document.getElementById('tab-' + tab).onclick = function() {
+        tabs.forEach(t => {
+          document.getElementById('tab-' + t).classList.remove('active');
+          document.getElementById('tab-content-' + t).style.display = 'none';
+        });
+        this.classList.add('active');
+        document.getElementById('tab-content-' + tab).style.display = '';
+      };
+    });
+
+    // Classroom controls event handlers
+    const joinBtn = document.getElementById('join-class-btn');
+    if (joinBtn) joinBtn.onclick = function() {
+      const classCode = document.getElementById('class-code-input').value;
+      vscode.postMessage({ command: 'joinClassroom', id: classCode });
+    };
+    const createBtn = document.getElementById('create-class-btn');
+    if (createBtn) createBtn.onclick = function() {
+      vscode.postMessage({ command: 'createClassroom' });
+    };
+    const leaveBtn = document.getElementById('leave-class-btn');
+    if (leaveBtn) leaveBtn.onclick = function() {
+      vscode.postMessage({ command: 'leaveClassroom' });
+    };
+
+    // Settings controls
+    const ecoTipsToggle = document.getElementById('eco-tips-toggle');
+    if (ecoTipsToggle) ecoTipsToggle.onchange = function() {
+      vscode.postMessage({ command: 'toggleEcoTips', enabled: this.checked });
+    };
+    const groqAIToggle = document.getElementById('groq-ai-toggle');
+    if (groqAIToggle) groqAIToggle.onchange = function() {
+      vscode.postMessage({ command: 'toggleGroqAI', enabled: this.checked });
+    };
+    const resetXPBtn = document.getElementById('reset-xp');
+    if (resetXPBtn) resetXPBtn.onclick = function() {
+      vscode.postMessage({ command: 'resetXP' });
+    };
+  </script>
 </body>
 </html>

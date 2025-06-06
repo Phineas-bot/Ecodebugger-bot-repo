@@ -101,21 +101,22 @@ document.addEventListener('visibilitychange', () => {
 // Listen for messages from the extension
 window.addEventListener('message', (event) => {
     const message = event.data;
-    
     switch (message.command) {
         case 'updateXP':
             if (message.state) {
                 updateXPDisplay(message.state.xp, message.state.level);
             }
             break;
-        
         case 'updateState':
             if (message.state) {
                 updateXPDisplay(message.state.xp, message.state.level);
+                updateAchievements(message.state.achievements);
+                updateEcoTipsLog(message.state.xpLog);
+                updateBugReports(message.state.bugReports);
+                updateLeaderboard(message.state.leaderboard);
                 updateClassroomSidebar(message.state);
             }
             break;
-            
         case 'updateClassroom':
             if (message.classroom) {
                 updateClassroomUI(message.classroom);
@@ -131,6 +132,56 @@ window.addEventListener('message', (event) => {
             break;
     }
 });
+
+function updateAchievements(achievements = []) {
+    const list = document.getElementById('achievements-list');
+    if (!list) { return; }
+    list.innerHTML = achievements.map(a => `
+        <div class="achievement${a.unlocked ? '' : ' locked'}">
+            <span class="badge-icon">${a.icon}</span>
+            <span>${a.name}${a.unlocked ? '' : ' (locked)'}</span>
+            <span class="achievement-desc">${a.description}</span>
+        </div>
+    `).join('');
+}
+
+function updateEcoTipsLog(xpLog = []) {
+    const log = document.getElementById('eco-tips-log');
+    if (!log) { return; }
+    log.innerHTML = xpLog.map(entry => `<div class="xp-log-entry">${entry}</div>`).join('');
+}
+
+function updateBugReports(bugReports = []) {
+    const list = document.getElementById('bug-reports-list');
+    if (!list) { return; }
+    if (!bugReports.length) {
+        list.innerHTML = '<div class="empty">No bugs detected!</div>';
+        return;
+    }
+    list.innerHTML = bugReports.map(bug => `
+        <div class="bug-report">
+            <div class="bug-desc">🐞 ${bug.description}</div>
+            <div class="bug-fix">💡 ${bug.suggestion || ''}</div>
+        </div>
+    `).join('');
+}
+
+function updateLeaderboard(leaderboard = []) {
+    const list = document.getElementById('leaderboard-list');
+    if (!list) { return; }
+    if (!leaderboard.length) {
+        list.innerHTML = '<div class="empty">No leaderboard data.</div>';
+        return;
+    }
+    list.innerHTML = leaderboard.map((user, i) => `
+        <div class="leaderboard-item">
+            <span class="rank">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}</span>
+            <span class="username">${user.username}</span>
+            <span class="user-xp">${user.xp} XP</span>
+            <span class="badges">${(user.achievements || []).map(a => a.icon || '').join(' ')}</span>
+        </div>
+    `).join('');
+}
 
 // Mock function to simulate fetching player data
 async function fetchPlayerData() {
