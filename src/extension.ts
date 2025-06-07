@@ -6,7 +6,7 @@ import { provideEcoTips } from './utils/ecoTips';
 import { xpForNextLevel } from './utils/xp';
 import { updateStatusBar } from './utils/statusBar';
 import { detectNestedLoops } from './utils/bugs';
-import { queueGroqRequest, canSendGroqRequest, sendGroqRequestBatch, fakeGroqApiCall } from './utils/groqApi';
+import { queueGroqRequest, canSendGroqRequest, sendGroqRequestBatch } from './utils/groqApi';
 import { ClassroomManager } from './utils/classroom';
 import { registerEcoDebuggerTreeView } from './feature/sidePanel';
 
@@ -30,10 +30,12 @@ export function activate(context: vscode.ExtensionContext): void {
     // Restore state from globalState if available
     const saved = context.globalState.get('ecodebuggerState') as any;
     if (saved) {
-        xp = saved.xp || 0;
+        xp =
         level = saved.level || 1;
         xpLog = saved.xpLog || [];
-        ecoTipNotifications = saved.ecoTipNotifications || []; // Restore ecoTipNotifications
+        ecoTipNotifications = saved.ecoTipNotifications || [];
+        ecoTipsEnabled = typeof saved.ecoTipsEnabled === 'boolean' ? saved.ecoTipsEnabled : true;
+        groqAIEnabled = typeof saved.groqAIEnabled === 'boolean' ? saved.groqAIEnabled : true;
     }
     statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
     context.subscriptions.push(statusBarItem);
@@ -59,25 +61,52 @@ export function activate(context: vscode.ExtensionContext): void {
         ecoTipsEnabled,
         groqAIEnabled
     };
-    // Patch setState to include ecoTipNotifications
+    // Patch setState to include ecoTipNotifications and settings
     function setState(newState: any) {
-        state = { ...state, ...newState };
+        // Handle toggles and reset logic
+        if (typeof newState.ecoTipsEnabled === 'boolean' && newState.ecoTipsEnabled !== ecoTipsEnabled) {
+            ecoTipsEnabled = newState.ecoTipsEnabled;
+            vscode.window.showInformationMessage(`Eco Tips ${ecoTipsEnabled ? 'enabled' : 'disabled'}.`);
+        }
+        if (typeof newState.groqAIEnabled === 'boolean' && newState.groqAIEnabled !== groqAIEnabled) {
+            groqAIEnabled = newState.groqAIEnabled;
+            vscode.window.showInformationMessage(`Groq AI ${groqAIEnabled ? 'enabled' : 'disabled'}.`);
+        }
+        if (newState.xp === 0 && newState.level === 1) {
+            xp = 0;
+            level = 1;
+            xpLog = [];
+            ecoTipNotifications = [];
+            // Optionally reset achievements (if tracked in state)
+            if (typeof newState.achievements !== 'undefined') {
+                // If using a module-level achievements object, reset it here
+                if (require('./utils/achievements').resetAchievements) {
+                    require('./utils/achievements').resetAchievements();
+                }
+            }
+            vscode.window.showInformationMessage('XP, achievements, and eco tips log have been reset.');
+        }
+        state = { ...state, ...newState, ecoTipsEnabled, groqAIEnabled };
         context.globalState.update('ecodebuggerState', {
             xp,
             level,
             xpLog,
-            ecoTipNotifications
+            ecoTipNotifications,
+            ecoTipsEnabled,
+            groqAIEnabled
         });
         treeDataProvider.setState(getState());
     }
-    // Patch getState to include ecoTipNotifications
+    // Patch getState to include ecoTipNotifications and settings
     function getState() {
         return {
             ...state,
             xp,
             level,
             xpLog,
-            ecoTipNotifications
+            ecoTipNotifications,
+            ecoTipsEnabled,
+            groqAIEnabled
         };
     }
     treeDataProvider = registerEcoDebuggerTreeView(context, getState, setState);
@@ -130,76 +159,74 @@ export function activate(context: vscode.ExtensionContext): void {
     // Register onDidSaveTextDocument to trigger eco tip and bug analysis
     context.subscriptions.push(
         vscode.workspace.onDidSaveTextDocument(async (document) => {
-            if (!ecoTipsEnabled) { return; }
-            if (!["python", "javascript", "typescript"].includes(document.languageId)) { return; }
+            if (!ecoTipsEnabled && !groqAIEnabled) { return; }
+            if (!['python', 'javascript', 'typescript'].includes(document.languageId)) { return; }
             const fileUri = document.uri.toString();
-            const { provideEcoTips } = require('./utils/ecoTips');
-            const tipsResult = await provideEcoTips();
-            const currentIssues: Set<string> = new Set((tipsResult.ecoTips || []).map((tip: string) => String(tip).trim()));
-            const previousIssues: Set<string> = lastIssuesPerFile.get(fileUri) || new Set<string>();
-            const resolvedIssues = Array.from(previousIssues).filter(issue => !currentIssues.has(issue));
-            Array.from(currentIssues).forEach((tip: string) => {
-                vscode.window.showWarningMessage('⚡ Eco Tip: ' + tip);
-                if (!ecoTipNotifications.includes(tip)) {
-                    ecoTipNotifications.push(tip);
-                }
-            });
-            if (resolvedIssues.length > 0) {
-                resolvedIssues.forEach(() => {
-                    awardXP('ecoTip');
+            // Eco Tips
+            if (ecoTipsEnabled) {
+                const { provideEcoTips } = require('./utils/ecoTips');
+                const tipsResult = await provideEcoTips();
+                const currentIssues: Set<string> = new Set((tipsResult.ecoTips || []).map((tip: string) => String(tip).trim()));
+                const previousIssues: Set<string> = lastIssuesPerFile.get(fileUri) || new Set<string>();
+                Array.from(currentIssues).forEach((tip: string) => {
+                    vscode.window.showWarningMessage('⚡ Eco Tip: ' + tip);
+                    if (!ecoTipNotifications.includes(tip)) {
+                        ecoTipNotifications.push(tip);
+                    }
                 });
-                vscode.window.showInformationMessage(`🎉 You resolved ${resolvedIssues.length} eco issue(s) and earned XP!`);
+                // Only award XP if the number of issues decreased
+                if (previousIssues.size > 0 && currentIssues.size < previousIssues.size) {
+                    const resolvedCount = previousIssues.size - currentIssues.size;
+                    for (let i = 0; i < resolvedCount; i++) {
+                        awardXP('ecoTip');
+                    }
+                    vscode.window.showInformationMessage(`🎉 You resolved ${resolvedCount} eco issue(s) and earned XP!`);
+                }
+                lastIssuesPerFile.set(fileUri, currentIssues);
             }
-            lastIssuesPerFile.set(fileUri, currentIssues);
-
-            // --- Bug detection logic ---
+            // Bug detection logic (always runs)
             const { detectNestedLoops, detectUnusedVariables } = require('./utils/bugs');
             const text = document.getText();
             let currentBugs: Set<string> = new Set();
             let bugReports: any[] = treeDataProvider?.state?.bugReports || [];
-            // Detect bugs and add to set
             if (detectNestedLoops(text)) {
                 currentBugs.add('Nested loops detected');
             }
             if (detectUnusedVariables(text)) {
                 currentBugs.add('Unused variable detected');
             }
-            // Add more bug detection as needed
             const previousBugs: Set<string> = lastBugsPerFile.get(fileUri) || new Set<string>();
-            const resolvedBugs = Array.from(previousBugs).filter(bug => !currentBugs.has(bug));
-            // Show bug warnings for current bugs
             Array.from(currentBugs).forEach((bug: string) => {
                 vscode.window.showWarningMessage('🐞 Bug: ' + bug);
             });
-            // Award XP only for resolved bugs
-            if (resolvedBugs.length > 0) {
-                resolvedBugs.forEach(() => {
+            // Only award XP if the number of bugs decreased
+            if (previousBugs.size > 0 && currentBugs.size < previousBugs.size) {
+                const resolvedCount = previousBugs.size - currentBugs.size;
+                for (let i = 0; i < resolvedCount; i++) {
                     awardXP('bug');
-                });
-                vscode.window.showInformationMessage(`🎉 You fixed ${resolvedBugs.length} bug(s) and earned XP!`);
+                }
+                vscode.window.showInformationMessage(`🎉 You fixed ${resolvedCount} bug(s) and earned XP!`);
             }
             lastBugsPerFile.set(fileUri, currentBugs);
-            // Update bugReports in the TreeView state
             bugReports = Array.from(currentBugs).map(bug => ({ description: bug }));
             if (treeDataProvider && typeof treeDataProvider.setState === 'function') {
                 treeDataProvider.setState({ ...getState(), bugReports });
             }
-
-            // --- AI analysis (Groq API) ---
-            try {
-                const { queueGroqRequest } = require('./utils/groqApi');
-                const aiResult = await queueGroqRequest(document.getText());
-                const aiMsg = aiResult && aiResult.explanation ? aiResult.explanation : JSON.stringify(aiResult);
-                vscode.window.showInformationMessage('AI analysis: ' + aiMsg);
-            } catch (err) {
-                const errorMsg = 'AI analysis failed: ' + String(err);
-                vscode.window.showWarningMessage(errorMsg);
-                if (!ecoTipNotifications.includes(errorMsg)) {
-                    ecoTipNotifications.push(errorMsg);
+            // AI analysis (Groq API)
+            if (groqAIEnabled) {
+                try {
+                    const { queueGroqRequest } = require('./utils/groqApi');
+                    const aiResult = await queueGroqRequest(document.getText());
+                    const aiMsg = aiResult && aiResult.explanation ? aiResult.explanation : JSON.stringify(aiResult);
+                    vscode.window.showInformationMessage('AI analysis: ' + aiMsg);
+                } catch (err) {
+                    const errorMsg = 'AI analysis failed: ' + String(err);
+                    vscode.window.showWarningMessage(errorMsg);
+                    if (!ecoTipNotifications.includes(errorMsg)) {
+                        ecoTipNotifications.push(errorMsg);
+                    }
                 }
             }
-
-            // ...existing code for TreeView refresh...
         })
     );
 

@@ -12,6 +12,26 @@ class GreenCodeVisitor(ast.NodeVisitor):
         self.inefficient_list_append = False
         self.magic_numbers = set()
         self.unreachable_code = False
+        self.unused_imports = set()
+        self.imported_names = set()
+        self.used_imports = set()
+        self.infinite_loops = False
+        self.shadowed_vars = set()
+        self.assigned_vars = set()
+        self.used_before_assign = set()
+        self.deprecated_functions = set()
+        self.deprecated_function_list = {'apply', 'buffer', 'coerce', 'intern', 'reload', 'reduce'}  # Example
+        self.scope_stack = [{}]  # For shadowed vars
+
+    def visit_Import(self, node):
+        for alias in node.names:
+            self.imported_names.add(alias.asname or alias.name)
+        self.generic_visit(node)
+
+    def visit_ImportFrom(self, node):
+        for alias in node.names:
+            self.imported_names.add(alias.asname or alias.name)
+        self.generic_visit(node)
 
     def visit_For(self, node):
         # Check for nested loops
@@ -31,6 +51,17 @@ class GreenCodeVisitor(ast.NodeVisitor):
         # Track used variables
         if isinstance(node.ctx, ast.Load):
             self.used_vars.add(node.id)
+            if node.id in self.imported_names:
+                self.used_imports.add(node.id)
+            # Used before assignment
+            if node.id not in self.assigned_vars and node.id not in self.declared_vars:
+                self.used_before_assign.add(node.id)
+        elif isinstance(node.ctx, ast.Store):
+            # Shadowed variable detection
+            if node.id in self.scope_stack[-1]:
+                self.shadowed_vars.add(node.id)
+            self.scope_stack[-1][node.id] = True
+            self.assigned_vars.add(node.id)
         self.generic_visit(node)
 
     def visit_AugAssign(self, node):
@@ -39,6 +70,21 @@ class GreenCodeVisitor(ast.NodeVisitor):
             if hasattr(node.value, 's'):
                 self.inefficient_string_concat = True
         self.generic_visit(node)
+
+    def visit_While(self, node):
+        # Infinite loop detection
+        if isinstance(node.test, ast.Constant) and node.test.value is True:
+            self.infinite_loops = True
+        self.generic_visit(node)
+
+    def visit_FunctionDef(self, node):
+        self.scope_stack.append({})
+        for idx, stmt in enumerate(node.body[:-1]):
+            if isinstance(stmt, (ast.Return, ast.Break, ast.Continue)):
+                self.unreachable_code = True
+                break
+        self.generic_visit(node)
+        self.scope_stack.pop()
 
     def visit_Call(self, node):
         # Detect list.append in loops
@@ -49,18 +95,14 @@ class GreenCodeVisitor(ast.NodeVisitor):
                     self.inefficient_list_append = True
                     break
                 parent = getattr(parent, 'parent', None)
+        if isinstance(node.func, ast.Name):
+            if node.func.id in self.deprecated_function_list:
+                self.deprecated_functions.add(node.func.id)
         self.generic_visit(node)
 
     def visit_Num(self, node):
         if node.n not in (0, 1):  # Ignore common values
             self.magic_numbers.add(node.n)
-        self.generic_visit(node)
-
-    def visit_FunctionDef(self, node):
-        for idx, stmt in enumerate(node.body[:-1]):
-            if isinstance(stmt, (ast.Return, ast.Break, ast.Continue)):
-                self.unreachable_code = True
-                break
         self.generic_visit(node)
 
 def set_parents(node, parent=None):
@@ -74,13 +116,19 @@ def analyze_code(code):
     visitor = GreenCodeVisitor()
     visitor.visit(tree)
     unused = list(visitor.declared_vars - visitor.used_vars)
+    unused_imports = list(visitor.imported_names - visitor.used_imports)
     return {
         "nested_loops": visitor.nested_loops,
         "unused_variables": unused,
         "inefficient_string_concat": visitor.inefficient_string_concat,
         "inefficient_list_append": visitor.inefficient_list_append,
         "magic_numbers": list(visitor.magic_numbers),
-        "unreachable_code": visitor.unreachable_code
+        "unreachable_code": visitor.unreachable_code,
+        "unused_imports": unused_imports,
+        "infinite_loops": visitor.infinite_loops,
+        "shadowed_variables": list(visitor.shadowed_vars),
+        "used_before_assignment": list(visitor.used_before_assign),
+        "deprecated_functions": list(visitor.deprecated_functions)
     }
 
 if __name__ == "__main__":

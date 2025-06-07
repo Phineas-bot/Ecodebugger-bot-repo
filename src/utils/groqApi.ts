@@ -14,7 +14,8 @@ export function canSendGroqRequest() {
 }
 
 // === Real Groq API Integration ===
-const GROQ_API_KEY = process.env.GROQ_API_KEY || '';
+// Insert your shared API key below. This key will be used for all users.
+const GROQ_API_KEY = '';
 const GROQ_API_URL = 'https://api.groq.com/v1/your-endpoint'; // Replace with actual endpoint
 
 async function realGroqApiCall(codes: string[]): Promise<any[]> {

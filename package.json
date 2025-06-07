@@ -15,7 +15,8 @@
     "onLanguage:javascript",
     "onLanguage:python"
   ],
-  "contributes": {    "commands": [
+  "contributes": {
+    "commands": [
       {
         "command": "Ecodebugger.helloWorld",
         "title": "EcoDebugger: Hello World"
@@ -68,7 +69,6 @@
     },
     "views": {
       "ecodebugger": [
-        
         {
           "id": "ecodebuggerSidebar",
           "name": "EcoDebugger Sidebar"
@@ -115,6 +115,7 @@
     "@typescript-eslint/parser": "^8.28.0",
     "@vscode/test-cli": "^0.0.10",
     "@vscode/test-electron": "^2.4.1",
+    "@vscode/vsce": "^3.5.0",
     "copy-webpack-plugin": "^13.0.0",
     "css-loader": "^7.1.2",
     "eslint": "^9.23.0",
