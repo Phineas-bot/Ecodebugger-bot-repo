@@ -93,7 +93,14 @@
           "group": "inline"
         }
       ]
-    }
+    },
+    "authentication": [
+      {
+        "id": "github",
+        "label": "GitHub",
+        "supportsMultipleAccounts": false
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run package",

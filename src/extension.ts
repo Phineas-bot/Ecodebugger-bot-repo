@@ -26,6 +26,34 @@ const lastIssuesPerFile: Map<string, Set<string>> = new Map();
 // Map to track last detected bugs per file
 const lastBugsPerFile: Map<string, Set<string>> = new Map();
 
+let githubStatusBarItem: vscode.StatusBarItem | undefined;
+
+async function getGitHubSession(): Promise<vscode.AuthenticationSession | undefined> {
+    return await vscode.authentication.getSession(
+        'github',
+        ['read:user'],
+        { createIfNone: true }
+    );
+}
+
+async function showGitHubUserInStatusBar() {
+    const session = await getGitHubSession();
+    if (!session) {
+        if (githubStatusBarItem) {
+            githubStatusBarItem.hide();
+        }
+        return;
+    }
+    const username = session.account.label;
+    if (!githubStatusBarItem) {
+        githubStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
+    }
+    githubStatusBarItem.text = `$(mark-github) ${username}`;
+    githubStatusBarItem.tooltip = `Signed in as ${username}\nClick to sign out of EcoDebugger`;
+    githubStatusBarItem.command = 'ecoDebugger.signOutGitHub';
+    githubStatusBarItem.show();
+}
+
 export function activate(context: vscode.ExtensionContext): void {
     // Restore state from globalState if available
     const saved = context.globalState.get('ecodebuggerState') as any;
@@ -52,12 +80,7 @@ export function activate(context: vscode.ExtensionContext): void {
             { name: 'Team Leader', unlocked: false, icon: '👑', description: 'Top leaderboard in classroom mode.' }
         ],
         xpLog,
-        bugReports: [], // TODO: fill with bug report data
-        leaderboard: classroomManager?.getLeaderboard() || [],
-        classroom: {
-            code: classroomManager?.getClassroomId() || '',
-            weeklyTop: classroomManager?.getLeaderboard()?.[0]?.username || '',
-        },
+        bugReports: [],
         ecoTipsEnabled,
         groqAIEnabled
     };
@@ -122,7 +145,8 @@ export function activate(context: vscode.ExtensionContext): void {
             const pin = await vscode.window.showInputBox({ prompt: 'Enter a PIN for your classroom (optional)' });
             const classroom = await classroomManager?.createClassroom(pin);
             vscode.window.showInformationMessage('Classroom created: ' + classroom?.classroom_id);
-            setState(getState()); // Force UI refresh
+            setState(getState());
+            await showGitHubUserInStatusBar();
         })
     );
     context.subscriptions.push(
@@ -131,14 +155,8 @@ export function activate(context: vscode.ExtensionContext): void {
             const pin = await vscode.window.showInputBox({ prompt: 'Enter PIN (if required)' });
             const ok = await classroomManager?.joinClassroom(id || '', pin);
             vscode.window.showInformationMessage(ok ? 'Joined classroom!' : 'Failed to join classroom.');
-            setState(getState()); // Force UI refresh
-        })
-    );
-    context.subscriptions.push(
-        vscode.commands.registerCommand('ecoDebugger.leaveClassroom', async () => {
-            await classroomManager?.leaveClassroom();
-            vscode.window.showInformationMessage('Left classroom.');
-            setState(getState()); // Force UI refresh
+            setState(getState());
+            await showGitHubUserInStatusBar();
         })
     );
 
@@ -242,21 +260,34 @@ export function activate(context: vscode.ExtensionContext): void {
             vscode.window.showInformationMessage(`🎉 Congratulations! You reached Level ${level}!`);
         }
         xpLog.push(`${type === 'bug' ? 'Fixed a bug' : 'Applied eco tip'} (+${xpAwarded} XP)`);
-        checkAchievements(xp, level, classroomManager?.getLeaderboard()[0]?.username === 'You');
+        checkAchievements(xp, level, false); // Remove leaderboard check
         updateXPAndTreeView();
-        // Persist to globalState after every XP change
         context.globalState.update('ecodebuggerState', {
             xp,
             level,
             xpLog
         });
-        // Sync with classroom
-        if (classroomManager) {
-            classroomManager.syncXP(xp, []); // TODO: pass real achievements
-        }
+        // Remove classroomManager.syncXP
     }
 
-    // ...existing code...
+    (async () => { await showGitHubUserInStatusBar(); })();
+    if (githubStatusBarItem) {
+        context.subscriptions.push(githubStatusBarItem);
+    }
+    context.subscriptions.push(
+        vscode.commands.registerCommand('ecoDebugger.refreshGitHubStatus', async () => {
+            await showGitHubUserInStatusBar();
+        })
+    );
+    // Add a command to sign out from GitHub
+    context.subscriptions.push(
+        vscode.commands.registerCommand('ecoDebugger.signOutGitHub', async () => {
+            // VS Code does not provide a direct logout API. Instead, clear session preference and prompt user.
+            await vscode.authentication.getSession('github', ['read:user'], { clearSessionPreference: true, createIfNone: false });
+            vscode.window.showInformationMessage('To fully sign out, use the Accounts menu in the Activity Bar (bottom left) and sign out from GitHub.');
+            if (githubStatusBarItem) { githubStatusBarItem.hide(); }
+        })
+    );
 }
 
 function joinClassroom(code: string) {

@@ -1,4 +1,4 @@
-// Groq API management and batching for EcoDebugger
+// Groq API management and batching for EcoDebugger 
 
 let groqRateLimit = { count: 0, lastReset: Date.now() };
 const GROQ_RATE_LIMIT = 60; // max 60 requests per hour
@@ -14,9 +14,9 @@ export function canSendGroqRequest() {
 }
 
 // === Real Groq API Integration ===
-// Insert your shared API key below. This key will be used for all users.
+// To insert the shared API key below. This key will be used for all users usx batch request and restricted acess for fair use .
 const GROQ_API_KEY = '';
-const GROQ_API_URL = 'https://api.groq.com/v1/your-endpoint'; // Replace with actual endpoint
+const GROQ_API_URL = 'https://api.groq.com/v1/your-endpoint'; // to be replace with actual endpoint
 
 async function realGroqApiCall(codes: string[]): Promise<any[]> {
     if (!GROQ_API_KEY) {
@@ -66,7 +66,7 @@ export function queueGroqRequest(code: string): Promise<any> {
             groqBatchTimer = setTimeout(() => {
                 sendGroqRequestBatch();
                 groqBatchTimer = undefined;
-            }, 1000); // batch every 1s
+            }, 1000); // batch every 1second 
         }
     });
 }
