@@ -89,6 +89,7 @@ export class EcoDebuggerTreeDataProvider implements vscode.TreeDataProvider<EcoD
             case 'leaderboard': {
                 const leaderboard = this.state.leaderboard || [];
                 const weeklyTop = this.state.classroom?.weeklyTop;
+                const currentUser = this.state.githubUsername || 'You';
                 // Add join/create classroom buttons as special items at the top
                 const joinBtn = new EcoDebuggerTreeItem('Join Classroom...', vscode.TreeItemCollapsibleState.None, 'joinClassroom', undefined, new vscode.ThemeIcon('sign-in'), {
                     command: 'ecoDebugger.joinClassroom',
@@ -100,21 +101,34 @@ export class EcoDebuggerTreeDataProvider implements vscode.TreeDataProvider<EcoD
                     title: 'Create Classroom',
                     arguments: []
                 });
+                // Add leave classroom button if in a classroom
+                const leaveBtn = (this.state.classroom?.code)
+                    ? new EcoDebuggerTreeItem('Leave Classroom', vscode.TreeItemCollapsibleState.None, 'leaveClassroom', undefined, new vscode.ThemeIcon('sign-out'), {
+                        command: 'ecoDebugger.leaveClassroom',
+                        title: 'Leave Classroom',
+                        arguments: []
+                    })
+                    : undefined;
+                // Show current user at the top if present
                 const userItems = leaderboard.map((user: any, i: number) => {
                     const isTop = user.username === weeklyTop;
+                    const isYou = user.username === currentUser;
                     const rankIcon = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1).toString();
                     const badges = (user.achievements || []).map((a: any) => a.icon || '').join(' ');
                     let label = `${rankIcon} ${user.username} (${user.xp} XP)`;
                     if (isTop) { label += ' ⭐'; }
+                    if (isYou) { label += ' (You)'; }
                     return new EcoDebuggerTreeItem(
                         label,
-                        vscode.TreeItemCollapsibleState.Collapsed,
+                        vscode.TreeItemCollapsibleState.None,
                         'leaderboardUser',
                         badges ? `Badges: ${badges}` : undefined,
                         new vscode.ThemeIcon(isTop ? 'star-full' : 'account')
                     );
                 });
-                return Promise.resolve([joinBtn, createBtn, ...userItems]);
+                const items = [joinBtn, createBtn];
+                if (leaveBtn) { items.push(leaveBtn); }
+                return Promise.resolve([...items, ...userItems]);
             }
             case 'leaderboardUser': {
                 // Show more stats for a user if needed

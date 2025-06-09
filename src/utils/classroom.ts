@@ -391,4 +391,32 @@ export class ClassroomManager {
             }
         }
     }
+
+    getLeaderboard() {
+        if (!this.classroom) {
+            return [];
+        }
+        // Sort users by XP descending
+        const users = [...this.classroom.users].sort((a, b) => b.xp - a.xp);
+        return users;
+    }
+
+    getClassroomId() {
+        return this.classroom?.classroom_id || '';
+    }
+
+    async leaveClassroom() {
+        if (!this.classroom) { return; }
+        if (this.mode === 'local') {
+            this.classroom.users = this.classroom.users.filter(u => u.user_id !== this.userId);
+            await this.saveLocal();
+        } else if (this.mode === 'cloud' && this.classroom && typeof supabase !== 'undefined') {
+            // Optionally, remove user from classroom_users in Supabase
+            await supabase.from('classroom_users')
+                .delete()
+                .eq('classroom_id', this.classroom.classroom_id)
+                .eq('user_id', this.userId);
+        }
+        this.classroom = null;
+    }
 }

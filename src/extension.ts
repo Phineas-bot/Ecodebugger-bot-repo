@@ -29,6 +29,7 @@ const lastIssuesPerFile: Map<string, Set<string>> = new Map();
 const lastBugsPerFile: Map<string, Set<string>> = new Map();
 
 let githubStatusBarItem: vscode.StatusBarItem | undefined;
+let classroomStatusBarItem: vscode.StatusBarItem | undefined;
 
 async function getGitHubSession(): Promise<vscode.AuthenticationSession | undefined> {
     return await vscode.authentication.getSession(
@@ -56,11 +57,42 @@ async function showGitHubUserInStatusBar() {
     githubStatusBarItem.show();
 }
 
+function updateClassroomStatusBar() {
+    if (!classroomManager) { return; }
+    const code = classroomManager.getClassroomId();
+    if (!classroomStatusBarItem) {
+        classroomStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 99);
+        classroomStatusBarItem.command = 'ecoDebugger.copyClassroomCode';
+    }
+    if (code) {
+        classroomStatusBarItem.text = `$(organization) Classroom: ${code}`;
+        classroomStatusBarItem.tooltip = 'Click to copy classroom code';
+        classroomStatusBarItem.show();
+    } else {
+        classroomStatusBarItem.hide();
+    }
+}
+
+let githubUsername: string | undefined = undefined;
+
+async function getGitHubUsername(): Promise<string> {
+    const session = await getGitHubSession();
+    if (session) {
+        githubUsername = session.account.label;
+        return githubUsername;
+    }
+    githubUsername = undefined;
+    return 'You';
+}
+
+let setState: (s: any) => void;
+let getState: () => any;
+
 export function activate(context: vscode.ExtensionContext): void {
     // Restore state from globalState if available
     const saved = context.globalState.get('ecodebuggerState') as any;
     if (saved) {
-        xp =
+        xp = saved.xp || 0;
         level = saved.level || 1;
         xpLog = saved.xpLog || [];
         ecoTipNotifications = saved.ecoTipNotifications || [];
@@ -71,75 +103,89 @@ export function activate(context: vscode.ExtensionContext): void {
     context.subscriptions.push(statusBarItem);
     updateStatusBar(statusBarItem, xp, level);
     console.log('Congratulations, your extension "Ecodebugger" is now active!');
-    // Register the TreeView sidebar
-    let state = {
-        xp,
-        level,
-        achievements: [
-            { name: 'Green Coder', unlocked: true, icon: '🌱', description: 'Apply 10 eco tips.' },
-            { name: 'Bug Slayer', unlocked: true, icon: '🪲', description: 'Fix 20 bugs.' },
-            { name: 'Efficient Thinker', unlocked: false, icon: '⚡', description: 'Reach 500 XP.' },
-            { name: 'Team Leader', unlocked: false, icon: '👑', description: 'Top leaderboard in classroom mode.' }
-        ],
-        xpLog,
-        bugReports: [],
-        ecoTipsEnabled,
-        groqAIEnabled
-    };
-    // Patch setState to include ecoTipNotifications and settings
-    function setState(newState: any) {
-        // Handle toggles and reset logic
-        if (typeof newState.ecoTipsEnabled === 'boolean' && newState.ecoTipsEnabled !== ecoTipsEnabled) {
-            ecoTipsEnabled = newState.ecoTipsEnabled;
-            vscode.window.showInformationMessage(`Eco Tips ${ecoTipsEnabled ? 'enabled' : 'disabled'}.`);
-        }
-        if (typeof newState.groqAIEnabled === 'boolean' && newState.groqAIEnabled !== groqAIEnabled) {
-            groqAIEnabled = newState.groqAIEnabled;
-            vscode.window.showInformationMessage(`Groq AI ${groqAIEnabled ? 'enabled' : 'disabled'}.`);
-        }
-        if (newState.xp === 0 && newState.level === 1) {
-            xp = 0;
-            level = 1;
-            xpLog = [];
-            ecoTipNotifications = [];
-            // Optionally reset achievements (if tracked in state)
-            if (typeof newState.achievements !== 'undefined') {
-                // If using a module-level achievements object, reset it here
-                if (require('./utils/achievements').resetAchievements) {
-                    require('./utils/achievements').resetAchievements();
-                }
-            }
-            vscode.window.showInformationMessage('XP, achievements, and eco tips log have been reset.');
-        }
-        state = { ...state, ...newState, ecoTipsEnabled, groqAIEnabled };
-        context.globalState.update('ecodebuggerState', {
-            xp,
-            level,
-            xpLog,
-            ecoTipNotifications,
-            ecoTipsEnabled,
-            groqAIEnabled
-        });
-        treeDataProvider.setState(getState());
-    }
-    // Patch getState to include ecoTipNotifications and settings
-    function getState() {
-        return {
-            ...state,
-            xp,
-            level,
-            xpLog,
-            ecoTipNotifications,
-            ecoTipsEnabled,
-            groqAIEnabled
-        };
-    }
-    treeDataProvider = registerEcoDebuggerTreeView(context, getState, setState);
 
-    // For demo, use VS Code user info or fallback
-    const userId = vscode.env.machineId;
-    const username = vscode.env.appName || 'You';
-    classroomManager = new ClassroomManager(userId, username);
+    // Fetch GitHub username and instantiate ClassroomManager
+    (async () => {
+        const userId = vscode.env.machineId;
+        const username = await getGitHubUsername();
+        classroomManager = new ClassroomManager(userId, username);
+        // Register the TreeView sidebar after username is available
+        let state = {
+            xp,
+            level,
+            achievements: [
+                { name: 'Green Coder', unlocked: true, icon: '🌱', description: 'Apply 10 eco tips.' },
+                { name: 'Bug Slayer', unlocked: true, icon: '🪲', description: 'Fix 20 bugs.' },
+                { name: 'Efficient Thinker', unlocked: false, icon: '⚡', description: 'Reach 500 XP.' },
+                { name: 'Team Leader', unlocked: false, icon: '👑', description: 'Top leaderboard in classroom mode.' }
+            ],
+            xpLog,
+            bugReports: [],
+            ecoTipsEnabled,
+            groqAIEnabled,
+            leaderboard: classroomManager?.getLeaderboard() || [],
+            classroom: {
+                code: classroomManager?.getClassroomId() || '',
+                weeklyTop: classroomManager?.getLeaderboard()?.[0]?.username || '',
+            },
+            githubUsername: username
+        };
+        setState = function(newState: any) {
+            // Handle toggles and reset logic
+            if (typeof newState.ecoTipsEnabled === 'boolean' && newState.ecoTipsEnabled !== ecoTipsEnabled) {
+                ecoTipsEnabled = newState.ecoTipsEnabled;
+                vscode.window.showInformationMessage(`Eco Tips ${ecoTipsEnabled ? 'enabled' : 'disabled'}.`);
+            }
+            if (typeof newState.groqAIEnabled === 'boolean' && newState.groqAIEnabled !== groqAIEnabled) {
+                groqAIEnabled = newState.groqAIEnabled;
+                vscode.window.showInformationMessage(`Groq AI ${groqAIEnabled ? 'enabled' : 'disabled'}.`);
+            }
+            if (newState.xp === 0 && newState.level === 1) {
+                xp = 0;
+                level = 1;
+                xpLog = [];
+                ecoTipNotifications = [];
+                // Optionally reset achievements (if tracked in state)
+                if (typeof newState.achievements !== 'undefined') {
+                    // If using a module-level achievements object, reset it here
+                    if (require('./utils/achievements').resetAchievements) {
+                        require('./utils/achievements').resetAchievements();
+                    }
+                }
+                vscode.window.showInformationMessage('XP, achievements, and eco tips log have been reset.');
+            }
+            state = { ...state, ...newState, ecoTipsEnabled, groqAIEnabled };
+            context.globalState.update('ecodebuggerState', {
+                xp,
+                level,
+                xpLog,
+                ecoTipNotifications,
+                ecoTipsEnabled,
+                groqAIEnabled
+            });
+            treeDataProvider.setState(getState());
+        };
+        getState = function() {
+            return {
+                ...state,
+                xp,
+                level,
+                xpLog,
+                ecoTipNotifications,
+                ecoTipsEnabled,
+                groqAIEnabled,
+                leaderboard: classroomManager?.getLeaderboard() || [],
+                classroom: {
+                    code: classroomManager?.getClassroomId() || '',
+                    weeklyTop: classroomManager?.getLeaderboard()?.[0]?.username || '',
+                },
+                githubUsername: username
+            };
+        };
+        treeDataProvider = registerEcoDebuggerTreeView(context, getState, setState);
+        await showGitHubUserInStatusBar();
+        updateClassroomStatusBar();
+    })();
 
     // Add classroom commands
     context.subscriptions.push(
@@ -149,6 +195,7 @@ export function activate(context: vscode.ExtensionContext): void {
             vscode.window.showInformationMessage('Classroom created: ' + classroom?.classroom_id);
             setState(getState());
             await showGitHubUserInStatusBar();
+            updateClassroomStatusBar();
         })
     );
     context.subscriptions.push(
@@ -159,6 +206,44 @@ export function activate(context: vscode.ExtensionContext): void {
             vscode.window.showInformationMessage(ok ? 'Joined classroom!' : 'Failed to join classroom.');
             setState(getState());
             await showGitHubUserInStatusBar();
+            updateClassroomStatusBar();
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('ecoDebugger.copyClassroomCode', async () => {
+            if (classroomManager) {
+                const code = classroomManager.getClassroomId();
+                if (code) {
+                    await vscode.env.clipboard.writeText(code);
+                    vscode.window.showInformationMessage(`Classroom code copied: ${code}`);
+                } else {
+                    vscode.window.showWarningMessage('Not in a classroom.');
+                }
+            }
+        })
+    );
+    context.subscriptions.push(
+        vscode.commands.registerCommand('ecoDebugger.showClassroomDetails', async () => {
+            if (classroomManager && classroomManager["classroom"] && classroomManager["classroom"].users) {
+                const code = classroomManager.getClassroomId();
+                const users = classroomManager["classroom"].users;
+                const leaderboard = classroomManager.getLeaderboard();
+                const msg = `Classroom: ${code}\n\nMembers:\n${users.map((u: any, i: number) => `${i+1}. ${u.username} (${u.xp} XP)`).join('\n')}`;
+                vscode.window.showInformationMessage(msg, { modal: true });
+            } else {
+                vscode.window.showWarningMessage('Not in a classroom.');
+            }
+        })
+    );
+    context.subscriptions.push(
+        vscode.commands.registerCommand('ecoDebugger.leaveClassroom', async () => {
+            if (classroomManager && classroomManager["leaveClassroom"]) {
+                await classroomManager.leaveClassroom();
+                vscode.window.showInformationMessage('Left classroom.');
+                setState(getState());
+                updateClassroomStatusBar();
+            }
         })
     );
 
@@ -253,23 +338,44 @@ export function activate(context: vscode.ExtensionContext): void {
     // Pass context to awardXP for persistence
     function awardXP(type: 'bug' | 'ecoTip') {
         let xpAwarded = type === 'bug' ? 10 : 5;
-        xp += xpAwarded;
-        let leveledUp = false;
-        while (xp >= xpForNextLevel(level)) {
-            xp -= xpForNextLevel(level);
-            level++;
-            leveledUp = true;
-            vscode.window.showInformationMessage(`🎉 Congratulations! You reached Level ${level}!`);
+        if (classroomManager && classroomManager.getClassroomId()) {
+            const userId = classroomManager["userId"];
+            const user = classroomManager.getLeaderboard().find(u => u.user_id === userId);
+            let newXP = (user ? user.xp : 0) + xpAwarded;
+            classroomManager.addOrUpdateUser(newXP, []); // TODO: pass real achievements if tracked
+            updateXPAndTreeView();
+        } else {
+            xp += xpAwarded;
+            let leveledUp = false;
+            while (xp >= xpForNextLevel(level)) {
+                xp -= xpForNextLevel(level);
+                level++;
+                leveledUp = true;
+                vscode.window.showInformationMessage(`🎉 Congratulations! You reached Level ${level}!`);
+            }
+            xpLog.push(`${type === 'bug' ? 'Fixed a bug' : 'Applied eco tip'} (+${xpAwarded} XP)`);
+            checkAchievements(xp, level, false);
+            updateXPAndTreeView();
+            context.globalState.update('ecodebuggerState', {
+                xp,
+                level,
+                xpLog
+            });
         }
-        xpLog.push(`${type === 'bug' ? 'Fixed a bug' : 'Applied eco tip'} (+${xpAwarded} XP)`);
-        checkAchievements(xp, level, false); // Remove leaderboard check
-        updateXPAndTreeView();
-        context.globalState.update('ecodebuggerState', {
-            xp,
-            level,
-            xpLog
-        });
-        // Remove classroomManager.syncXP
+    }
+
+    async function joinClassroom(code: string) {
+        if (classroomManager && await classroomManager.joinClassroom(code)) {
+            const userId = classroomManager["userId"];
+            let user = classroomManager.getLeaderboard().find(u => u.user_id === userId);
+            if (!user) {
+                classroomManager.addOrUpdateUser(0, []);
+            }
+            updateXPAndTreeView();
+            vscode.window.showInformationMessage(`Joined classroom: ${code}`);
+        } else {
+            vscode.window.showWarningMessage('Failed to join classroom.');
+        }
     }
 
     (async () => { await showGitHubUserInStatusBar(); })();
@@ -290,6 +396,11 @@ export function activate(context: vscode.ExtensionContext): void {
             if (githubStatusBarItem) { githubStatusBarItem.hide(); }
         })
     );
+
+    updateClassroomStatusBar();
+    if (classroomStatusBarItem) {
+        context.subscriptions.push(classroomStatusBarItem);
+    }
 }
 
 function joinClassroom(code: string) {
@@ -309,6 +420,16 @@ export function deactivate(): void {
 function updateXPAndTreeView() {
     updateStatusBar(statusBarItem, xp, level);
     if (treeDataProvider && typeof treeDataProvider.setState === 'function') {
-        treeDataProvider.setState({ xp, level, xpLog });
+        treeDataProvider.setState({
+            xp,
+            level,
+            xpLog,
+            leaderboard: classroomManager?.getLeaderboard() || [],
+            classroom: {
+                code: classroomManager?.getClassroomId() || '',
+                weeklyTop: classroomManager?.getLeaderboard()?.[0]?.username || '',
+            },
+            githubUsername
+        });
     }
 }
