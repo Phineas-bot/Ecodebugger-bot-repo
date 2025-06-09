@@ -1,3 +1,5 @@
+import * as dotenv from 'dotenv';
+dotenv.config();
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -213,7 +215,7 @@ export function activate(context: vscode.ExtensionContext): void {
             if (detectUnusedVariables(text)) {
                 currentBugs.add('Unused variable detected');
             }
-            const previousBugs: Set<string> = lastBugsPerFile.get(fileUri) || new Set<string>();
+            const previousBugs: Set<string> = lastBugsPerFile.get(fileUri) || new Set();
             Array.from(currentBugs).forEach((bug: string) => {
                 vscode.window.showWarningMessage('🐞 Bug: ' + bug);
             });

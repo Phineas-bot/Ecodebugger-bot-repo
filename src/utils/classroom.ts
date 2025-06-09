@@ -1,3 +1,6 @@
+import * as dotenv from 'dotenv';
+dotenv.config();
+
 // ClassroomManager for EcoDebugger Classroom Mode
 // ---
 // Supabase Cloud Sync Setup:
