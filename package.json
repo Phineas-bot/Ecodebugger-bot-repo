@@ -3,6 +3,12 @@
   "displayName": "EcoDebugger",
   "description": "A gamified extension for debugging with eco coding tips.",
   "version": "0.0.1",
+  "publisher": "ecodebugger",
+  "license": "MIT",
+  "repository": {
+  "type": "git",
+  "url": "https://github.com/Phineas-bot/Ecodebugger-bot-repo.git"
+  },
   "engines": {
     "vscode": "^1.100.0"
   },
