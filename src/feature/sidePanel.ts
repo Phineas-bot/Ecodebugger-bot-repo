@@ -101,7 +101,6 @@ export class EcoDebuggerTreeDataProvider implements vscode.TreeDataProvider<EcoD
                     title: 'Create Classroom',
                     arguments: []
                 });
-                // Add leave classroom button if in a classroom
                 const leaveBtn = (this.state.classroom?.code)
                     ? new EcoDebuggerTreeItem('Leave Classroom', vscode.TreeItemCollapsibleState.None, 'leaveClassroom', undefined, new vscode.ThemeIcon('sign-out'), {
                         command: 'ecoDebugger.leaveClassroom',
@@ -115,7 +114,11 @@ export class EcoDebuggerTreeDataProvider implements vscode.TreeDataProvider<EcoD
                     const isYou = user.username === currentUser;
                     const rankIcon = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1).toString();
                     const badges = (user.achievements || []).map((a: any) => a.icon || '').join(' ');
-                    let label = `${rankIcon} ${user.username} (${user.xp} XP)`;
+                    let label = `${rankIcon} ${user.username} (Classroom XP: ${user.xp}`;
+                    if (isYou && typeof user.globalXP === 'number') {
+                        label += ` | Global XP: ${user.globalXP}`;
+                    }
+                    label += ' XP)';
                     if (isTop) { label += ' ⭐'; }
                     if (isYou) { label += ' (You)'; }
                     return new EcoDebuggerTreeItem(

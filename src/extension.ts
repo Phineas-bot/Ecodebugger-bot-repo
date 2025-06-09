@@ -341,9 +341,25 @@ export function activate(context: vscode.ExtensionContext): void {
         if (classroomManager && classroomManager.getClassroomId()) {
             const userId = classroomManager["userId"];
             const user = classroomManager.getLeaderboard().find(u => u.user_id === userId);
-            let newXP = (user ? user.xp : 0) + xpAwarded;
-            classroomManager.addOrUpdateUser(newXP, []); // TODO: pass real achievements if tracked
+            let newClassroomXP = (user ? user.xp : 0) + xpAwarded;
+            classroomManager.addOrUpdateUser(newClassroomXP, []); // Update classroom XP
+            // --- Add to global XP as well ---
+            xp += xpAwarded;
+            let leveledUp = false;
+            while (xp >= xpForNextLevel(level)) {
+                xp -= xpForNextLevel(level);
+                level++;
+                leveledUp = true;
+                vscode.window.showInformationMessage(`🎉 Congratulations! You reached Level ${level}!`);
+            }
+            xpLog.push(`${type === 'bug' ? 'Fixed a bug' : 'Applied eco tip'} (+${xpAwarded} XP)`);
+            checkAchievements(xp, level, false);
             updateXPAndTreeView();
+            context.globalState.update('ecodebuggerState', {
+                xp,
+                level,
+                xpLog
+            });
         } else {
             xp += xpAwarded;
             let leveledUp = false;
