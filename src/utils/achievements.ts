@@ -33,7 +33,13 @@ function unlockAchievement(key: string) {
         unlocked[key] = true;
         globalContext.globalState.update('unlockedAchievements', unlocked);
     }
-    // --- Trigger UI update for badges tab ---
+    // --- Always refresh the TreeView with the latest achievements ---
+    if (typeof (globalThis as any).treeDataProvider?.setState === 'function' && typeof (globalThis as any).getState === 'function') {
+        // Use correct relative path for require
+        const { getAchievements } = require('./achievements');
+        (globalThis as any).treeDataProvider.setState({ ...(globalThis as any).getState(), achievements: getAchievements() });
+    }
+    // Also trigger any additional UI update hooks (for webview, etc.)
     if ((globalThis as any).updateAchievementsUI) {
         (globalThis as any).updateAchievementsUI();
     }
@@ -129,9 +135,32 @@ function isNightTime(): boolean {
 }
 
 export function getAchievements() {
-    return achievementDefs.map(a => ({
-        name: a.key,
-        unlocked: !!achievements[a.key],
-        description: a.desc
-    }));
+    // Map badge keys to emoji icons
+    const iconMap: { [key: string]: string } = {
+        'Green Coder': '🌱',
+        'Bug Slayer': '🐞',
+        'Efficient Thinker': '⚡',
+        'Team Leader': '👑',
+        'XP Novice': '🎓',
+        'XP Master': '🏆',
+        'Eco Streak': '🌿',
+        'Bug Hunter': '🔎',
+        'Bug Exterminator': '🦟',
+        'Eco Marathon': '🏃',
+        'Fast Fixer': '⏱️',
+        'Night Owl': '🦉',
+        'First Save': '💾',
+        'Classroom Hero': '🦸',
+    };
+    return achievementDefs.map(a => {
+        const unlocked = !!achievements[a.key];
+        return {
+            name: a.key,
+            unlocked,
+            description: a.desc,
+            icon: iconMap[a.key] || '',
+            // For TreeView: VS Code ThemeIcon id for locked/unlocked
+            themeIcon: unlocked ? 'verified' : 'circle-outline',
+        };
+    });
 }
