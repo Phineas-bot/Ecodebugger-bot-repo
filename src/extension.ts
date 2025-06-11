@@ -174,10 +174,14 @@ export function activate(context: vscode.ExtensionContext): void {
                     weeklyTop: classroomManager?.getLeaderboard()?.[0]?.username || '',
                 },
                 githubUsername: username,
-                bugReports
+                bugReports,
+                achievements: require('./utils/achievements').getAchievements(), // Always fetch latest achievements
             };
         };
         treeDataProvider = registerEcoDebuggerTreeView(context, getState, setState);
+        // Make treeDataProvider and getState globally accessible for achievements.ts
+        (globalThis as any).treeDataProvider = treeDataProvider;
+        (globalThis as any).getState = getState;
         await showGitHubUserInStatusBar();
         updateClassroomStatusBar();
     })();
