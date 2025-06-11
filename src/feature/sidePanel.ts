@@ -78,13 +78,24 @@ export class EcoDebuggerTreeDataProvider implements vscode.TreeDataProvider<EcoD
                 );
             case 'bugReports':
                 return Promise.resolve(
-                    (this.state.bugReports || []).map((bug: any) =>
-                        new EcoDebuggerTreeItem(`🐞 ${bug.description}`, vscode.TreeItemCollapsibleState.None, 'bugReports', bug.suggestion ? `💡 ${bug.suggestion}` : undefined, new vscode.ThemeIcon('bug'), {
-                            command: 'ecodebugger.copyBug',
-                            title: 'Copy Bug',
-                            arguments: [new EcoDebuggerTreeItem(bug.description, vscode.TreeItemCollapsibleState.None, 'bugReports')]
-                        })
-                    )
+                    (this.state.bugReports || []).map((bug: any) => {
+                        let label = `🐞 ${bug.description}`;
+                        if (bug.suggestion) {
+                            label += `: ${bug.suggestion}`;
+                        }
+                        return new EcoDebuggerTreeItem(
+                            label,
+                            vscode.TreeItemCollapsibleState.None,
+                            'bugReports',
+                            undefined,
+                            new vscode.ThemeIcon('bug'),
+                            {
+                                command: 'ecodebugger.copyBug',
+                                title: 'Copy Bug',
+                                arguments: [new EcoDebuggerTreeItem(label, vscode.TreeItemCollapsibleState.None, 'bugReports')]
+                            }
+                        );
+                    })
                 );
             case 'leaderboard': {
                 const leaderboard = this.state.leaderboard || [];
