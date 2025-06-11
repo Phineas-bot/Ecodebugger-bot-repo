@@ -15,30 +15,50 @@ export function canSendGroqRequest() {
 
 // === Real Groq API Integration ===
 // To insert the shared API key below. This key will be used for all users usx batch request and restricted acess for fair use .
-const GROQ_API_KEY = '';
-const GROQ_API_URL = 'https://api.groq.com/v1/your-endpoint'; // to be replace with actual endpoint
+const GROQ_API_KEY = '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';
+const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions'; // to be replace with actual endpoint
+const SYSTEM_PROMPT = `You are an expert eco-coding assistant. Your tasks:
+1. Analyze the code and identify any potential environmental inefficiencies.
+2. Suggest concrete improvements that reduce energy consumption, enhance performance, and promote green software engineering practices.
+3. If no improvements are needed, acknowledge that the code is eco-friendly and efficient.
+4. Format your output as:
+- **Detected Issues**: [list]
+- **Eco Tips**: [list of suggestions]
+- **Estimated CO₂ Impact**
+
+Be concise, practical, and helpful.`;
+const GROQ_MODEL = 'llama3-70b-8192'; // You can change this to any supported Groq model
 
 async function realGroqApiCall(codes: string[]): Promise<any[]> {
     if (!GROQ_API_KEY) {
         throw new Error('No Groq API key set. Please configure your API key to use AI analysis.');
     }
-    // Example: send a POST request with code snippets
-    const response = await fetch(GROQ_API_URL, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${GROQ_API_KEY}`
-        },
-        body: JSON.stringify({
-            inputs: codes
+    // Send one request per code snippet, as the OpenAI chat/completions endpoint expects a single conversation per request
+    const results = await Promise.all(
+        codes.map(async (code) => {
+            const response = await fetch(GROQ_API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${GROQ_API_KEY}`
+                },
+                body: JSON.stringify({
+                    model: GROQ_MODEL,
+                    messages: [
+                        { role: 'system', content: SYSTEM_PROMPT },
+                        { role: 'user', content: code }
+                    ]
+                })
+            });
+            if (!response.ok) {
+                throw new Error(`Groq API error: ${response.status} ${response.statusText}`);
+            }
+            const data: any = await response.json();
+            // Return the main content from the first choice
+            return data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : data;
         })
-    });
-    if (!response.ok) {
-        throw new Error(`Groq API error: ${response.status} ${response.statusText}`);
-    }
-    const data: any = await response.json();
-    // Adapt this to match your API's response structure
-    return data.results || data;
+    );
+    return results;
 }
 
 export async function sendGroqRequestBatch() {

@@ -33,6 +33,10 @@ function unlockAchievement(key: string) {
         unlocked[key] = true;
         globalContext.globalState.update('unlockedAchievements', unlocked);
     }
+    // --- Trigger UI update for badges tab ---
+    if ((globalThis as any).updateAchievementsUI) {
+        (globalThis as any).updateAchievementsUI();
+    }
 }
 
 export function initAchievements(context: vscode.ExtensionContext) {

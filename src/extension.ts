@@ -113,12 +113,7 @@ export function activate(context: vscode.ExtensionContext): void {
         let state = {
             xp,
             level,
-            achievements: [
-                { name: 'Green Coder', unlocked: true, icon: '🌱', description: 'Apply 10 eco tips.' },
-                { name: 'Bug Slayer', unlocked: true, icon: '🪲', description: 'Fix 20 bugs.' },
-                { name: 'Efficient Thinker', unlocked: false, icon: '⚡', description: 'Reach 500 XP.' },
-                { name: 'Team Leader', unlocked: false, icon: '👑', description: 'Top leaderboard in classroom mode.' }
-            ],
+            achievements: require('./utils/achievements').getAchievements(),
             xpLog,
             bugReports: [],
             ecoTipsEnabled,
@@ -435,6 +430,14 @@ export function activate(context: vscode.ExtensionContext): void {
     if (classroomStatusBarItem) {
         context.subscriptions.push(classroomStatusBarItem);
     }
+
+    // Add this global function to allow achievements.ts to trigger a UI update
+    (globalThis as any).updateAchievementsUI = function() {
+        if (typeof treeDataProvider?.setState === 'function') {
+            const { getAchievements } = require('./utils/achievements');
+            treeDataProvider.setState({ ...getState(), achievements: getAchievements() });
+        }
+    };
 }
 
 function joinClassroom(code: string) {
