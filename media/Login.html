@@ -83,7 +83,8 @@
       } else {
         localStorage.removeItem('ecodebugger_remember_me');
       }
-      window.location.href = 'index.html';
+      // Redirect to VS Code extension via custom URI
+      window.location.href = `vscode://lucid.ecodebugger/ecodebugger-login?user=${encodeURIComponent(username)}`;
     };
     document.getElementById('signupLink').onclick = function() {
       const username = document.getElementById('username').value.trim();
@@ -102,7 +103,9 @@
       localStorage.setItem('ecodebugger_current_user', username);
       errorDiv.style.color = '#2ecc71';
       errorDiv.textContent = 'Account created! Logging in...';
-      setTimeout(() => { window.location.href = 'index.html'; }, 1000);
+      setTimeout(() => {
+        window.location.href = `vscode://lucid.ecodebugger/ecodebugger-login?user=${encodeURIComponent(username)}`;
+      }, 1000);
     };
   </script>
 </body>

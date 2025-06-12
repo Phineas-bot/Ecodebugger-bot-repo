@@ -286,11 +286,46 @@ export function activate(context: vscode.ExtensionContext): void {
     context.subscriptions.push(statusBarItem);
     updateStatusBar(statusBarItem, xp, level);
     console.log('Congratulations, your extension "Ecodebugger" is now active!');
-    // Register the webview view provider
+
+    // Show login link immediately when extension is activated
+    (async () => {
+        const loginUrl = vscode.Uri.file(path.join(context.extensionPath, 'media', 'login.html'));
+        const action = await vscode.window.showInformationMessage(
+            '🔐 Click here to log in to EcoDebugger.',
+            'Open Login Page'
+        );
+        if (action === 'Open Login Page') {
+            await vscode.env.openExternal(loginUrl);
+            vscode.window.showInformationMessage('After logging in, return to VS Code to continue using EcoDebugger.');
+        }
+    })();
+
+    // Register the webview view provider only once
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider('ecodebuggerView', new EcoDebuggerViewProvider(context))
     );
+    context.subscriptions.push(
+        vscode.commands.registerCommand('ecodebugger.login', async () => {
+            const loginUrl = vscode.Uri.file(path.join(context.extensionPath, 'media', 'login.html'));
+            await vscode.env.openExternal(loginUrl);
+            vscode.window.showInformationMessage('Please complete login in your browser. Return to VS Code when done.');
+        })
+    );
+    context.subscriptions.push(
+        vscode.commands.registerCommand('ecodebugger.showLoginLink', async () => {
+            const loginUrl = vscode.Uri.file(path.join(context.extensionPath, 'media', 'login.html'));
+            const action = await vscode.window.showInformationMessage(
+                '🔐 Click here to log in to EcoDebugger.',
+                'Open Login Page'
+            );
+            if (action === 'Open Login Page') {
+                await vscode.env.openExternal(loginUrl);
+                vscode.window.showInformationMessage('After logging in, return to VS Code to continue using EcoDebugger.');
+            }
+        })
+    );
 }
+
 
 function saveState() {
     if (contextGlobal) {
