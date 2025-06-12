@@ -17,16 +17,28 @@ export function canSendGroqRequest() {
 // To insert the shared API key below. This key will be used for all users usx batch request and restricted acess for fair use .
 const GROQ_API_KEY = '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';
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions'; // to be replace with actual endpoint
-const SYSTEM_PROMPT = `You are an expert eco-coding assistant. Your tasks:
-1. Analyze the code and identify any potential environmental inefficiencies.
-2. Suggest concrete improvements that reduce energy consumption, enhance performance, and promote green software engineering practices.
-3. If no improvements are needed, acknowledge that the code is eco-friendly and efficient.
-4. Format your output as:
-- **Detected Issues**: [list]
-- **Eco Tips**: [list of suggestions]
-- **Estimated CO₂ Impact**
+const SYSTEM_PROMPT = `
+Your tasks:
 
-Be concise, practical, and helpful.`;
+1. Analyze the code and detect any programming practices that are **not environmentally friendly**.
+   
+
+2. Clearly explain each issue found and why it is energy-inefficient.
+
+3. For each issue, propose a **clean, optimized alternative code snippet** that improves the energy efficiency and reduces carbon footprint.
+
+4. Format your response as:
+- **Detected Issues & Explanations**:
+    - Issue 1: ...
+    - Issue 2: ...
+- **Optimized Alternative Code**:
+\`\`\`language
+[replacement code]
+\`\`\`
+- **Estimated waste and what would be saved by fixing**: Estimated CO₂ Impact.
+
+Be very brief, precise, technical, and practical.
+`;
 const GROQ_MODEL = 'llama3-70b-8192'; // You can change this to any supported Groq model
 
 async function realGroqApiCall(codes: string[]): Promise<any[]> {
