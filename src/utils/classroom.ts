@@ -10,7 +10,7 @@ dotenv.config();
 // 4. Example usage for cloud sync is in the ClassroomManager methods (createClassroom, joinClassroom, syncXP, etc).
 // ---
 
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient, Session, User } from '@supabase/supabase-js';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
@@ -58,6 +58,9 @@ const LOCAL_CLASSROOM_FILE = path.join(
     '.ecodebugger_classroom.json'
 );
 
+// --- Supabase Auth integration ---
+// Use Supabase Auth for secure, RLS-protected classroom data
+
 export class ClassroomManager {
     private classroom: ClassroomData | null = null;
     private mode: 'cloud' | 'local';
@@ -65,18 +68,58 @@ export class ClassroomManager {
     private username: string;
     private lastSync: number = 0;
     private syncInterval: NodeJS.Timeout | null = null;
-
+    private supabase: SupabaseClient;
+    private supabaseUser: User | null = null;
     private xpLimits: { [userId: string]: { date: string, xp: number, lastAction: { [key: string]: number } } } = {};
     private static readonly MAX_DAILY_XP = 300;
     private static readonly ACTION_COOLDOWN = 60000; // 1 minute cooldown between same actions
 
-    constructor(userId: string, username: string) {
+    // Use a static async factory for async auth
+    static async createWithAuth(): Promise<ClassroomManager> {
+        if (!supabaseUrl || !supabaseKey) { throw new Error('Supabase credentials missing'); }
+        const supabase = createClient(supabaseUrl as string, supabaseKey as string);
+        let { data: sessionData } = await supabase.auth.getSession();
+        let session = sessionData?.session ?? null;
+        if (!session) {
+            const { data, error } = await supabase.auth.signInWithOAuth({ provider: 'github' });
+            if (error) { throw error; }
+            // Wait for session
+            session = await new Promise<Session | null>((resolve) => {
+                const { data } = supabase.auth.onAuthStateChange((event, session) => {
+                    if (event === 'SIGNED_IN') {
+                        resolve(session);
+                        data.subscription.unsubscribe();
+                    }
+                });
+            });
+        }
+        if (!session || !session.user) { throw new Error('Supabase Auth failed'); }
+        const userId = session.user.id; // Supabase UUID
+        const username = session.user.user_metadata?.user_name || 'Unknown';
+        return new ClassroomManager(userId, username, supabase, session.user);
+    }
+
+    // Make constructor private, use factory
+    private constructor(userId: string, username: string, supabase: SupabaseClient, supabaseUser: User) {
         this.userId = userId;
         this.username = username;
-        // Only use cloud mode if valid Supabase credentials are set
+        this.supabase = supabase;
+        this.supabaseUser = supabaseUser;
         this.mode = (supabaseUrl && supabaseKey) ? 'cloud' : 'local';
         if (this.mode === 'cloud') {
             this.startSync();
+        }
+    }
+
+    // Helper to ensure user is authenticated before any classroom action
+    private async ensureAuth() {
+        if (!this.supabaseUser) {
+            const { data: sessionData } = await this.supabase.auth.getSession();
+            const session = sessionData?.session ?? null;
+            if (!session || !session.user) { throw new Error('Not authenticated'); }
+            this.supabaseUser = session.user;
+            this.userId = session.user.id;
+            this.username = session.user.user_metadata?.user_name || 'Unknown';
         }
     }
 

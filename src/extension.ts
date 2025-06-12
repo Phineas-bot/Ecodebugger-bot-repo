@@ -107,66 +107,16 @@ export function activate(context: vscode.ExtensionContext): void {
 
     // Fetch GitHub username and instantiate ClassroomManager
     (async () => {
-        const userId = vscode.env.machineId;
-        const username = await getGitHubUsername();
-        classroomManager = new ClassroomManager(userId, username);
-        // Register the TreeView sidebar after username is available
-        let state = {
-            xp,
-            level,
-            achievements: require('./utils/achievements').getAchievements(),
-            xpLog,
-            bugReports: [],
-            ecoTipsEnabled,
-            groqAIEnabled,
-            leaderboard: classroomManager?.getLeaderboard() || [],
-            classroom: {
-                code: classroomManager?.getClassroomId() || '',
-                weeklyTop: classroomManager?.getLeaderboard()?.[0]?.username || '',
-            },
-            githubUsername: username
-        };
-        setState = function(newState: any) {
-            // Handle toggles and reset logic
-            if (typeof newState.ecoTipsEnabled === 'boolean' && newState.ecoTipsEnabled !== ecoTipsEnabled) {
-                ecoTipsEnabled = newState.ecoTipsEnabled;
-                vscode.window.showInformationMessage(`Eco Tips ${ecoTipsEnabled ? 'enabled' : 'disabled'}.`);
-            }
-            if (typeof newState.groqAIEnabled === 'boolean' && newState.groqAIEnabled !== groqAIEnabled) {
-                groqAIEnabled = newState.groqAIEnabled;
-                vscode.window.showInformationMessage(`Groq AI ${groqAIEnabled ? 'enabled' : 'disabled'}.`);
-            }
-            let xpChanged = false;
-            if (typeof newState.xp === 'number' && newState.xp !== xp) {
-                xp = newState.xp;
-                xpChanged = true;
-            }
-            if (typeof newState.level === 'number' && newState.level !== level) {
-                level = newState.level;
-                xpChanged = true;
-            }
-            state = { ...state, ...newState, ecoTipsEnabled, groqAIEnabled, bugReports };
-            context.globalState.update('ecodebuggerState', {
+        try {
+            classroomManager = await ClassroomManager.createWithAuth();
+            const username = classroomManager["username"];
+            // Register the TreeView sidebar after username is available
+            let state = {
                 xp,
                 level,
+                achievements: require('./utils/achievements').getAchievements(),
                 xpLog,
-                ecoTipNotifications,
-                ecoTipsEnabled,
-                groqAIEnabled,
-                bugReports
-            });
-            treeDataProvider.setState(getState());
-            if (xpChanged) {
-                updateXPAndTreeView();
-            }
-        };
-        getState = function() {
-            return {
-                ...state,
-                xp,
-                level,
-                xpLog,
-                ecoTipNotifications,
+                bugReports: [],
                 ecoTipsEnabled,
                 groqAIEnabled,
                 leaderboard: classroomManager?.getLeaderboard() || [],
@@ -174,17 +124,70 @@ export function activate(context: vscode.ExtensionContext): void {
                     code: classroomManager?.getClassroomId() || '',
                     weeklyTop: classroomManager?.getLeaderboard()?.[0]?.username || '',
                 },
-                githubUsername: username,
-                bugReports,
-                achievements: require('./utils/achievements').getAchievements(), // Always fetch latest achievements
+                githubUsername: username
             };
-        };
-        treeDataProvider = registerEcoDebuggerTreeView(context, getState, setState);
-        // Make treeDataProvider and getState globally accessible for achievements.ts
-        (globalThis as any).treeDataProvider = treeDataProvider;
-        (globalThis as any).getState = getState;
-        await showGitHubUserInStatusBar();
-        updateClassroomStatusBar();
+            setState = function(newState: any) {
+                // Handle toggles and reset logic
+                if (typeof newState.ecoTipsEnabled === 'boolean' && newState.ecoTipsEnabled !== ecoTipsEnabled) {
+                    ecoTipsEnabled = newState.ecoTipsEnabled;
+                    vscode.window.showInformationMessage(`Eco Tips ${ecoTipsEnabled ? 'enabled' : 'disabled'}.`);
+                }
+                if (typeof newState.groqAIEnabled === 'boolean' && newState.groqAIEnabled !== groqAIEnabled) {
+                    groqAIEnabled = newState.groqAIEnabled;
+                    vscode.window.showInformationMessage(`Groq AI ${groqAIEnabled ? 'enabled' : 'disabled'}.`);
+                }
+                let xpChanged = false;
+                if (typeof newState.xp === 'number' && newState.xp !== xp) {
+                    xp = newState.xp;
+                    xpChanged = true;
+                }
+                if (typeof newState.level === 'number' && newState.level !== level) {
+                    level = newState.level;
+                    xpChanged = true;
+                }
+                state = { ...state, ...newState, ecoTipsEnabled, groqAIEnabled, bugReports };
+                context.globalState.update('ecodebuggerState', {
+                    xp,
+                    level,
+                    xpLog,
+                    ecoTipNotifications,
+                    ecoTipsEnabled,
+                    groqAIEnabled,
+                    bugReports
+                });
+                treeDataProvider.setState(getState());
+                if (xpChanged) {
+                    updateXPAndTreeView();
+                }
+            };
+            getState = function() {
+                return {
+                    ...state,
+                    xp,
+                    level,
+                    xpLog,
+                    ecoTipNotifications,
+                    ecoTipsEnabled,
+                    groqAIEnabled,
+                    leaderboard: classroomManager?.getLeaderboard() || [],
+                    classroom: {
+                        code: classroomManager?.getClassroomId() || '',
+                        weeklyTop: classroomManager?.getLeaderboard()?.[0]?.username || '',
+                    },
+                    githubUsername: username,
+                    bugReports,
+                    achievements: require('./utils/achievements').getAchievements(), // Always fetch latest achievements
+                };
+            };
+            treeDataProvider = registerEcoDebuggerTreeView(context, getState, setState);
+            // Make treeDataProvider and getState globally accessible for achievements.ts
+            (globalThis as any).treeDataProvider = treeDataProvider;
+            (globalThis as any).getState = getState;
+            await showGitHubUserInStatusBar();
+            updateClassroomStatusBar();
+        } catch (err) {
+            vscode.window.showErrorMessage('Supabase Auth failed: ' + String(err));
+        }
     })();
 
     // Add classroom commands
