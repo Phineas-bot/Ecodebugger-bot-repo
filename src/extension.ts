@@ -359,7 +359,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
     // Pass context to awardXP for persistence
     function awardXP(type: 'bug' | 'ecoTip') {
-        let xpAwarded = type === 'bug' ? 10 : 5;
+        let xpAwarded = type === 'bug' ? 10 : 10; // Changed ecoTip XP from 5 to 10
         if (classroomManager && classroomManager.getClassroomId()) {
             const userId = classroomManager["userId"];
             const user = classroomManager.getLeaderboard().find(u => u.user_id === userId);
