@@ -1,5 +1,6 @@
 {
   "name": "ecodebugger",
+  "publisher": "ian",
   "displayName": "EcoDebugger",
   "description": "A gamified extension for debugging with eco coding tips.",
   "version": "0.0.1",

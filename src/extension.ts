@@ -22,6 +22,7 @@ let classroom = {
 };
 let ecoTipsEnabled = true;
 let groqAIEnabled = true;
+let loggedInUser: string | undefined = undefined;
 
 function updateSettings(newSettings: { ecoTipsEnabled?: boolean, groqAIEnabled?: boolean }) {
     if (typeof newSettings.ecoTipsEnabled === 'boolean') {
@@ -103,7 +104,8 @@ class EcoDebuggerViewProvider implements vscode.WebviewViewProvider {
             leaderboard: classroom.leaderboard,
             classroom,
             ecoTipsEnabled,
-            groqAIEnabled
+            groqAIEnabled,
+            loggedInUser
         };
 
         webviewView.webview.html = getWebviewContent(state, webviewView.webview, this.context.extensionPath);
@@ -201,7 +203,8 @@ function updateEcoDebuggerWebview() {
             leaderboard: classroom.leaderboard,
             classroom,
             ecoTipsEnabled,
-            groqAIEnabled
+            groqAIEnabled,
+            loggedInUser // Pass username to webview
         };
         ecoDebuggerWebviewView.webview.postMessage({ command: 'updateXP', state });
     }
@@ -324,6 +327,22 @@ export function activate(context: vscode.ExtensionContext): void {
             }
         })
     );
+    context.subscriptions.push(
+        vscode.window.registerUriHandler({
+            handleUri(uri: vscode.Uri) {
+                // Parse username from URI
+                const params = new URLSearchParams(uri.query);
+                const user = params.get('user');
+                if (user) {
+                    loggedInUser = user;
+                    vscode.window.showInformationMessage(`Logged in as ${user}`);
+                    updateEcoDebuggerWebview();
+                } else {
+                    vscode.window.showErrorMessage('Login failed: No user found in URI.');
+                }
+            }
+        })
+    );
 }
 
 
@@ -417,6 +436,9 @@ function getWebviewContent(state: any, webview: vscode.Webview, extensionPath: s
         </style>
         <body>
             <div class="container">
+                <div style="text-align:right; margin-bottom:0.5rem; color:#2ecc71; font-weight:bold;">
+                    Logged in as ${state.loggedInUser || 'Not logged in'}
+                </div>
                 <div class="tabs">
                     <div class="tab active" id="tab-xp">XP/Level</div>
                     <div class="tab" id="tab-badges">Badges Earned</div>
