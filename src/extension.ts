@@ -89,6 +89,7 @@ let setState: (s: any) => void;
 let getState: () => any;
 
 export function activate(context: vscode.ExtensionContext): void {
+    (globalThis as any).vscodeExtensionContext = context;
     // Restore state from globalState if available
     const saved = context.globalState.get('ecodebuggerState') as any;
     if (saved) {

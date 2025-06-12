@@ -54,11 +54,12 @@ export function initAchievements(context: vscode.ExtensionContext) {
     }
 }
 
-export function trackEcoTip() {
+export function trackEcoTip(xp: number = 0, level: number = 1, leaderboardTop: boolean = false) {
     ecoTipsApplied++;
     if (!achievements['Green Coder'] && ecoTipsApplied >= 10) {
         unlockAchievement('Green Coder');
     }
+    checkAchievements(xp, level, leaderboardTop);
 }
 
 export function trackBugDetection(fileUri: string, bugDescription: string) {
@@ -66,7 +67,7 @@ export function trackBugDetection(fileUri: string, bugDescription: string) {
     bugDetectionTimestamps.set(`${fileUri}:${bugDescription}`, Date.now());
 }
 
-export function trackBugFix(fileUri: string, bugDescription: string) {
+export function trackBugFix(fileUri: string, bugDescription: string, xp: number = 0, level: number = 1, leaderboardTop: boolean = false) {
     // Call this when a bug is fixed
     const key = `${fileUri}:${bugDescription}`;
     const detectedAt = bugDetectionTimestamps.get(key);
@@ -80,6 +81,7 @@ export function trackBugFix(fileUri: string, bugDescription: string) {
     if (!achievements['Bug Slayer'] && bugsFixed >= 20) {
         unlockAchievement('Bug Slayer');
     }
+    checkAchievements(xp, level, leaderboardTop);
 }
 
 export function checkAchievements(xp: number, level: number, leaderboardTop = false): void {

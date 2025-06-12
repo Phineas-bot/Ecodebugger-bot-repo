@@ -262,19 +262,25 @@ export function registerEcoDebuggerTreeView(context: vscode.ExtensionContext, ge
                     editBuilder.insert(editor.selection.active, code);
                 }
             });
-            // Award XP for applying eco tip via sidebar
-            if (typeof (globalThis as any).awardXP === 'function') {
-                (globalThis as any).awardXP('ecoTip');
-            } else if (typeof require !== 'undefined') {
-                // fallback: try to get awardXP from extension
-                try {
-                    const ext = require('../extension');
-                    if (typeof ext.awardXP === 'function') {
-                        ext.awardXP('ecoTip');
-                    }
-                } catch {}
+            // Prevent duplicate XP for the same eco tip
+            const context = (globalThis as any).vscodeExtensionContext;
+            let awardedEcoTips: string[] = [];
+            if (context) {
+                awardedEcoTips = context.globalState.get('awardedEcoTips', []);
             }
-            vscode.window.showInformationMessage('Eco tip code inserted into editor!');
+            const tipKey = tip.trim();
+            if (awardedEcoTips.includes(tipKey)) {
+                vscode.window.showInformationMessage('XP for this eco tip was already awarded.');
+            } else {
+                if (typeof (globalThis as any).awardXP === 'function') {
+                    (globalThis as any).awardXP('ecoTip');
+                }
+                if (context) {
+                    awardedEcoTips.push(tipKey);
+                    context.globalState.update('awardedEcoTips', awardedEcoTips);
+                }
+                vscode.window.showInformationMessage('Eco tip code inserted into editor!');
+            }
         })
     );
 

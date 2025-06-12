@@ -67,6 +67,21 @@ async function analyzePythonGreenCode(text, returnTips) {
                 if (result.unreachable_code) {
                     ecoTips.push('Remove unreachable code after return/break/continue.');
                 }
+                if (result.unused_imports && result.unused_imports.length > 0) {
+                    ecoTips.push(`Remove unused imports (${result.unused_imports.join(', ')}) in Python code.`);
+                }
+                if (result.infinite_loops) {
+                    ecoTips.push('Avoid infinite loops (while True) unless absolutely necessary.');
+                }
+                if (result.shadowed_variables && result.shadowed_variables.length > 0) {
+                    ecoTips.push(`Avoid shadowing variables (${result.shadowed_variables.join(', ')}).`);
+                }
+                if (result.used_before_assignment && result.used_before_assignment.length > 0) {
+                    ecoTips.push(`Variables used before assignment: ${result.used_before_assignment.join(', ')}.`);
+                }
+                if (result.deprecated_functions && result.deprecated_functions.length > 0) {
+                    ecoTips.push(`Avoid deprecated functions: ${result.deprecated_functions.join(', ')}.`);
+                }
             }
             catch (e) {
                 vscode.window.showErrorMessage('Failed to parse Python analysis result.');

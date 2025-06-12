@@ -305,6 +305,16 @@ export class ClassroomManager {
             }
         }
         this.classroom.last_updated = new Date().toISOString();
+        // --- Check achievements after leaderboard update ---
+        try {
+            const { checkAchievements } = require('./achievements');
+            // Find current user and check if they are at the top
+            const leaderboard = this.getLeaderboard();
+            const userIdx = leaderboard.findIndex(u => u.user_id === this.userId);
+            const user = leaderboard[userIdx];
+            const leaderboardTop = userIdx === 0;
+            checkAchievements(user?.xp || 0, 1, leaderboardTop);
+        } catch (e) { /* ignore */ }
     }
 
     private addNotification(message: string) {
