@@ -72,9 +72,24 @@ export class EcoDebuggerTreeDataProvider implements vscode.TreeDataProvider<EcoD
             case 'ecoTips':
                 // Show all eco tip notifications
                 return Promise.resolve(
-                    (this.state.ecoTipNotifications || []).map((tip: string) =>
-                        new EcoDebuggerTreeItem(tip, vscode.TreeItemCollapsibleState.None, undefined, undefined, new vscode.ThemeIcon('lightbulb'))
-                    )
+                    (this.state.ecoTipNotifications || []).map((tip: string, idx: number) => {
+                        // Use the first line as label, rest as description if multi-line
+                        const lines = String(tip).split(/\r?\n/);
+                        const label = lines[0].length > 60 ? lines[0].slice(0, 60) + '...' : lines[0];
+                        const description = lines.slice(1).join(' ').trim() || undefined;
+                        return new EcoDebuggerTreeItem(
+                            label,
+                            vscode.TreeItemCollapsibleState.None,
+                            'ecoTip',
+                            description,
+                            new vscode.ThemeIcon('lightbulb'),
+                            {
+                                command: 'ecodebugger.showEcoTip',
+                                title: 'Show Full Eco Tip',
+                                arguments: [tip]
+                            }
+                        );
+                    })
                 );
             case 'bugReports':
                 return Promise.resolve(
@@ -202,6 +217,11 @@ export function registerEcoDebuggerTreeView(context: vscode.ExtensionContext, ge
     context.subscriptions.push(
         vscode.commands.registerCommand('ecodebugger.showBadgeInfo', (item: EcoDebuggerTreeItem) => {
             vscode.window.showInformationMessage(item.description || 'No description');
+        })
+    );
+    context.subscriptions.push(
+        vscode.commands.registerCommand('ecodebugger.showEcoTip', (tip: string) => {
+            vscode.window.showInformationMessage(tip, { modal: true });
         })
     );
 

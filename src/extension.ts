@@ -325,13 +325,21 @@ export function activate(context: vscode.ExtensionContext): void {
                 try {
                     const { queueGroqRequest } = require('./utils/groqApi');
                     const aiResult = await queueGroqRequest(document.getText());
-                    // Assume aiResult.ecoTips is an array of tips
+                    // Accept both array and string results for eco tips
                     if (aiResult && Array.isArray(aiResult.ecoTips)) {
                         aiResult.ecoTips.forEach((tip: string) => {
                             if (!ecoTipNotifications.includes(tip)) {
                                 ecoTipNotifications.push(tip);
                             }
                         });
+                    } else if (aiResult && typeof aiResult === 'string') {
+                        if (!ecoTipNotifications.includes(aiResult)) {
+                            ecoTipNotifications.push(aiResult);
+                        }
+                    }
+                    // Always update the TreeView after adding tips
+                    if (treeDataProvider && typeof treeDataProvider.setState === 'function') {
+                        treeDataProvider.setState(getState());
                     }
                     const aiMsg = aiResult && aiResult.explanation ? aiResult.explanation : JSON.stringify(aiResult);
                     vscode.window.showInformationMessage('AI analysis: ' + aiMsg);
@@ -340,6 +348,9 @@ export function activate(context: vscode.ExtensionContext): void {
                     vscode.window.showWarningMessage(errorMsg);
                     if (!ecoTipNotifications.includes(errorMsg)) {
                         ecoTipNotifications.push(errorMsg);
+                    }
+                    if (treeDataProvider && typeof treeDataProvider.setState === 'function') {
+                        treeDataProvider.setState(getState());
                     }
                 }
             }
