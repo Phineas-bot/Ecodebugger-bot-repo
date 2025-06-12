@@ -77,18 +77,38 @@ export class EcoDebuggerTreeDataProvider implements vscode.TreeDataProvider<EcoD
                         const lines = String(tip).split(/\r?\n/);
                         const label = lines[0].length > 60 ? lines[0].slice(0, 60) + '...' : lines[0];
                         const description = lines.slice(1).join(' ').trim() || undefined;
-                        return new EcoDebuggerTreeItem(
-                            label,
-                            vscode.TreeItemCollapsibleState.None,
-                            'ecoTip',
-                            description,
-                            new vscode.ThemeIcon('lightbulb'),
-                            {
-                                command: 'ecodebugger.showEcoTip',
-                                title: 'Show Full Eco Tip',
-                                arguments: [tip]
-                            }
-                        );
+                        // Detect code block (markdown style)
+                        const codeBlockMatch = tip.match(/```[a-zA-Z]*\n([\s\S]*?)```/);
+                        const hasCode = !!codeBlockMatch;
+                        const codeSnippet = hasCode ? codeBlockMatch[1] : undefined;
+                        // If code, add a special command for replacement
+                        if (hasCode) {
+                            return new EcoDebuggerTreeItem(
+                                label,
+                                vscode.TreeItemCollapsibleState.None,
+                                'ecoTip',
+                                description,
+                                new vscode.ThemeIcon('lightbulb'),
+                                {
+                                    command: 'ecodebugger.replaceEcoTipCode',
+                                    title: 'Replace Code in Editor',
+                                    arguments: [codeSnippet, tip]
+                                }
+                            );
+                        } else {
+                            return new EcoDebuggerTreeItem(
+                                label,
+                                vscode.TreeItemCollapsibleState.None,
+                                'ecoTip',
+                                description,
+                                new vscode.ThemeIcon('lightbulb'),
+                                {
+                                    command: 'ecodebugger.showEcoTip',
+                                    title: 'Show Full Eco Tip',
+                                    arguments: [tip]
+                                }
+                            );
+                        }
                     })
                 );
             case 'bugReports':
@@ -222,6 +242,39 @@ export function registerEcoDebuggerTreeView(context: vscode.ExtensionContext, ge
     context.subscriptions.push(
         vscode.commands.registerCommand('ecodebugger.showEcoTip', (tip: string) => {
             vscode.window.showInformationMessage(tip, { modal: true });
+        })
+    );
+    context.subscriptions.push(
+        vscode.commands.registerCommand('ecodebugger.replaceEcoTipCode', async (code: string, tip: string) => {
+            if (!code) {
+                vscode.window.showWarningMessage('No code snippet found in this eco tip.');
+                return;
+            }
+            const editor = vscode.window.activeTextEditor;
+            if (!editor) {
+                vscode.window.showWarningMessage('No active editor to insert code.');
+                return;
+            }
+            await editor.edit(editBuilder => {
+                if (editor.selection && !editor.selection.isEmpty) {
+                    editBuilder.replace(editor.selection, code);
+                } else {
+                    editBuilder.insert(editor.selection.active, code);
+                }
+            });
+            // Award XP for applying eco tip via sidebar
+            if (typeof (globalThis as any).awardXP === 'function') {
+                (globalThis as any).awardXP('ecoTip');
+            } else if (typeof require !== 'undefined') {
+                // fallback: try to get awardXP from extension
+                try {
+                    const ext = require('../extension');
+                    if (typeof ext.awardXP === 'function') {
+                        ext.awardXP('ecoTip');
+                    }
+                } catch {}
+            }
+            vscode.window.showInformationMessage('Eco tip code inserted into editor!');
         })
     );
 

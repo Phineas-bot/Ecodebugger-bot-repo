@@ -407,6 +407,8 @@ export function activate(context: vscode.ExtensionContext): void {
             });
         }
     }
+    // Make awardXP globally accessible for sidebar/TreeView commands
+    (globalThis as any).awardXP = awardXP;
 
     async function joinClassroom(code: string) {
         if (classroomManager && await classroomManager.joinClassroom(code)) {
