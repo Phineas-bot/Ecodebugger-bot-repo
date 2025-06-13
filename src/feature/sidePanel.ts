@@ -44,6 +44,17 @@ export class EcoDebuggerTreeDataProvider implements vscode.TreeDataProvider<EcoD
 
     getChildren(element?: EcoDebuggerTreeItem): Thenable<EcoDebuggerTreeItem[]> {
         if (!element) {
+            if (this.state.error) {
+                return Promise.resolve([
+                    new EcoDebuggerTreeItem(
+                        this.state.error,
+                        vscode.TreeItemCollapsibleState.None,
+                        'error',
+                        undefined,
+                        new vscode.ThemeIcon('error')
+                    )
+                ]);
+            }
             return Promise.resolve([
                 new EcoDebuggerTreeItem('XP/Level', vscode.TreeItemCollapsibleState.Collapsed, 'xpLevel', undefined, new vscode.ThemeIcon('star')), // icon
                 new EcoDebuggerTreeItem('Badges', vscode.TreeItemCollapsibleState.Collapsed, 'badges', undefined, new vscode.ThemeIcon('trophy')), // icon

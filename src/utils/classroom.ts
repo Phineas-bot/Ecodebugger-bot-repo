@@ -1,5 +1,6 @@
-import * as dotenv from 'dotenv';
-dotenv.config();
+// HARDCODED Supabase configuration for EcoDebugger
+const supabaseUrl = 'https://phqimgicyicousyexkcv.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBocWltZ2ljeWljb3VzeWV4a2N2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk3Njk2MTcsImV4cCI6MjA2NTM0NTYxN30.9BkF-b1bDJUx_GawlY_pvTEycQ3ZXMu50pHDf_fRs0U';
 
 // ClassroomManager for EcoDebugger Classroom Mode
 // ---
@@ -16,8 +17,6 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 
 // Supabase setup (replace with your project URL and anon key)
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY;
 const supabase = (supabaseUrl && supabaseKey) ? createClient(supabaseUrl, supabaseKey) : undefined;
 
 export type ClassroomUser = {
