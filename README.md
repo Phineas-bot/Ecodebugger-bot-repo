@@ -87,21 +87,21 @@ We used Scrum to make Eco-Debugger step-by-step, fixing issues fast while balanc
 ### Team Organization
 We organized our team by giving everyone clear task, meeting daily to stay on track, and combining our different skills to create Eco-Debugger's coding tools and game features. Three team of two per task to bring Eco-Debugger to life as seen below.
 -	Team A (XP Engine)
---	Built XP (Experience Points) engine that gives XP when bugs are fixed.
---	Later integrated GroqAI when basic pattern matching proved insufficient for multi-language support
---	Handled authentication (switched from Firebase to Supabase and GitHub authentication support for better integration.)
+ -	Built XP (Experience Points) engine that gives XP when bugs are fixed.
+ -	Later integrated GroqAI when basic pattern matching proved insufficient for multi-language support
+ -	Handled authentication (switched from Firebase to Supabase and GitHub authentication support for better integration.)
  	
 -	Team B (Eco-Tips)
---	Worked on XP Engine as well.
--- Developed an Eco-Tip engine that scans Python and JS/TS code for beginner mistakes that waste resources. 
---	Implemented non-intrusive side-panel notifications. That is, displays popup side notifications with XP and Eco-tips
+ -	Worked on XP Engine as well.
+ - Developed an Eco-Tip engine that scans Python and JS/TS code for beginner mistakes that waste resources. 
+ -	Implemented non-intrusive side-panel notifications. That is, displays popup side notifications with XP and Eco-tips
 -	Team C (UI)
---	Initially developed an HTML webview interface but faced difficulties connecting to backend.
---	Pivoted to TreeView with Scrum Master’s guidance.
--- Refined the badges Tab for effective unlocking of achievements.
+ -	Initially developed an HTML webview interface but faced difficulties connecting to backend.
+ -	Pivoted to TreeView with Scrum Master’s guidance.
+ - Refined the badges Tab for effective unlocking of achievements.
  	
 -	Adapted Structure
---	Later merged into a unified team after recognizing integration bottlenecks.
+ -	Later merged into a unified team after recognizing integration bottlenecks.
 
 ### Workflow Management 
 We broke the work into small chunks, met daily to stay on track, and improved our process along the way.
