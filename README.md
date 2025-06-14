@@ -83,27 +83,27 @@ This system is designed as a multi-layered architecture that integrates seamless
 
 ### Materials and Technologies Used
 Core Languages
-	TypeScript: Primary language for the extension, ensuring type safety and reduced runtime errors.
-	JavaScript: Used for client-side debugging and VS Code environment integration.
-	Python: For backend energy profiling (analyzing code efficiency).
+-	TypeScript: Primary language for the extension, ensuring type safety and reduced runtime errors.
+-	JavaScript: Used for client-side debugging and VS Code environment integration.
+-	Python: For backend energy profiling (analyzing code efficiency).
 Frameworks & Platforms
-	Node.js: Backend runtime for gamification logic, bug fixes, and energy calculations.
-	VS Code Extension API: Provides execution environment and UI integration (WebView, commands).
-	Supabase: Cloud database for leaderboards, user achievements, and auth (replaced Firebase).
+-	Node.js: Backend runtime for gamification logic, bug fixes, and energy calculations.
+-	VS Code Extension API: Provides execution environment and UI integration (WebView, commands).
+-	Supabase: Cloud database for leaderboards, user achievements, and auth (replaced Firebase).
 Development Tools
-	Git/GitHub: Version control and collaborative development.
-	Webpack: Bundles TypeScript/JavaScript into optimized VS Code extension files.
-	ESLint + Pylint: Static analysis for JavaScript/TypeScript (ESLint) and Python (Pylint) to enforce code quality.
-	Prettier: Automated code formatting for consistency.
+-	Git/GitHub: Version control and collaborative development.
+-	Webpack: Bundles TypeScript/JavaScript into optimized VS Code extension files.
+-	ESLint + Pylint: Static analysis for JavaScript/TypeScript (ESLint) and Python (Pylint) to enforce code quality.
+-	Prettier: Automated code formatting for consistency.
 UI & Visualization
-	VS Code WebView API: Renders interactive dashboards/leaderboards within the IDE.
-	HTML/CSS: Styled to match VS Code’s native UI while providing eco-feedback.
+-	VS Code WebView API: Renders interactive dashboards/leaderboards within the IDE.
+-	HTML/CSS: Styled to match VS Code’s native UI while providing eco-feedback.
 Data & Storage
-	Supabase: Stores user profiles, XP, achievements, and leaderboards (PostgreSQL-based).
-	SQLite/Local JSON: Lightweight storage for offline/cached data (e.g., recent eco-tips).
+-	Supabase: Stores user profiles, XP, achievements, and leaderboards (PostgreSQL-based).
+-	SQLite/Local JSON: Lightweight storage for offline/cached data (e.g., recent eco-tips).
 Collaboration & Docs
-	VS Code Live Share: Real-time collaborative debugging and pair programming.
-	Markdown/PDF: Project documentation (READMEs, architecture decisions, user guides).
+-	VS Code Live Share: Real-time collaborative debugging and pair programming.
+-	Markdown/PDF: Project documentation (READMEs, architecture decisions, user guides).
 
 
 
