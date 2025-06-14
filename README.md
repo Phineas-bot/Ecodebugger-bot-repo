@@ -115,3 +115,11 @@ Collaboration & Docs
 ## RESULTS AND DISCUSSIONS
 
 ## RECOMENDATIONS AND CONCLUSION
+
+Eco-Debugger successfully delivered a gamified VS Code extension that educates developers on energy-efficient coding while making debugging engaging. Key achievements include: 
+o	real-time eco-tip engine with about 95% bug detection accuracy after GroqAI integration, 
+o	a functional XP/leaderboard system that increased user engagement in classroom tests, and 
+o	seamless GitHub authentication replacing earlier Firebase/Supabase complexities. 
+The project demonstrated how Scrum’s iterative approach enabled critical pivots—like switching from Webview to TreeView, while maintaining development velocity.
+Challenges such as cross-language analysis gaps and team coordination hurdles were overcome through spike solutions (e.g., AI integration) and daily standups. However, limitations remain, ……
+
