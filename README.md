@@ -75,7 +75,69 @@ We adopted the Agile Scrum methodology for iterative development, with developme
 
 
 ### System Requirements
-Eco-Debugger’s system requirements prioritizes both functionality (real-time code analysis, gamified feedback) and sustainability, ensuring the VS Code extension delivers an engaging, energy-conscious debugging experience without compromising developer productivity. Functional requirements include bug detection, XP rewards, and CO₂ emission estimates, while non-functional requirements enforce responsiveness, and minimal resource usage.
+Eco-Debugger’s system requirements prioritizes both functionality (real-time code analysis, gamified feedback) and sustainability, ensuring the VS Code extension delivers an engaging, energy-conscious debugging experience without compromising developer productivity. 
+
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+-	Automatically detects fixed bugs or code changes on. 
+-	Analysis source code per eco efficiency.
+  
+Eco-tip generation (AI integrated)
+-	Sends code to AI API per analysis.
+-	Reviews eco-friendly suggestions.
+-	Displays personalized eco-tips per file or code block.
+  
+XP and leveling system
+-	Rewards XP for fixing bugs and applying eco-tips.
+-	Tracks XP’s and levels.
+-	Awards badges like “Green coder”,” bug slayer” etc
+  
+User authentication
+-	Authenticates users via GitHub Authentication.
+-	Stores user profiles and progress in Superbase.
+  
+Leaderboard (Classroom mode)
+-	Displays top contributors (XP based).
+-	Supports competition among students or team members.
+  
+Code linting and Eco parsing
+-	Flags code with high CO2 estimates.
+-	Integrated with ESLint (JS/TS), Pylint, AST (python) per code quality and eco warning.
+  
+Extension settings
+-	Enable and disable XP systems and eco-tips
+-	 Configure API keys and GitHub integration.
+
+Non-Functional Requirements
+
+Performance 
+-	Lightweight for fast coding and saving.
+-	Code analysis and tip integration must return in seconds (2 – 3 seconds).  
+Scalability 
+-	Scale for individual users and classroom environments (that is many users)
+-	Future potential integration into enterprise development teams.
+
+Security 
+-	GitHub Authentication.
+-	API tokens encrypted.
+-	Data in Supabase must be access controlled (RLS enabled).
+  
+Reliability
+-	Must work well consistently across VS code extension.
+- Tips and XPs must not be cost due to reload or network failure.
+  
+Maintainability
+-	Code base has clear modular architecture.
+-	Uses consistent formatting and typescript typing.
+  
+Portability
+-	Works on windows, macOS, and very compatible with newer versions of VS code.
+Usability 
+-	Simple pop-up tooltid for eco-tips.
+-	User friendly and engaging UI
+-	Easy GitHub login.
+-	Settings available via panel.
 
 
 ## System Design
