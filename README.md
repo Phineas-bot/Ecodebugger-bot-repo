@@ -81,6 +81,53 @@ Eco-Debugger’s system requirements prioritizes both functionality (real-time c
 ## System Design
 This system is designed as a multi-layered architecture that integrates seamlessly with Visual Studio Code (VS Code) while providing real-time feedback on code efficiency and environmental impact. The architecture follows a model where the VS Code extension interacts with backend analysis tools and gamification services to deliver a responsive and engaging user experience. 
 
+## Application of Scrum
+We used Scrum to make Eco-Debugger step-by-step, fixing issues fast while balancing eco-coding and gamification.
+
+### Team Organization
+We organized our team by giving everyone clear task, meeting daily to stay on track, and combining our different skills to create Eco-Debugger's coding tools and game features. Three team of two per task to bring Eco-Debugger to life as seen below.
+-	Team A (XP Engine)
+--	Built XP (Experience Points) engine that gives XP when bugs are fixed.
+--	Later integrated GroqAI when basic pattern matching proved insufficient for multi-language support
+--	Handled authentication (switched from Firebase to Supabase and GitHub authentication support for better integration.)
+ 	
+-	Team B (Eco-Tips)
+--	Worked on XP Engine as well.
+-- Developed an Eco-Tip engine that scans Python and JS/TS code for beginner mistakes that waste resources. 
+--	Implemented non-intrusive side-panel notifications. That is, displays popup side notifications with XP and Eco-tips
+-	Team C (UI)
+--	Initially developed an HTML webview interface but faced difficulties connecting to backend.
+--	Pivoted to TreeView with Scrum Master’s guidance.
+-- Refined the badges Tab for effective unlocking of achievements.
+ 	
+-	Adapted Structure
+--	Later merged into a unified team after recognizing integration bottlenecks.
+
+### Workflow Management 
+We broke the work into small chunks, met daily to stay on track, and improved our process along the way.
+
+#### Core Process: 
+Strict 1–2-week sprints with Daily Zoom and google meet standups (even during merges) for quick and effective work.
+Key Pivots:
+
+-	UI Change: Changed from Webview to TreeView.
+-	Auth Simplification: From Firebase to Supabase then GitHub Auth
+-	AI Boost: Added GroqAI.
+
+### Conflict Resolution
+We solved conflicts through open discussions, finding middle ground, and letting test results guide tough decisions.
+
+### Challenges encountered and how it was overcome
+Some challenges were encountered through out the system’s realization and the following points will explain these problems and how they were overcome.
+- Challenge 1: Webview Integration Failures
+After developing the webview interface, we ran some testing (led by Scrum Master) and discovered difficulties were faced in connecting it to the backend. So we had to switch to  TreeView which was easier to connect to the backend. This change saved helped a lot for the realization of this system.
+- Challenge 2: Cross-Language Analysis Gaps
+Our initial rule-based system only analyzed and caught about 60% of issues. Worked on integrating an AI (GroqAI) which boosted coverage to about 95%.
+- Challenge 3: Team Merge Friction
+Realized that after separating the task into teams, productivity and corresponding yields were not enough and were not the right ones. Hence, we solved this by combining all teams and having daily google meet and zoom meetings to work in a synchronized way. 
+- Challenge 4: Auth System 
+Using firebase for data storage, it was not efficient enough for our system so we decided to switch to Supabase. A login page was created but faced difficulties deploying it and connecting to system so we simplified to GitHub Auth.
+
 ### Materials and Technologies Used
 Core Languages
 -	TypeScript: Primary language for the extension, ensuring type safety and reduced runtime errors.
