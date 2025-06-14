@@ -82,15 +82,29 @@ Eco-Debugger’s system requirements prioritizes both functionality (real-time c
 This system is designed as a multi-layered architecture that integrates seamlessly with Visual Studio Code (VS Code) while providing real-time feedback on code efficiency and environmental impact. The architecture follows a model where the VS Code extension interacts with backend analysis tools and gamification services to deliver a responsive and engaging user experience. 
 
 ### Materials and Technologies Used
-The EcoDebugger extension is built using TypeScript as its primary language, leveraging  JavaScript programming methodologies and modern static typing features to enhance code reliability and prevent runtime bugs. The client-side debugging and code analysis functionalities are implemented in JavaScript, taking full advantage of VS Code's execution environment for real-time code analysis. The backend logic runs on Node.js, providing a robust runtime environment for energy profiling calculations,fixing bugs and gamification services.
+Core Languages
+	TypeScript: Primary language for the extension, ensuring type safety and reduced runtime errors.
+	JavaScript: Used for client-side debugging and VS Code environment integration.
+	Python: For backend energy profiling (analyzing code efficiency).
+Frameworks & Platforms
+	Node.js: Backend runtime for gamification logic, bug fixes, and energy calculations.
+	VS Code Extension API: Provides execution environment and UI integration (WebView, commands).
+	Supabase: Cloud database for leaderboards, user achievements, and auth (replaced Firebase).
+Development Tools
+	Git/GitHub: Version control and collaborative development.
+	Webpack: Bundles TypeScript/JavaScript into optimized VS Code extension files.
+	ESLint + Pylint: Static analysis for JavaScript/TypeScript (ESLint) and Python (Pylint) to enforce code quality.
+	Prettier: Automated code formatting for consistency.
+UI & Visualization
+	VS Code WebView API: Renders interactive dashboards/leaderboards within the IDE.
+	HTML/CSS: Styled to match VS Code’s native UI while providing eco-feedback.
+Data & Storage
+	Supabase: Stores user profiles, XP, achievements, and leaderboards (PostgreSQL-based).
+	SQLite/Local JSON: Lightweight storage for offline/cached data (e.g., recent eco-tips).
+Collaboration & Docs
+	VS Code Live Share: Real-time collaborative debugging and pair programming.
+	Markdown/PDF: Project documentation (READMEs, architecture decisions, user guides).
 
-For version control and collaborative development, we utilize Git/GitHub, enabling seamless team coordination and continuous integration. The user interface is developed using VS Code's Webview API, which allows us to implement modern, interactive dashboards/leaderboards within the extension. These dashboards/leaderboards are built with HTML and CSS, styled to match VS Code's native theming system while providing enhanced visual feedback about code efficiency.
-
-The codebase employs Webpack as its module bundler, efficiently packaging our complex TypeScript architecture into optimized deployment bundles. This ensures smooth publishing to the VS Code Marketplace while maintaining excellent performance characteristics. For code quality assurance, we integrate ESLint with Prettier to enforce consistent formatting, linting and  catch potential bugs during development.
-We also used Live Share extension to facilitates real-time collaborative meetings and debugging sessions among team members.
-
-Data persistence is handled through a hybrid storage approach: Firebase serves as our cloud database for leaderboard data and user achievements, while SQLite/local JSON databases to manage data. 
-The project documentation is written in Markdown for .md files and pdf too. 
 
 
 ## RESULTS AND DISCUSSIONS
