@@ -89,6 +89,7 @@ let setState: (s: any) => void;
 let getState: () => any;
 
 export function activate(context: vscode.ExtensionContext): void {
+    (globalThis as any).vscodeExtensionContext = context;
     // Restore state from globalState if available
     const saved = context.globalState.get('ecodebuggerState') as any;
     if (saved) {
@@ -113,12 +114,7 @@ export function activate(context: vscode.ExtensionContext): void {
         let state = {
             xp,
             level,
-            achievements: [
-                { name: 'Green Coder', unlocked: true, icon: '🌱', description: 'Apply 10 eco tips.' },
-                { name: 'Bug Slayer', unlocked: true, icon: '🪲', description: 'Fix 20 bugs.' },
-                { name: 'Efficient Thinker', unlocked: false, icon: '⚡', description: 'Reach 500 XP.' },
-                { name: 'Team Leader', unlocked: false, icon: '👑', description: 'Top leaderboard in classroom mode.' }
-            ],
+            achievements: require('./utils/achievements').getAchievements(),
             xpLog,
             bugReports: [],
             ecoTipsEnabled,
@@ -140,30 +136,29 @@ export function activate(context: vscode.ExtensionContext): void {
                 groqAIEnabled = newState.groqAIEnabled;
                 vscode.window.showInformationMessage(`Groq AI ${groqAIEnabled ? 'enabled' : 'disabled'}.`);
             }
-            if (newState.xp === 0 && newState.level === 1) {
-                xp = 0;
-                level = 1;
-                xpLog = [];
-                ecoTipNotifications = [];
-                // Optionally reset achievements (if tracked in state)
-                if (typeof newState.achievements !== 'undefined') {
-                    // If using a module-level achievements object, reset it here
-                    if (require('./utils/achievements').resetAchievements) {
-                        require('./utils/achievements').resetAchievements();
-                    }
-                }
-                vscode.window.showInformationMessage('XP, achievements, and eco tips log have been reset.');
+            let xpChanged = false;
+            if (typeof newState.xp === 'number' && newState.xp !== xp) {
+                xp = newState.xp;
+                xpChanged = true;
             }
-            state = { ...state, ...newState, ecoTipsEnabled, groqAIEnabled };
+            if (typeof newState.level === 'number' && newState.level !== level) {
+                level = newState.level;
+                xpChanged = true;
+            }
+            state = { ...state, ...newState, ecoTipsEnabled, groqAIEnabled, bugReports };
             context.globalState.update('ecodebuggerState', {
                 xp,
                 level,
                 xpLog,
                 ecoTipNotifications,
                 ecoTipsEnabled,
-                groqAIEnabled
+                groqAIEnabled,
+                bugReports
             });
             treeDataProvider.setState(getState());
+            if (xpChanged) {
+                updateXPAndTreeView();
+            }
         };
         getState = function() {
             return {
@@ -179,10 +174,15 @@ export function activate(context: vscode.ExtensionContext): void {
                     code: classroomManager?.getClassroomId() || '',
                     weeklyTop: classroomManager?.getLeaderboard()?.[0]?.username || '',
                 },
-                githubUsername: username
+                githubUsername: username,
+                bugReports,
+                achievements: require('./utils/achievements').getAchievements(), // Always fetch latest achievements
             };
         };
         treeDataProvider = registerEcoDebuggerTreeView(context, getState, setState);
+        // Make treeDataProvider and getState globally accessible for achievements.ts
+        (globalThis as any).treeDataProvider = treeDataProvider;
+        (globalThis as any).getState = getState;
         await showGitHubUserInStatusBar();
         updateClassroomStatusBar();
     })();
@@ -267,19 +267,36 @@ export function activate(context: vscode.ExtensionContext): void {
             if (!ecoTipsEnabled && !groqAIEnabled) { return; }
             if (!['python', 'javascript', 'typescript'].includes(document.languageId)) { return; }
             const fileUri = document.uri.toString();
-            // Eco Tips
+            // --- Collect static bugs and eco tips for Bug Reports tab ---
+            let currentFileBugReports: any[] = [];
+            // Static bug detection
+            const { detectNestedLoops, detectUnusedVariables } = require('./utils/bugs');
+            const text = document.getText();
+            let currentBugs: Set<string> = new Set();
+            if (detectNestedLoops(text)) {
+                currentBugs.add('Nested loops detected');
+            }
+            if (detectUnusedVariables(text)) {
+                currentBugs.add('Unused variable detected');
+            }
+            // Add static bugs to currentFileBugReports and show notification
+            Array.from(currentBugs).forEach((bug: string) => {
+                currentFileBugReports.push({ file: fileUri, description: bug });
+                vscode.window.showWarningMessage('🐞 Bug: ' + bug);
+            });
+            // --- Local eco tips (static analyzer) ---
             if (ecoTipsEnabled) {
                 const { provideEcoTips } = require('./utils/ecoTips');
                 const tipsResult = await provideEcoTips();
-                const currentIssues: Set<string> = new Set((tipsResult.ecoTips || []).map((tip: string) => String(tip).trim()));
-                const previousIssues: Set<string> = lastIssuesPerFile.get(fileUri) || new Set<string>();
-                Array.from(currentIssues).forEach((tip: string) => {
-                    vscode.window.showWarningMessage('⚡ Eco Tip: ' + tip);
-                    if (!ecoTipNotifications.includes(tip)) {
-                        ecoTipNotifications.push(tip);
-                    }
+                const localEcoTips = (tipsResult.ecoTips || []).map((tip: string) => String(tip).trim());
+                // Add local eco tips to currentFileBugReports as suggestions and show notification
+                localEcoTips.forEach((tip: string) => {
+                    currentFileBugReports.push({ file: fileUri, description: 'Eco Tip', suggestion: tip });
+                    vscode.window.showWarningMessage('💡 Eco Tip: ' + tip);
                 });
-                // Only award XP if the number of issues decreased
+                // XP/level logic (unchanged)
+                const previousIssues: Set<string> = lastIssuesPerFile.get(fileUri) || new Set<string>();
+                const currentIssues: Set<string> = new Set(localEcoTips);
                 if (previousIssues.size > 0 && currentIssues.size < previousIssues.size) {
                     const resolvedCount = previousIssues.size - currentIssues.size;
                     for (let i = 0; i < resolvedCount; i++) {
@@ -289,22 +306,8 @@ export function activate(context: vscode.ExtensionContext): void {
                 }
                 lastIssuesPerFile.set(fileUri, currentIssues);
             }
-            // Bug detection logic (always runs)
-            const { detectNestedLoops, detectUnusedVariables } = require('./utils/bugs');
-            const text = document.getText();
-            let currentBugs: Set<string> = new Set();
-            let bugReports: any[] = treeDataProvider?.state?.bugReports || [];
-            if (detectNestedLoops(text)) {
-                currentBugs.add('Nested loops detected');
-            }
-            if (detectUnusedVariables(text)) {
-                currentBugs.add('Unused variable detected');
-            }
+            // Only award XP for bugs if the number decreased
             const previousBugs: Set<string> = lastBugsPerFile.get(fileUri) || new Set();
-            Array.from(currentBugs).forEach((bug: string) => {
-                vscode.window.showWarningMessage('🐞 Bug: ' + bug);
-            });
-            // Only award XP if the number of bugs decreased
             if (previousBugs.size > 0 && currentBugs.size < previousBugs.size) {
                 const resolvedCount = previousBugs.size - currentBugs.size;
                 for (let i = 0; i < resolvedCount; i++) {
@@ -313,15 +316,32 @@ export function activate(context: vscode.ExtensionContext): void {
                 vscode.window.showInformationMessage(`🎉 You fixed ${resolvedCount} bug(s) and earned XP!`);
             }
             lastBugsPerFile.set(fileUri, currentBugs);
-            bugReports = Array.from(currentBugs).map(bug => ({ description: bug }));
+            // --- Merge current file's bug reports into global bugReports ---
+            bugReports = bugReports.filter((r: any) => r.file !== fileUri).concat(currentFileBugReports);
             if (treeDataProvider && typeof treeDataProvider.setState === 'function') {
                 treeDataProvider.setState({ ...getState(), bugReports });
             }
-            // AI analysis (Groq API)
+            // --- AI eco tips (Groq API) go to Eco Tips tab only ---
             if (groqAIEnabled) {
                 try {
                     const { queueGroqRequest } = require('./utils/groqApi');
                     const aiResult = await queueGroqRequest(document.getText());
+                    // Accept both array and string results for eco tips
+                    if (aiResult && Array.isArray(aiResult.ecoTips)) {
+                        aiResult.ecoTips.forEach((tip: string) => {
+                            if (!ecoTipNotifications.includes(tip)) {
+                                ecoTipNotifications.push(tip);
+                            }
+                        });
+                    } else if (aiResult && typeof aiResult === 'string') {
+                        if (!ecoTipNotifications.includes(aiResult)) {
+                            ecoTipNotifications.push(aiResult);
+                        }
+                    }
+                    // Always update the TreeView after adding tips
+                    if (treeDataProvider && typeof treeDataProvider.setState === 'function') {
+                        treeDataProvider.setState(getState());
+                    }
                     const aiMsg = aiResult && aiResult.explanation ? aiResult.explanation : JSON.stringify(aiResult);
                     vscode.window.showInformationMessage('AI analysis: ' + aiMsg);
                 } catch (err) {
@@ -330,6 +350,9 @@ export function activate(context: vscode.ExtensionContext): void {
                     if (!ecoTipNotifications.includes(errorMsg)) {
                         ecoTipNotifications.push(errorMsg);
                     }
+                    if (treeDataProvider && typeof treeDataProvider.setState === 'function') {
+                        treeDataProvider.setState(getState());
+                    }
                 }
             }
         })
@@ -337,7 +360,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
     // Pass context to awardXP for persistence
     function awardXP(type: 'bug' | 'ecoTip') {
-        let xpAwarded = type === 'bug' ? 10 : 5;
+        let xpAwarded = type === 'bug' ? 10 : 10; // Changed ecoTip XP from 5 to 10
         if (classroomManager && classroomManager.getClassroomId()) {
             const userId = classroomManager["userId"];
             const user = classroomManager.getLeaderboard().find(u => u.user_id === userId);
@@ -353,8 +376,11 @@ export function activate(context: vscode.ExtensionContext): void {
                 vscode.window.showInformationMessage(`🎉 Congratulations! You reached Level ${level}!`);
             }
             xpLog.push(`${type === 'bug' ? 'Fixed a bug' : 'Applied eco tip'} (+${xpAwarded} XP)`);
-            checkAchievements(xp, level, false);
+            // --- Force status bar and UI update immediately ---
             updateXPAndTreeView();
+            checkAchievements(xp, level, false);
+            const { getAchievements } = require('./utils/achievements');
+            treeDataProvider.setState({ ...getState(), achievements: getAchievements() });
             context.globalState.update('ecodebuggerState', {
                 xp,
                 level,
@@ -370,8 +396,11 @@ export function activate(context: vscode.ExtensionContext): void {
                 vscode.window.showInformationMessage(`🎉 Congratulations! You reached Level ${level}!`);
             }
             xpLog.push(`${type === 'bug' ? 'Fixed a bug' : 'Applied eco tip'} (+${xpAwarded} XP)`);
-            checkAchievements(xp, level, false);
+            // --- Force status bar and UI update immediately ---
             updateXPAndTreeView();
+            checkAchievements(xp, level, false);
+            const { getAchievements } = require('./utils/achievements');
+            treeDataProvider.setState({ ...getState(), achievements: getAchievements() });
             context.globalState.update('ecodebuggerState', {
                 xp,
                 level,
@@ -379,6 +408,8 @@ export function activate(context: vscode.ExtensionContext): void {
             });
         }
     }
+    // Make awardXP globally accessible for sidebar/TreeView commands
+    (globalThis as any).awardXP = awardXP;
 
     async function joinClassroom(code: string) {
         if (classroomManager && await classroomManager.joinClassroom(code)) {
@@ -417,6 +448,14 @@ export function activate(context: vscode.ExtensionContext): void {
     if (classroomStatusBarItem) {
         context.subscriptions.push(classroomStatusBarItem);
     }
+
+    // Add this global function to allow achievements.ts to trigger a UI update
+    (globalThis as any).updateAchievementsUI = function() {
+        if (typeof treeDataProvider?.setState === 'function') {
+            const { getAchievements } = require('./utils/achievements');
+            treeDataProvider.setState({ ...getState(), achievements: getAchievements() });
+        }
+    };
 }
 
 function joinClassroom(code: string) {
@@ -434,12 +473,18 @@ export function deactivate(): void {
 }
 
 function updateXPAndTreeView() {
+    console.log('updateXPAndTreeView called with:', { xp, level }); // Debugging log
     updateStatusBar(statusBarItem, xp, level);
     if (treeDataProvider && typeof treeDataProvider.setState === 'function') {
         treeDataProvider.setState({
             xp,
             level,
             xpLog,
+            ecoTipNotifications,
+            ecoTipsEnabled,
+            groqAIEnabled,
+            bugReports,
+            achievements: (require('./utils/achievements').getAchievements) ? require('./utils/achievements').getAchievements() : [],
             leaderboard: classroomManager?.getLeaderboard() || [],
             classroom: {
                 code: classroomManager?.getClassroomId() || '',
@@ -449,3 +494,5 @@ function updateXPAndTreeView() {
         });
     }
 }
+
+let bugReports: any[] = [];

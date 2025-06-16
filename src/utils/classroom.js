@@ -34,7 +34,16 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ClassroomManager = void 0;
+const dotenv = __importStar(require("dotenv"));
+dotenv.config();
 // ClassroomManager for EcoDebugger Classroom Mode
+// ---
+// Supabase Cloud Sync Setup:
+// 1. Set SUPABASE_URL and SUPABASE_KEY as environment variables (or hardcode for dev only).
+// 2. Your Supabase project must have a 'classrooms' table with the appropriate schema.
+// 3. The code below will use Supabase for cloud sync if credentials are present, otherwise it will use local file storage.
+// 4. Example usage for cloud sync is in the ClassroomManager methods (createClassroom, joinClassroom, syncXP, etc).
+// ---
 const supabase_js_1 = require("@supabase/supabase-js");
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
@@ -93,21 +102,44 @@ class ClassroomManager {
             console.error('Cloud sync failed:', err);
         }
     }
-    addNotification(message) {
-        if (!this.classroom) {
-            return;
+    async createClassroom(pin) {
+        const classroom_id = 'CLSRM-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+        this.classroom = {
+            classroom_id,
+            users: [{
+                    user_id: this.userId,
+                    username: this.username,
+                    xp: 0,
+                    achievements: [],
+                    weeklyXP: 0,
+                    lastActive: new Date().toISOString()
+                }],
+            last_updated: new Date().toISOString(),
+            pin,
+            notifications: []
+        };
+        if (this.mode === 'cloud' && supabase) {
+            await supabase.from('classrooms').insert({
+                classroom_id,
+                last_updated: this.classroom.last_updated,
+                pin,
+                weeklyTopUser: null
+            });
+            await supabase.from('classroom_users').insert({
+                classroom_id,
+                user_id: this.userId,
+                username: this.username,
+                xp: 0,
+                achievements: [],
+                weeklyXP: 0,
+                lastActive: new Date().toISOString()
+            });
         }
-        this.classroom.notifications = this.classroom.notifications || [];
-        this.classroom.notifications.unshift({
-            id: Date.now().toString(),
-            message,
-            timestamp: new Date().toISOString(),
-            read: false
-        });
-        // Keep only last 50 notifications
-        this.classroom.notifications = this.classroom.notifications.slice(0, 50);
-        // Show notification in VS Code
-        vscode.window.showInformationMessage(`🎓 ${message}`);
+        else {
+            await this.saveLocal();
+        }
+        this.addNotification('Classroom created');
+        return this.classroom;
     }
     clearNotifications() {
         if (this.classroom) {
@@ -158,36 +190,6 @@ class ClassroomManager {
             clearInterval(this.syncInterval);
         }
     }
-    async createClassroom(pin) {
-        const classroom_id = 'CLSRM-' + Math.random().toString(36).substr(2, 6).toUpperCase();
-        this.classroom = {
-            classroom_id,
-            users: [{
-                    user_id: this.userId,
-                    username: this.username,
-                    xp: 0,
-                    achievements: [],
-                    weeklyXP: 0,
-                    lastActive: new Date().toISOString()
-                }],
-            last_updated: new Date().toISOString(),
-            pin,
-            notifications: []
-        };
-        if (this.mode === 'cloud' && supabase) {
-            const { error } = await supabase
-                .from('classrooms')
-                .insert(this.classroom);
-            if (error) {
-                throw error;
-            }
-        }
-        else {
-            await this.saveLocal();
-        }
-        this.addNotification('Classroom created');
-        return this.classroom;
-    }
     getWeeklySummary() {
         if (!this.classroom) {
             return null;
@@ -205,7 +207,6 @@ class ClassroomManager {
         };
     }
     async joinClassroom(classroom_id, pin) {
-        // For local mode, load from file if exists
         if (this.mode === 'local') {
             if (fs.existsSync(LOCAL_CLASSROOM_FILE)) {
                 const data = JSON.parse(fs.readFileSync(LOCAL_CLASSROOM_FILE, 'utf-8'));
@@ -218,33 +219,44 @@ class ClassroomManager {
             }
             return false;
         }
-        // Cloud mode
         if (this.mode === 'cloud' && supabase) {
-            const { data, error } = await supabase
+            const { data: classroom, error: classErr } = await supabase
                 .from('classrooms')
                 .select('*')
                 .eq('classroom_id', classroom_id)
                 .single();
-            if (error) {
+            if (classErr || !classroom) {
                 return false;
             }
-            if (data.pin && data.pin !== pin) {
+            if (classroom.pin && classroom.pin !== pin) {
                 return false;
             }
-            this.classroom = data;
+            const { data: users } = await supabase
+                .from('classroom_users')
+                .select('*')
+                .eq('classroom_id', classroom_id);
+            const { data: notifications } = await supabase
+                .from('classroom_notifications')
+                .select('*')
+                .eq('classroom_id', classroom_id)
+                .order('timestamp', { ascending: false });
+            const { data: reports } = await supabase
+                .from('classroom_reports')
+                .select('*')
+                .eq('classroom_id', classroom_id);
+            this.classroom = {
+                classroom_id,
+                users: users || [],
+                last_updated: classroom.last_updated,
+                pin: classroom.pin,
+                weeklyTopUser: classroom.weeklyTopUser,
+                notifications: notifications || [],
+                reports: reports || []
+            };
             this.addOrUpdateUser();
-            await this.syncXP(0, []);
             return true;
         }
         return false;
-    }
-    async leaveClassroom() {
-        if (!this.classroom) {
-            return;
-        }
-        this.classroom.users = this.classroom.users.filter(u => u.user_id !== this.userId);
-        await this.saveLocal();
-        this.classroom = null;
     }
     addOrUpdateUser(xp = 0, achievements = []) {
         if (!this.classroom) {
@@ -254,90 +266,66 @@ class ClassroomManager {
         if (!user) {
             user = { user_id: this.userId, username: this.username, xp, achievements, weeklyXP: 0, lastActive: new Date().toISOString() };
             this.classroom.users.push(user);
+            if (this.mode === 'cloud' && supabase) {
+                supabase.from('classroom_users').insert({
+                    classroom_id: this.classroom.classroom_id,
+                    user_id: this.userId,
+                    username: this.username,
+                    xp,
+                    achievements,
+                    weeklyXP: 0,
+                    lastActive: user.lastActive
+                });
+            }
         }
         else {
             user.xp = xp;
             user.achievements = achievements;
             this.updateWeeklyXP(user, xp);
+            if (this.mode === 'cloud' && supabase) {
+                supabase.from('classroom_users').update({
+                    xp,
+                    achievements,
+                    weeklyXP: user.weeklyXP,
+                    lastActive: user.lastActive
+                }).eq('classroom_id', this.classroom.classroom_id).eq('user_id', this.userId);
+            }
         }
         this.classroom.last_updated = new Date().toISOString();
-    }
-    getLeaderboard() {
-        if (!this.classroom) {
-            return [];
+        // --- Check achievements after leaderboard update ---
+        try {
+            const { checkAchievements } = require('./achievements');
+            // Find current user and check if they are at the top
+            const leaderboard = this.getLeaderboard();
+            const userIdx = leaderboard.findIndex(u => u.user_id === this.userId);
+            const user = leaderboard[userIdx];
+            const leaderboardTop = userIdx === 0;
+            checkAchievements(user?.xp || 0, 1, leaderboardTop);
         }
-        const users = [...this.classroom.users].sort((a, b) => b.xp - a.xp);
-        // Add medal emoji for top 3
-        if (users.length > 0) {
-            users[0].username = `🥇 ${users[0].username}`;
-        }
-        if (users.length > 1) {
-            users[1].username = `🥈 ${users[1].username}`;
-        }
-        if (users.length > 2) {
-            users[2].username = `🥉 ${users[2].username}`;
-        }
-        return users;
+        catch (e) { /* ignore */ }
     }
-    getClassroomId() {
-        return this.classroom?.classroom_id || '';
-    }
-    getCurrentUser() {
-        return this.classroom?.users.find(u => u.user_id === this.userId);
-    }
-    async saveLocal() {
+    addNotification(message) {
         if (!this.classroom) {
             return;
         }
-        fs.writeFileSync(LOCAL_CLASSROOM_FILE, JSON.stringify(this.classroom, null, 2));
-    }
-    checkXPLimit(userId, amount, actionId) {
-        const today = new Date().toDateString();
-        if (!this.xpLimits[userId] || this.xpLimits[userId].date !== today) {
-            this.xpLimits[userId] = { date: today, xp: 0, lastAction: {} };
-        }
-        // Check daily limit
-        if (this.xpLimits[userId].xp + amount > ClassroomManager.MAX_DAILY_XP) {
-            vscode.window.showWarningMessage(`Daily XP limit (${ClassroomManager.MAX_DAILY_XP}) reached!`);
-            return false;
-        }
-        // Check duplicate action
-        if (actionId) {
-            const now = Date.now();
-            const lastActionTime = this.xpLimits[userId].lastAction[actionId] || 0;
-            if (now - lastActionTime < ClassroomManager.ACTION_COOLDOWN) {
-                vscode.window.showWarningMessage('Please wait before repeating the same action.');
-                return false;
-            }
-            this.xpLimits[userId].lastAction[actionId] = now;
-        }
-        this.xpLimits[userId].xp += amount;
-        return true;
-    }
-    async syncXP(xp, achievements, actionId) {
-        if (!this.checkXPLimit(this.userId, xp - (this.getCurrentUser()?.xp || 0), actionId)) {
-            return false;
-        }
-        const prevXP = this.getCurrentUser()?.xp || 0;
-        this.addOrUpdateUser(xp, achievements);
-        // Check if user became top scorer
-        const leaderboard = this.getLeaderboard();
-        if (leaderboard[0]?.user_id === this.userId && xp > prevXP) {
-            this.addNotification(`${this.username} took the lead with ${xp} XP! 🎉`);
-        }
+        const notification = {
+            id: Date.now().toString(),
+            message,
+            timestamp: new Date().toISOString(),
+            read: false
+        };
+        this.classroom.notifications = this.classroom.notifications || [];
+        this.classroom.notifications.unshift(notification);
+        this.classroom.notifications = this.classroom.notifications.slice(0, 50);
         if (this.mode === 'cloud' && supabase) {
-            const { error } = await supabase
-                .from('classrooms')
-                .update(this.classroom)
-                .eq('classroom_id', this.classroom?.classroom_id);
-            if (error) {
-                throw error;
-            }
+            supabase.from('classroom_notifications').insert({
+                classroom_id: this.classroom.classroom_id,
+                message,
+                timestamp: notification.timestamp,
+                read: false
+            });
         }
-        else {
-            await this.saveLocal();
-        }
-        return true;
+        vscode.window.showInformationMessage(`🎓 ${message}`);
     }
     async reportSuspiciousActivity(reportedUserId, reason) {
         if (!this.classroom) {
@@ -348,49 +336,93 @@ class ClassroomManager {
             return;
         }
         this.addNotification(`🚨 Suspicious activity reported for ${reportedUser.username}`);
-        // Store the report in the classroom data
-        if (!this.classroom.reports) {
-            this.classroom.reports = [];
-        }
-        this.classroom.reports.push({
+        const report = {
             reporterId: this.userId,
             reportedId: reportedUserId,
             reason,
             timestamp: new Date().toISOString()
+        };
+        if (!this.classroom.reports) {
+            this.classroom.reports = [];
+        }
+        this.classroom.reports.push(report);
+        if (this.mode === 'cloud' && supabase) {
+            await supabase.from('classroom_reports').insert({
+                classroom_id: this.classroom.classroom_id,
+                reporterId: this.userId,
+                reportedId: reportedUserId,
+                reason,
+                timestamp: report.timestamp
+            });
+        }
+        else {
+            await this.saveLocal();
+        }
+        vscode.window.showInformationMessage('Report submitted successfully');
+    }
+    async saveLocal() {
+        if (!this.classroom) {
+            return;
+        }
+        fs.writeFileSync(LOCAL_CLASSROOM_FILE, JSON.stringify(this.classroom, null, 4));
+    }
+    updateWeeklyXP(user, additionalXP) {
+        const now = new Date();
+        const today = now.toISOString().split('T')[0];
+        if (!this.xpLimits[user.user_id]) {
+            this.xpLimits[user.user_id] = { date: today, xp: 0, lastAction: {} };
+        }
+        const userXP = this.xpLimits[user.user_id];
+        if (userXP.date !== today) {
+            userXP.date = today;
+            userXP.xp = 0;
+            userXP.lastAction = {};
+        }
+        const actions = Object.keys(userXP.lastAction);
+        const actionCooldown = ClassroomManager.ACTION_COOLDOWN;
+        const nowMillis = now.getTime();
+        let canAddXP = true;
+        actions.forEach(action => {
+            if (nowMillis - userXP.lastAction[action] < actionCooldown) {
+                canAddXP = false;
+            }
         });
-        try {
-            // Save the report
-            if (this.mode === 'cloud' && supabase) {
-                await supabase.from('classrooms').update(this.classroom)
-                    .eq('classroom_id', this.classroom.classroom_id);
-                vscode.window.showInformationMessage('Report submitted successfully');
-            }
-            else {
-                this.saveLocal();
-                vscode.window.showInformationMessage('Report submitted successfully');
+        if (canAddXP) {
+            userXP.xp += additionalXP;
+            user.weeklyXP += additionalXP;
+            userXP.lastAction[new Date().toISOString()] = nowMillis;
+            if (userXP.xp > ClassroomManager.MAX_DAILY_XP) {
+                userXP.xp = ClassroomManager.MAX_DAILY_XP;
             }
         }
-        catch (error) {
-            console.error('Failed to save report:', error);
-            vscode.window.showErrorMessage('Failed to submit report');
-        }
     }
-    // Helper method to calculate weekly metrics
-    getWeekStart(date = new Date()) {
-        const weekStart = new Date(date);
-        weekStart.setDate(date.getDate() - date.getDay());
-        weekStart.setHours(0, 0, 0, 0);
-        return weekStart;
-    }
-    // Update weekly XP when syncing
-    updateWeeklyXP(user, xp) {
-        const weekStart = this.getWeekStart();
-        // Reset weekly XP if it's a new week
-        if (new Date(user.lastActive) < weekStart) {
-            user.weeklyXP = 0;
+    getLeaderboard() {
+        if (!this.classroom) {
+            return [];
         }
-        user.weeklyXP += xp - (user.xp || 0); // Only add the difference
-        user.lastActive = new Date().toISOString();
+        // Sort users by XP descending
+        const users = [...this.classroom.users].sort((a, b) => b.xp - a.xp);
+        return users;
+    }
+    getClassroomId() {
+        return this.classroom?.classroom_id || '';
+    }
+    async leaveClassroom() {
+        if (!this.classroom) {
+            return;
+        }
+        if (this.mode === 'local') {
+            this.classroom.users = this.classroom.users.filter(u => u.user_id !== this.userId);
+            await this.saveLocal();
+        }
+        else if (this.mode === 'cloud' && this.classroom && typeof supabase !== 'undefined') {
+            // Optionally, remove user from classroom_users in Supabase
+            await supabase.from('classroom_users')
+                .delete()
+                .eq('classroom_id', this.classroom.classroom_id)
+                .eq('user_id', this.userId);
+        }
+        this.classroom = null;
     }
 }
 exports.ClassroomManager = ClassroomManager;
