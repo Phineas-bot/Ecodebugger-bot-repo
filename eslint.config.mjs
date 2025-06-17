@@ -12,11 +12,13 @@ export default [{
         parser: tsParser,
          parserOptions: {
                 project: "./tsconfig.json"
+                 },
         ecmaVersion: 2022,
         sourceType: "module",
     },
 
     rules: {
+        ...typescriptEslint.configs.recommended.rules,
         "@typescript-eslint/naming-convention": ["warn", {
             selector: "import",
             format: ["camelCase", "PascalCase"],
