@@ -19,6 +19,7 @@ export default [{
 
     rules: {
         ...typescriptEslint.configs.recommended.rules,
+        ...typescriptEslint.configs["recommended-requiring-type-checking"].rules,
         "@typescript-eslint/naming-convention": ["warn", {
             selector: "import",
             format: ["camelCase", "PascalCase"],
@@ -28,5 +29,8 @@ export default [{
         eqeqeq: "warn",
         "no-throw-literal": "warn",
         semi: "warn",
+        "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    "@typescript-eslint/explicit-function-return-type": ["warn", { "allowExpressions": true }],
+    "@typescript-eslint/no-explicit-any": "warn",
     },
 }];
