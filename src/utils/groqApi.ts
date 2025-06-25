@@ -15,7 +15,7 @@ export function canSendGroqRequest() {
 
 // === Real Groq API Integration ===
 // To insert the shared API key below. This key will be used for all users usx batch request and restricted acess for fair use .
-const GROQ_API_KEY = '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';
+const GROQ_API_KEY = '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';
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions'; // to be replace with actual endpoint
 const SYSTEM_PROMPT = `
 Your tasks:
