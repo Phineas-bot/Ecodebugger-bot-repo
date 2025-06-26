@@ -4,7 +4,7 @@
   "description": "A gamified extension for debugging with eco coding tips.",
   "version": "0.0.1",
   "publisher": "ecodebugger",
-   "icon": "assets/eco_debugger_icon_128x128.png",
+   "icon": "./assets/eco_debugger_icon_128x128.png",
   "license": "MIT",
   "repository": {
   "type": "git",
