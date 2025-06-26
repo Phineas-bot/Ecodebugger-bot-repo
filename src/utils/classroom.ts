@@ -16,8 +16,9 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 
 // Supabase setup (replace with your project URL and anon key)
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY;
+const supabaseUrl = "https://dunqjypvdtebnvotvacu.supabase.co";
+const postgresql = "//postgres:[Ecodebugger@2025]@db.dunqjypvdtebnvotvacu.supabase.co:5432/postgres";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1bnFqeXB2ZHRlYm52b3R2YWN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkzODcyOTYsImV4cCI6MjA2NDk2MzI5Nn0.p1SngmNZk0qme8cX_A-c7fqyXKjssNNnp1BMGldnqH4";
 const supabase = (supabaseUrl && supabaseKey) ? createClient(supabaseUrl, supabaseKey) : undefined;
 
 export type ClassroomUser = {
@@ -114,7 +115,7 @@ export class ClassroomManager {
         }
     }
 
-    async createClassroom(pin?: string) {
+    async createClassroom(pin: string) {
         const classroom_id = 'CLSRM-' + Math.random().toString(36).substr(2, 6).toUpperCase();
         this.classroom = {
             classroom_id,
@@ -128,14 +129,16 @@ export class ClassroomManager {
             }],
             last_updated: new Date().toISOString(),
             pin,
-            notifications: []
+            notifications: [],
+            weeklyTopUser: '',
+            reports: []
         };
         if (this.mode === 'cloud' && supabase) {
             await supabase.from('classrooms').insert({
                 classroom_id,
                 last_updated: this.classroom.last_updated,
                 pin,
-                weeklyTopUser: null
+                weeklyTopUser: ''
             });
             await supabase.from('classroom_users').insert({
                 classroom_id,
@@ -172,7 +175,7 @@ export class ClassroomManager {
 
     markNotificationRead(id: string) {
         if (this.classroom) {
-            const notification = this.classroom.notifications.find(n => n.id === id);
+            const notification = this.classroom.notifications.find(n => n.notificationid === id);
             if (notification) {
                 notification.read = true;
                 this.saveState();
@@ -320,7 +323,7 @@ export class ClassroomManager {
     private addNotification(message: string) {
         if (!this.classroom) { return; }
         const notification = {
-            id: Date.now().toString(),
+            notificationid: Date.now().toString(),
             message,
             timestamp: new Date().toISOString(),
             read: false
