@@ -191,7 +191,7 @@ export function activate(context: vscode.ExtensionContext): void {
     context.subscriptions.push(
         vscode.commands.registerCommand('ecoDebugger.createClassroom', async () => {
             const pin = await vscode.window.showInputBox({ prompt: 'Enter a PIN for your classroom (optional)' });
-            const classroom = await classroomManager?.createClassroom(pin);
+            const classroom = await classroomManager?.createClassroom(pin ?? '');
             vscode.window.showInformationMessage('Classroom created: ' + classroom?.classroom_id);
             setState(getState());
             await showGitHubUserInStatusBar();
