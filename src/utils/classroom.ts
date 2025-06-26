@@ -37,20 +37,20 @@ export type ClassroomReport = {
 };
 
 export type ClassroomNotification = {
-    id: string;
+    notificationid: string;
     message: string;
     timestamp: string;
-    read?: boolean;
+    read: boolean;
 };
 
 export type ClassroomData = {
     classroom_id: string;
     users: ClassroomUser[];
     last_updated: string;
-    pin?: string;
-    weeklyTopUser?: string;
+    pin: string;
+    weeklyTopUser: string;
     notifications: ClassroomNotification[];
-    reports?: ClassroomReport[];
+    reports: ClassroomReport[];
 };
 
 const LOCAL_CLASSROOM_FILE = path.join(
