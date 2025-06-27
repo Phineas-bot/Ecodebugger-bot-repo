@@ -16,8 +16,9 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 
 // Supabase setup (replace with your project URL and anon key)
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY;
+const supabaseUrl = "https://dunqjypvdtebnvotvacu.supabase.co";
+const postgresql = "//postgres:[Ecodebugger@2025]@db.dunqjypvdtebnvotvacu.supabase.co:5432/postgres";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1bnFqeXB2ZHRlYm52b3R2YWN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkzODcyOTYsImV4cCI6MjA2NDk2MzI5Nn0.p1SngmNZk0qme8cX_A-c7fqyXKjssNNnp1BMGldnqH4";
 const supabase = (supabaseUrl && supabaseKey) ? createClient(supabaseUrl, supabaseKey) : undefined;
 
 export type ClassroomUser = {
@@ -37,10 +38,10 @@ export type ClassroomReport = {
 };
 
 export type ClassroomNotification = {
-    id: string;
+    notificationid: string;
     message: string;
     timestamp: string;
-    read?: boolean;
+    read: boolean;
 };
 
 export type ClassroomData = {
@@ -49,7 +50,7 @@ export type ClassroomData = {
     last_updated: string;
     pin?: string;
     weeklyTopUser?: string;
-    notifications: ClassroomNotification[];
+    notifications?: ClassroomNotification[];
     reports?: ClassroomReport[];
 };
 
@@ -128,14 +129,16 @@ export class ClassroomManager {
             }],
             last_updated: new Date().toISOString(),
             pin,
-            notifications: []
+            notifications: [],
+            weeklyTopUser: '',
+            reports: []
         };
         if (this.mode === 'cloud' && supabase) {
             await supabase.from('classrooms').insert({
                 classroom_id,
                 last_updated: this.classroom.last_updated,
                 pin,
-                weeklyTopUser: null
+                weeklyTopUser: ''
             });
             await supabase.from('classroom_users').insert({
                 classroom_id,
@@ -162,7 +165,7 @@ export class ClassroomManager {
 
     markAllNotificationsRead() {
         if (this.classroom) {
-            this.classroom.notifications = this.classroom.notifications.map(n => ({
+            this.classroom.notifications = (this.classroom.notifications ?? []).map(n => ({
                 ...n,
                 read: true
             }));
@@ -172,7 +175,7 @@ export class ClassroomManager {
 
     markNotificationRead(id: string) {
         if (this.classroom) {
-            const notification = this.classroom.notifications.find(n => n.id === id);
+            const notification = (this.classroom.notifications ?? []).find(n => n.notificationid === id);
             if (notification) {
                 notification.read = true;
                 this.saveState();
@@ -239,12 +242,37 @@ export class ClassroomManager {
             return false;
         }
         if (this.mode === 'cloud' && supabase) {
-            const { data: classroom, error: classErr } = await supabase
+            let { data: classroom, error: classErr } = await supabase
                 .from('classrooms')
                 .select('*')
                 .eq('classroom_id', classroom_id)
                 .single();
-            if (classErr || !classroom) { return false; }
+            if (classErr || !classroom) {
+                // Classroom does not exist, so create it
+                await supabase.from('classrooms').insert({
+                    classroom_id,
+                    last_updated: new Date().toISOString(),
+                    pin,
+                    weeklyTopUser: ''
+                });
+                await supabase.from('classroom_users').insert({
+                    classroom_id,
+                    user_id: this.userId,
+                    username: this.username,
+                    xp: 0,
+                    achievements: [],
+                    weeklyXP: 0,
+                    lastActive: new Date().toISOString()
+                });
+                // Now fetch the classroom again
+                const result = await supabase
+                    .from('classrooms')
+                    .select('*')
+                    .eq('classroom_id', classroom_id)
+                    .single();
+                classroom = result.data;
+                if (!classroom) { return false; }
+            }
             if (classroom.pin && classroom.pin !== pin) { return false; }
             const { data: users } = await supabase
                 .from('classroom_users')
@@ -320,7 +348,7 @@ export class ClassroomManager {
     private addNotification(message: string) {
         if (!this.classroom) { return; }
         const notification = {
-            id: Date.now().toString(),
+            notificationid: Date.now().toString(),
             message,
             timestamp: new Date().toISOString(),
             read: false
