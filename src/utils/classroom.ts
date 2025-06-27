@@ -140,7 +140,7 @@ export class ClassroomManager {
                 pin,
                 weeklyTopUser: ''
             });
-            await supabase.from('ClassroomUsers').insert({
+            await supabase.from('classroom_users').insert({
                 classroom_id,
                 user_id: this.userId,
                 username: this.username,
@@ -255,7 +255,7 @@ export class ClassroomManager {
                     pin,
                     weeklyTopUser: ''
                 });
-                await supabase.from('ClassroomUsers').insert({
+                await supabase.from('classroom_users').insert({
                     classroom_id,
                     user_id: this.userId,
                     username: this.username,
@@ -275,16 +275,16 @@ export class ClassroomManager {
             }
             if (classroom.pin && classroom.pin !== pin) { return false; }
             const { data: users } = await supabase
-                .from('ClassroomUsers')
+                .from('classroom_users')
                 .select('*')
                 .eq('classroom_id', classroom_id);
             const { data: notifications } = await supabase
-                .from('ClassroomNotification')
+                .from('classroom_notifications')
                 .select('*')
                 .eq('classroom_id', classroom_id)
                 .order('timestamp', { ascending: false });
             const { data: reports } = await supabase
-                .from('ClassroomReport')
+                .from('classroom_reports')
                 .select('*')
                 .eq('classroom_id', classroom_id);
             this.classroom = {
@@ -311,7 +311,7 @@ export class ClassroomManager {
             this.classroom.users.push(user);
             if (this.mode === 'cloud' && supabase) {
                 try {
-                    await supabase.from('ClassroomUsers').insert({
+                    await supabase.from('classroom_users').insert({
                         classroom_id: this.classroom.classroom_id,
                         user_id: this.userId,
                         username: this.username,
@@ -331,7 +331,7 @@ export class ClassroomManager {
             user.lastActive = now;
             if (this.mode === 'cloud' && supabase) {
                 try {
-                    await supabase.from('ClassroomUsers').upsert([
+                    await supabase.from('classroom_users').upsert([
                         {
                             classroom_id: this.classroom.classroom_id,
                             user_id: this.userId,
@@ -372,7 +372,7 @@ export class ClassroomManager {
         this.classroom.notifications.unshift(notification);
         this.classroom.notifications = this.classroom.notifications.slice(0, 50);
         if (this.mode === 'cloud' && supabase) {
-            supabase.from('ClassroomNotification').insert({
+            supabase.from('classroom_notifications').insert({
                 classroom_id: this.classroom.classroom_id,
                 message,
                 timestamp: notification.timestamp,
@@ -396,7 +396,7 @@ export class ClassroomManager {
         if (!this.classroom.reports) { this.classroom.reports = []; }
         this.classroom.reports.push(report);
         if (this.mode === 'cloud' && supabase) {
-            await supabase.from('ClassroomReport').insert({
+            await supabase.from('classroom_reports').insert({
                 classroom_id: this.classroom.classroom_id,
                 reporterId: this.userId,
                 reportedId: reportedUserId,
@@ -464,8 +464,8 @@ export class ClassroomManager {
             this.classroom.users = this.classroom.users.filter(u => u.user_id !== this.userId);
             await this.saveLocal();
         } else if (this.mode === 'cloud' && this.classroom && typeof supabase !== 'undefined') {
-            // Optionally, remove user from ClassroomUsers in Supabase
-            await supabase.from('ClassroomUsers')
+            // Optionally, remove user from classroom_users in Supabase
+            await supabase.from('classroom_users')
                 .delete()
                 .eq('classroom_id', this.classroom.classroom_id)
                 .eq('user_id', this.userId);
