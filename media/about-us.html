@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About Us - EcoDebugger</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Montserrat', Arial, sans-serif;
+      background: linear-gradient(120deg, #e0ffe6 0%, #f0faff 100%);
+      margin: 0;
+      padding: 0;
+      color: #222;
+    }
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+      padding: 40px 32px 32px 32px;
+    }
+    h1 {
+      text-align: center;
+      font-size: 2.8rem;
+      color: #2e8b57;
+      margin-bottom: 0.5em;
+    }
+    .subtitle {
+      text-align: center;
+      font-size: 1.3rem;
+      color: #555;
+      margin-bottom: 2em;
+    }
+    .photo-placeholder {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 2em 0 2.5em 0;
+    }
+    .photo-box {
+      width: 320px;
+      height: 180px;
+      background: repeating-linear-gradient(135deg, #e0e0e0 0 20px, #c0c0c0 20px 40px);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #888;
+      font-size: 1.2rem;
+      font-style: italic;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      border: 2px dashed #b0b0b0;
+    }
+    .team-section {
+      margin-top: 2.5em;
+    }
+    .team-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 32px;
+      justify-content: center;
+    }
+    .member {
+      background: #f7faf7;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(46,139,87,0.07);
+      padding: 24px 20px;
+      width: 220px;
+      text-align: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .member:hover {
+      transform: translateY(-6px) scale(1.03);
+      box-shadow: 0 8px 24px rgba(46,139,87,0.13);
+    }
+    .member-name {
+      font-weight: 700;
+      font-size: 1.15rem;
+      color: #2e8b57;
+      margin-bottom: 0.3em;
+    }
+    .member-role {
+      color: #555;
+      font-size: 1rem;
+      margin-bottom: 0.7em;
+    }
+    .member-desc {
+      font-size: 0.97rem;
+      color: #444;
+    }
+    @media (max-width: 700px) {
+      .container { padding: 18px 4vw; }
+      .team-list { flex-direction: column; align-items: center; }
+      .member { width: 90vw; }
+      .photo-box { width: 90vw; height: 120px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>About Us</h1>
+    <div class="subtitle">Meet the passionate team behind <b>EcoDebugger</b> — empowering greener, smarter coding for everyone.</div>
+    <div class="photo-placeholder">
+      <div class="photo-box">
+        <img src="WhatsApp Image 2025-06-27 at 12.40.19_ce7f87f2.jpg" alt="Group Photo" style="max-width: 100%; height: auto;">
+      </div>
+    </div>
+    <div class="team-section">
+      <h2 style="text-align:center; color:#2e8b57; margin-bottom:1.2em;">Our Team</h2>
+    </div>
+    <div class="download-section" style="margin: 2.5em 0 2em 0; text-align: center;">
+      <h2 style="color:#2e8b57; margin-bottom:0.7em;">Download EcoDebugger Extension</h2>
+      <p style="color:#444; font-size:1.08rem; margin-bottom:1.2em;">Get the latest version of our VS Code extension to enhance your coding experience with eco-friendly tools.</p>
+      <a href="ecodebugger-0.0.1.vsix" download style="display:inline-block; background:#2e8b57; color:#fff; font-weight:600; padding: 0.9em 2.1em; border-radius: 8px; text-decoration:none; font-size:1.1rem; box-shadow:0 2px 8px rgba(46,139,87,0.13); transition: background 0.2s;">Download v0.0.1</a>
+    </div>
+      <div class="team-list">
+        <div class="member">
+          <div class="member-name">NGNINDEM PHINEES</div>
+          <div class="member-role">SCRUM MASTER</div>
+          <div class="member-desc">A natural leader who keeps the team focused and motivated, ensuring smooth project delivery</div>
+        </div>
+        <div class="member">
+          <div class="member-name">TIOTSE DOUNGMENE BETRAND JUNIOR</div>
+          <div class="member-role">CTO</div>
+          <div class="member-desc">A visionary technologist with a passion for innovative solutions and technical excellence.</div>
+        </div>
+        <div class="member">
+          <div class="member-name">TEMAH IAN SEUN SAMUEL</div>
+          <div class="member-role">DATABASE ADMIN</div>
+          <div class="member-desc">Meticulous and detail-oriented, always ensuring our data is secure, organized, and accessible.</div>
+        </div>
+        <div class="member">
+          <div class="member-name">NKENGAFEH LUIZA BIH ETIENDEM</div>
+          <div class="member-role">DOC LEAD</div>
+          <div class="member-desc">An exceptional communicator who transforms complex ideas into clear, user-friendly documentation.</div>
+        </div>
+        <div class="member">
+          <div class="member-name">ADAMA HADIDJATOU OUMMOUL MODI</div>
+          <div class="member-role">PRODUCT OWNER</div>
+          <div class="member-desc">Driven by user needs, always striving to deliver value and guide the team toward impactful results.</div>
+        </div>
+        <div class="member">
+          <div class="member-name">TCHATCHOUA DJIETCHEU KLEMENS DIMITRI</div>
+          <div class="member-role">PASSIVE MEMBER</div>
+          <div class="member-desc">JUST THERE</div>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center; margin-top:3em; color:#888; font-size:1.05rem;">
+      &copy; 2025 EcoDebugger Team. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>
