@@ -10,7 +10,5 @@
     "resolveJsonModule": true,
     "moduleResolution": "node"
   },
-  "include": ["Ecodebugger-bot-repo/src    *.ts"],
   "exclude": ["node_modules", ".vscode-test"]
 }
-
