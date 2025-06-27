@@ -155,8 +155,9 @@ export class ClassroomManager {
                 weeklyXP: 0,
                 lastActive: new Date().toISOString()
             });
+            // Always insert user info into classroom_users table
             await supabase.from('classroom_users').insert({
-                classroom_id: this.classroom!.classroom_id,
+                classroom_id: classroom_id,
                 user_id: this.userId,
                 username: this.username,
                 xp: 0,
