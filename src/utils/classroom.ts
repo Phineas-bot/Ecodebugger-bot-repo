@@ -134,11 +134,26 @@ export class ClassroomManager {
             reports: []
         };
         if (this.mode === 'cloud' && supabase) {
-            await supabase.from('classrooms').insert({
+            console.log('[DEBUG] Creating classroom in Supabase:', {
                 classroom_id,
-                last_updated: this.classroom.last_updated,
+                last_updated: new Date().toISOString(),
                 pin,
                 weeklyTopUser: ''
+            });
+            await supabase.from('classrooms').insert({
+                classroom_id,
+                last_updated: new Date().toISOString(),
+                pin,
+                weeklyTopUser: ''
+            });
+            console.log('[DEBUG] Creating classroom user in Supabase:', {
+                classroom_id: this.classroom!.classroom_id,
+                user_id: this.userId,
+                username: this.username,
+                xp: 0,
+                achievements: [],
+                weeklyXP: 0,
+                lastActive: new Date().toISOString()
             });
             await supabase.from('classroom_users').insert({
                 classroom_id: this.classroom!.classroom_id,
@@ -297,6 +312,7 @@ export class ClassroomManager {
                 reports: reports || []
             };
             this.addOrUpdateUser();
+            this.addNotification(`${this.username} joined the classroom!`);
             return true;
         }
         return false;
@@ -372,6 +388,12 @@ export class ClassroomManager {
         this.classroom.notifications.unshift(notification);
         this.classroom.notifications = this.classroom.notifications.slice(0, 50);
         if (this.mode === 'cloud' && supabase) {
+            console.log('[DEBUG] Inserting classroom notification in Supabase:', {
+                classroom_id: this.classroom.classroom_id,
+                message,
+                timestamp: notification.timestamp,
+                read: false
+            });
             supabase.from('classroom_notifications').insert({
                 classroom_id: this.classroom.classroom_id,
                 message,
@@ -396,6 +418,13 @@ export class ClassroomManager {
         if (!this.classroom.reports) { this.classroom.reports = []; }
         this.classroom.reports.push(report);
         if (this.mode === 'cloud' && supabase) {
+            console.log('[DEBUG] Inserting classroom report in Supabase:', {
+                classroom_id: this.classroom.classroom_id,
+                reporterId: this.userId,
+                reportedId: reportedUserId,
+                reason,
+                timestamp: report.timestamp
+            });
             await supabase.from('classroom_reports').insert({
                 classroom_id: this.classroom.classroom_id,
                 reporterId: this.userId,
