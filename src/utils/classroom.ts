@@ -311,8 +311,21 @@ export class ClassroomManager {
                 notifications: notifications || [],
                 reports: reports || []
             };
+            // Ensure user info is in classroom_users table
+            const userExists = (users || []).some(u => u.user_id === this.userId);
+            if (!userExists) {
+                await supabase.from('classroom_users').insert({
+                    classroom_id,
+                    user_id: this.userId,
+                    username: this.username,
+                    xp: 0,
+                    achievements: [],
+                    weeklyXP: 0,
+                    lastActive: new Date().toISOString()
+                });
+            }
             this.addOrUpdateUser();
-            this.addNotification(`${this.username} joined the classroom!`);
+            await this.addNotification(`${this.username} joined the classroom!`);
             return true;
         }
         return false;
@@ -376,7 +389,7 @@ export class ClassroomManager {
         } catch (e) { /* ignore */ }
     }
 
-    private addNotification(message: string) {
+    private async addNotification(message: string) {
         if (!this.classroom) { return; }
         const notification = {
             notificationid: Date.now().toString(),
@@ -394,7 +407,7 @@ export class ClassroomManager {
                 timestamp: notification.timestamp,
                 read: false
             });
-            supabase.from('classroom_notifications').insert({
+            await supabase.from('classroom_notifications').insert({
                 classroom_id: this.classroom.classroom_id,
                 message,
                 timestamp: notification.timestamp,
