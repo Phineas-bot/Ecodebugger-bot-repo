@@ -141,7 +141,7 @@ export class ClassroomManager {
                 weeklyTopUser: ''
             });
             await supabase.from('classroom_users').insert({
-                classroom_id,
+                classroom_id: this.classroom!.classroom_id,
                 user_id: this.userId,
                 username: this.username,
                 xp: 0,
@@ -256,7 +256,7 @@ export class ClassroomManager {
                     weeklyTopUser: ''
                 });
                 await supabase.from('classroom_users').insert({
-                    classroom_id,
+                    classroom_id: this.classroom!.classroom_id,
                     user_id: this.userId,
                     username: this.username,
                     xp: 0,
@@ -315,10 +315,10 @@ export class ClassroomManager {
                         classroom_id: this.classroom.classroom_id,
                         user_id: this.userId,
                         username: this.username,
-                        xp,
-                        achievements: JSON.stringify(achievements),
+                        xp: 0,
+                        achievements: [],
                         weeklyXP: 0,
-                        lastActive: now
+                        lastActive: new Date().toISOString()
                     });
                 } catch (err) {
                     console.error('Supabase insert user error:', err);
@@ -337,7 +337,7 @@ export class ClassroomManager {
                             user_id: this.userId,
                             username: this.username,
                             xp: user.xp,
-                            achievements: JSON.stringify(user.achievements),
+                            achievements: user.achievements, // send as array
                             weeklyXP: user.weeklyXP,
                             lastActive: user.lastActive
                         }
