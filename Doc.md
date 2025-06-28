@@ -295,4 +295,33 @@ The selection of Scrum as the primary development methodology for the Eco-Debugg
 •	User-Centric Design Feedback from developers ensures the tool remains practical and engaging.
 •	Adaptability Allows seamless incorporation of new sustainability standards (e.g., updated energy-profiling metrics).
 •	Proven Success Similar tools (e.g, CodeAcademy, VS Code extensions) use Scrum for efficient, incremental updates.
+ntric design, and adaptive sustainability features. Below is a detailed justification for this choice, supported by empirical research and project-specific requirements.
+•	Iterative Development Enables quick prototyping of features (XP rewards, CO₂ feedback) and continuous improvement through biweekly sprints.
+•	User-Centric Design Feedback from developers ensures the tool remains practical and engaging.
+•	Adaptability Allows seamless incorporation of new sustainability standards (e.g., updated energy-profiling metrics).
+•	Proven Success Similar tools (e.g, CodeAcademy, VS Code extensions) use Scrum for efficient, incremental updates.
+ntric design, and adaptive sustainability features. Below is a detailed justification for this choice, supported by empirical research and project-specific requirements.
+•	Iterative Development Enables quick prototyping of features (XP rewards, CO₂ feedback) and continuous improvement through biweekly sprints.
+•	User-Centric Design Feedback from developers ensures the tool remains practical and engaging.
+•	Adaptability Allows seamless incorporation of new sustainability standards (e.g., updated energy-profiling metrics).
+•	Proven Success Similar tools (e.g, CodeAcademy, VS Code extensions) use Scrum for efficient, incremental updates.
+ntric design, and adaptive sustainability features. Below is a detailed justification for this choice, supported by empirical research and project-specific requirements.
+•	Iterative Development Enables quick prototyping of features (XP rewards, CO₂ feedback) and continuous improvement through biweekly sprints.
+•	User-Centric Design Feedback from developers ensures the tool remains practical and engaging.
+•	Adaptability Allows seamless incorporation of new sustainability standards (e.g., updated energy-profiling metrics).
+•	Proven Success Similar tools (e.g, CodeAcademy, VS Code extensions) use Scrum for efficient, incremental updates.
+•	Gamification in Developer: Tools Gamification techniques (Deterding et al., 2011) have been successfully applied to programming education (e.g., Codecademy’s badges). However, most tools focus solely on code correctness, neglecting energy efficiency—a gap Eco-Debugger addresses.
+•	Green Software Engineering: The Green Software Foundation’s SCI framework (2023) provides metrics for carbon-aware coding, while studies (Pang et al., 2021) demonstrate that real-time feedback reduces energy waste by up to 23%. Eco-Debugger extends this work by embedding SCI estimates directly into debugging workflows.
+•	IDE Extensions for Sustainability Existing VS Code extensions (e.g., Code Carbon) track emissions passively. Eco-Debugger innovates by proactively suggesting optimizations during debugging, bridging gamification and sustainability.
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
 
