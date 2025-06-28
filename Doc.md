@@ -233,3 +233,18 @@ Eco-Debugger successfully delivered a gamified VS Code extension that educates d
 The project demonstrated how Scrum’s iterative approach enabled critical pivots—like switching from Webview to TreeView, while maintaining development velocity.
 Challenges such as cross-language analysis gaps and team coordination hurdles were overcome through spike solutions (e.g., AI integration) and daily standups. However, limitations remain, ……
 
+As technology continues to advance at an unprecedented rate, the demand for software development has skyrocketed. However, this rapid growth comes with a hidden environmental cost: inefficient code significantly increases energy consumption across data centers and devices. The carbon footprint of the digital world is becoming increasingly substantial, yet it often goes unnoticed. Most developers prioritize functionality, performance, and meeting deadlines, frequently overlooking eco-friendly coding practices that could mitigate this issue.
+The environmental impact of software development cannot be ignored. 
+As the world becomes more digitally interconnected, the importance of sustainable coding practices grows.
+ Developers have a unique opportunity to make a positive impact by writing code that is not only functional and efficient but also environmentally friendly.
+This innovative, gamified VS Code extension provides real-time guidance on energy-efficient coding patterns during debugging sessions. 
+Eco-Debugger is particularly beneficial for freshmen programmers, educating them on best practices while making the learning process engaging and fun.
+
+The environmental impact of software development cannot be ignored. 
+As the world becomes more digitally interconnected, the importance of sustainable coding practices grows.
+ Developers have a unique opportunity to make a positive impact by writing code that is not only functional and efficient but also environmentally friendly.
+This innovative, gamified VS Code extension provides real-time guidance on energy-efficient coding patterns during debugging sessions. 
+Eco-Debugger is particularly beneficial for freshmen programmers, educating them on best practices while making the learning process engaging and fun.
+
+The aim of Eco-Debugger is to make debugging fun while reducing carbon footprint of software by encouraging eco-friendly coding habits in VS code.
+ Eco-Debugger represents a significant step towards integrating sustainability into software development. By educating developers about energy-efficient coding practices and making the debugging process more engaging, Eco-Debugger has the potential to drive meaningful change in the industry. As technology continues to evolve, Eco-Debugger will play a crucial role in shaping a more sustainable digital future.
