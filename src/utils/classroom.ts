@@ -134,16 +134,32 @@ export class ClassroomManager {
             reports: []
         };
         if (this.mode === 'cloud' && supabase) {
-            await supabase.from('classrooms').insert({
+            console.log('[DEBUG] Creating classroom in Supabase:', {
                 classroom_id,
-                last_updated: this.classroom.last_updated,
+                last_updated: new Date().toISOString(),
                 pin,
                 weeklyTopUser: ''
             });
-            await supabase.from('classroom_users').insert({
+            await supabase.from('classrooms').insert({
                 classroom_id,
+                last_updated: new Date().toISOString(),
+                pin,
+                weeklyTopUser: ''
+            });
+            console.log('[DEBUG] Creating classroom user in Supabase:', {
+                classroom_id: this.classroom!.classroom_id,
                 user_id: this.userId,
                 username: this.username,
+                xp: 0,
+                achievements: [],
+                weeklyXP: 0,
+                lastActive: new Date().toISOString()
+            });
+            // Always insert user info into classroom_users table with GitHub username
+            await supabase.from('classroom_users').insert({
+                classroom_id: classroom_id,
+                user_id: this.userId,
+                username: this.username, // this.username should be set to the GitHub username at authentication
                 xp: 0,
                 achievements: [],
                 weeklyXP: 0,
@@ -256,7 +272,7 @@ export class ClassroomManager {
                     weeklyTopUser: ''
                 });
                 await supabase.from('classroom_users').insert({
-                    classroom_id,
+                    classroom_id: this.classroom!.classroom_id,
                     user_id: this.userId,
                     username: this.username,
                     xp: 0,
@@ -296,40 +312,69 @@ export class ClassroomManager {
                 notifications: notifications || [],
                 reports: reports || []
             };
+            // Ensure user info is in classroom_users table
+            const userExists = (users || []).some(u => u.user_id === this.userId);
+            if (!userExists) {
+                await supabase.from('classroom_users').insert({
+                    classroom_id,
+                    user_id: this.userId,
+                    username: this.username, // this.username should be set to the GitHub username at authentication
+                    xp: 0,
+                    achievements: [],
+                    weeklyXP: 0,
+                    lastActive: new Date().toISOString()
+                });
+            }
             this.addOrUpdateUser();
+            await this.addNotification(`${this.username} joined the classroom!`);
             return true;
         }
         return false;
     }
 
-    addOrUpdateUser(xp = 0, achievements: string[] = []) {
+    async addOrUpdateUser(xp = 0, achievements: string[] = []) {
         if (!this.classroom) { return; }
         let user = this.classroom.users.find(u => u.user_id === this.userId);
+        const now = new Date().toISOString();
         if (!user) {
-            user = { user_id: this.userId, username: this.username, xp, achievements, weeklyXP: 0, lastActive: new Date().toISOString() };
+            user = { user_id: this.userId, username: this.username, xp, achievements, weeklyXP: 0, lastActive: now };
             this.classroom.users.push(user);
             if (this.mode === 'cloud' && supabase) {
-                supabase.from('classroom_users').insert({
-                    classroom_id: this.classroom.classroom_id,
-                    user_id: this.userId,
-                    username: this.username,
-                    xp,
-                    achievements,
-                    weeklyXP: 0,
-                    lastActive: user.lastActive
-                });
+                try {
+                    await supabase.from('classroom_users').insert({
+                        classroom_id: this.classroom.classroom_id,
+                        user_id: this.userId,
+                        username: this.username, // this.username should be set to the GitHub username at authentication
+                        xp: 0,
+                        achievements: [],
+                        weeklyXP: 0,
+                        lastActive: new Date().toISOString()
+                    });
+                } catch (err) {
+                    console.error('Supabase insert user error:', err);
+                }
             }
         } else {
             user.xp = xp;
             user.achievements = achievements;
             this.updateWeeklyXP(user, xp);
+            user.lastActive = now;
             if (this.mode === 'cloud' && supabase) {
-                supabase.from('classroom_users').update({
-                    xp,
-                    achievements,
-                    weeklyXP: user.weeklyXP,
-                    lastActive: user.lastActive
-                }).eq('classroom_id', this.classroom.classroom_id).eq('user_id', this.userId);
+                try {
+                    await supabase.from('classroom_users').upsert([
+                        {
+                            classroom_id: this.classroom.classroom_id,
+                            user_id: this.userId,
+                            username: this.username,
+                            xp: user.xp,
+                            achievements: user.achievements, // send as array
+                            weeklyXP: user.weeklyXP,
+                            lastActive: user.lastActive
+                        }
+                    ], { onConflict: 'classroom_id,user_id' });
+                } catch (err) {
+                    console.error('Supabase update user error:', err);
+                }
             }
         }
         this.classroom.last_updated = new Date().toISOString();
@@ -339,13 +384,13 @@ export class ClassroomManager {
             // Find current user and check if they are at the top
             const leaderboard = this.getLeaderboard();
             const userIdx = leaderboard.findIndex(u => u.user_id === this.userId);
-            const user = leaderboard[userIdx];
+            const userOnBoard = leaderboard[userIdx];
             const leaderboardTop = userIdx === 0;
-            checkAchievements(user?.xp || 0, 1, leaderboardTop);
+            checkAchievements(userOnBoard?.xp || 0, 1, leaderboardTop);
         } catch (e) { /* ignore */ }
     }
 
-    private addNotification(message: string) {
+    private async addNotification(message: string) {
         if (!this.classroom) { return; }
         const notification = {
             notificationid: Date.now().toString(),
@@ -357,7 +402,13 @@ export class ClassroomManager {
         this.classroom.notifications.unshift(notification);
         this.classroom.notifications = this.classroom.notifications.slice(0, 50);
         if (this.mode === 'cloud' && supabase) {
-            supabase.from('classroom_notifications').insert({
+            console.log('[DEBUG] Inserting classroom notification in Supabase:', {
+                classroom_id: this.classroom.classroom_id,
+                message,
+                timestamp: notification.timestamp,
+                read: false
+            });
+            await supabase.from('classroom_notifications').insert({
                 classroom_id: this.classroom.classroom_id,
                 message,
                 timestamp: notification.timestamp,
@@ -381,6 +432,13 @@ export class ClassroomManager {
         if (!this.classroom.reports) { this.classroom.reports = []; }
         this.classroom.reports.push(report);
         if (this.mode === 'cloud' && supabase) {
+            console.log('[DEBUG] Inserting classroom report in Supabase:', {
+                classroom_id: this.classroom.classroom_id,
+                reporterId: this.userId,
+                reportedId: reportedUserId,
+                reason,
+                timestamp: report.timestamp
+            });
             await supabase.from('classroom_reports').insert({
                 classroom_id: this.classroom.classroom_id,
                 reporterId: this.userId,
