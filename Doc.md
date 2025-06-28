@@ -324,4 +324,475 @@ XP and leveling system
 	Rewards XP for fixing bugs and applying eco-tips.
 	Tracks XP’s and levels.
 	Awards badges like “Green coder”,” bug slayer” etc
-
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+
