@@ -248,3 +248,22 @@ Eco-Debugger is particularly beneficial for freshmen programmers, educating them
 
 The aim of Eco-Debugger is to make debugging fun while reducing carbon footprint of software by encouraging eco-friendly coding habits in VS code.
  Eco-Debugger represents a significant step towards integrating sustainability into software development. By educating developers about energy-efficient coding practices and making the debugging process more engaging, Eco-Debugger has the potential to drive meaningful change in the industry. As technology continues to evolve, Eco-Debugger will play a crucial role in shaping a more sustainable digital future.
+Educate: To provide context-aware eco-tips during debugging.
+Engage: To implement a gamified system where users earn badges/XP when fixing bugs detected by the extension or when eco-tips suggested by the extension are applied.
+Analyze: Develop real-time code analysis to highlight energy-wasteful patterns.
+Track progress: Track developers’ eco-progress.
+Despite increasing recognition of technology's ecological footprint, developers often lack resources that make sustainable coding both engaging and practical. Existing debugging tools primarily focus on resolving errors, overlooking the chance to teach programmers about eco-friendly coding habits or motivate them to adopt more sustainable approaches. Eco-Debugger fills this void by converting debugging into an interactive, gamified experience.
+The integration of gamification and energy-aware debugging tools in modern IDEs represents an emerging research frontier in sustainable software engineering. This literature review synthesizes existing work on agile methodologies, gamified learning systems, and green coding practices to justify Eco-Debugger’s innovative approach to fostering eco-conscious developer behavior.
+Software development methodologies are frameworks that guide the development process. The selection of an appropriate software development methodology is critical for projects like Eco-Debugger, which require iterative refinement, user feedback integration, and technical robustness. Below are some of the different types of methodologies:
+Agile methodology.
+Waterfall methodology.
+DevOps methodology.
+
+By adopting the Scrum methodology, the Eco-Debugger team will be able to:
+ Respond quickly to changing project requirements.
+ Deliver working software in short iterations.
+ Foster collaboration and communication among team members.
+ Prioritize features based on user needs and feedback.
+ Improved Quality: Continuous testing and refinement ensure high-quality software that meets user needs. 
+Sustainability: Our project focuses on energy-saving suggestions and CO₂ emission estimation which aligns with the Agile Scrum methodology's emphasis on continuous improvement and adaptation.
+By embracing Agile Scrum, our project can deliver a cutting-edge tool that promotes sustainable software development practices, while ensuring a high-quality user experience.
