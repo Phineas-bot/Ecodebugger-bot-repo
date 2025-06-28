@@ -796,3 +796,42 @@ Bug detection and analysis
 Eco-tip generation (AI integrated)
 	Sends code to AI API per analysis.
 
+Security 
+	GitHub Authentication.
+	API tokens encrypted.
+	Data in Supabase must be access controlled (RLS enabled). 
+Reliability
+	Must work well consistently across VS code extension.
+	Tips and XPs must not be cost due to reload or network failure.
+Maintainability
+	Code base has clear modular architecture.
+	Uses consistent formatting and typescript typing.
+Portability
+	Works on windows, macOS, and very compatible with newer versions of VS code.
+Usability 
+	Simple pop-up tooltid for eco-tips.
+	User friendly and engaging UI
+	Easy GitHub login.
+	Settings available via panel.
+System Design
+	Team A (XP Engine)
+o	Built XP (Experience Points) engine that gives XP when bugs are fixed.
+o	Later integrated GroqAI when basic pattern matching proved insufficient for multi-language support
+o	Handled authentication (switched from Firebase to Supabase and GitHub authentication support for better integration.)
+	Team B (Eco-Tips)
+o	Worked on XP Engine as well.
+o	Developed an Eco-Tip engine that scans Python and JS/TS code for beginner mistakes that waste resources. 
+o	Implemented non-intrusive side-panel notifications. That is, displays popup side notifications with XP and Eco-tips
+	Team C (UI)
+o	Initially developed an HTML webview interface but faced difficulties connecting to backend.
+o	Pivoted to TreeView with Scrum Master’s guidance.
+o	Refined the badges Tab for effective unlocking of achievements.
+	Adapted Structure
+o	Later merged into a unified team after recognizing integration bottlenecks.
+o	Built XP (Experience Points) engine that gives XP when bugs are fixed.
+o	Later integrated GroqAI when basic pattern matching proved insufficient for multi-language support
+o	Handled authentication (switched from Firebase to Supabase and GitHub authentication support for better integration.)
+	Team B (Eco-Tips)
+o	Worked on XP Engine as well.
+o	Developed an Eco-Tip engine that scans Python and JS/TS code for beginner mistakes that waste resources. 
+o	Implemented non-intrusive side-panel notifications. That is, displays popup side notifications with XP and Eco-tips
