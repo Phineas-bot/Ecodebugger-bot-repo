@@ -278,4 +278,6 @@ Test-Driven Development (TDD).
 Functional Requirements: Bug detection and analysis, Eco-tip generation( AI integrated), XP and leveling system, User authentication, Leaderboard(Classroom mode), Code linting and Eco parsing, and Extension settings.
 Non-Functional Requirements: Performance, Scalability, Security, Reliability, Maintainability, Portability, and Usability.
 This system is designed as a multi-layered architecture that integrates seamlessly with Visual Studio Code (VS Code) while providing real-time feedback on code efficiency and environmental impact. The architecture follows a model where the VS Code extension interacts with backend analysis tools and gamification services to deliver a responsive and engaging user experience.
+Functional Requirements: Bug detection and analysis, Eco-tip generation( AI integrated), XP and leveling system, User authentication, Leaderboard(Classroom mode), Code linting and Eco parsing, and Extension settings.
+Non-Functional Requirements: Performance, Scalability, Security, Reliability, Maintainability, Portability, and Usability.
 
