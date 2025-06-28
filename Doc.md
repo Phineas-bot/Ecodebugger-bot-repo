@@ -267,3 +267,15 @@ By adopting the Scrum methodology, the Eco-Debugger team will be able to:
  Improved Quality: Continuous testing and refinement ensure high-quality software that meets user needs. 
 Sustainability: Our project focuses on energy-saving suggestions and CO₂ emission estimation which aligns with the Agile Scrum methodology's emphasis on continuous improvement and adaptation.
 By embracing Agile Scrum, our project can deliver a cutting-edge tool that promotes sustainable software development practices, while ensuring a high-quality user experience.
+Gamification in Developer: Tools Gamification techniques (Deterding et al., 2011) have been successfully applied to programming education (e.g., Codecademy’s badges). However, most tools focus solely on code correctness, neglecting energy efficiency—a gap Eco-Debugger addresses.
+Green Software Engineering: The Green Software Foundation’s SCI framework (2023) provides metrics for carbon-aware coding, while studies (Pang et al., 2021) demonstrate that real-time feedback reduces energy waste by up to 23%. Eco-Debugger extends this work by embedding SCI estimates directly into debugging workflows.
+Gamified Debugging: Nunes et al. (2020) found that XP systems increase developer engagement by 40%, but their study omitted environmental impacts.
+To ensure the Eco-Debugger project delivers high-quality and sustainable software, we adopted the Agile Scrum methodology. This approach enables iterative development, flexibility, and continuous improvement. We applied the following to our work:
+Weekly Sprints.
+Daily Stand-up Meetings.
+Incremental Development.
+Test-Driven Development (TDD).
+Functional Requirements: Bug detection and analysis, Eco-tip generation( AI integrated), XP and leveling system, User authentication, Leaderboard(Classroom mode), Code linting and Eco parsing, and Extension settings.
+Non-Functional Requirements: Performance, Scalability, Security, Reliability, Maintainability, Portability, and Usability.
+This system is designed as a multi-layered architecture that integrates seamlessly with Visual Studio Code (VS Code) while providing real-time feedback on code efficiency and environmental impact. The architecture follows a model where the VS Code extension interacts with backend analysis tools and gamification services to deliver a responsive and engaging user experience.
+
