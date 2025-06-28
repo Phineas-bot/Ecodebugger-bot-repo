@@ -155,11 +155,11 @@ export class ClassroomManager {
                 weeklyXP: 0,
                 lastActive: new Date().toISOString()
             });
-            // Always insert user info into classroom_users table
+            // Always insert user info into classroom_users table with GitHub username
             await supabase.from('classroom_users').insert({
                 classroom_id: classroom_id,
                 user_id: this.userId,
-                username: this.username,
+                username: this.username, // this.username should be set to the GitHub username at authentication
                 xp: 0,
                 achievements: [],
                 weeklyXP: 0,
@@ -318,7 +318,7 @@ export class ClassroomManager {
                 await supabase.from('classroom_users').insert({
                     classroom_id,
                     user_id: this.userId,
-                    username: this.username,
+                    username: this.username, // this.username should be set to the GitHub username at authentication
                     xp: 0,
                     achievements: [],
                     weeklyXP: 0,
@@ -344,7 +344,7 @@ export class ClassroomManager {
                     await supabase.from('classroom_users').insert({
                         classroom_id: this.classroom.classroom_id,
                         user_id: this.userId,
-                        username: this.username,
+                        username: this.username, // this.username should be set to the GitHub username at authentication
                         xp: 0,
                         achievements: [],
                         weeklyXP: 0,
