@@ -233,3 +233,605 @@ Eco-Debugger successfully delivered a gamified VS Code extension that educates d
 The project demonstrated how Scrum’s iterative approach enabled critical pivots—like switching from Webview to TreeView, while maintaining development velocity.
 Challenges such as cross-language analysis gaps and team coordination hurdles were overcome through spike solutions (e.g., AI integration) and daily standups. However, limitations remain, ……
 
+As technology continues to advance at an unprecedented rate, the demand for software development has skyrocketed. However, this rapid growth comes with a hidden environmental cost: inefficient code significantly increases energy consumption across data centers and devices. The carbon footprint of the digital world is becoming increasingly substantial, yet it often goes unnoticed. Most developers prioritize functionality, performance, and meeting deadlines, frequently overlooking eco-friendly coding practices that could mitigate this issue.
+The environmental impact of software development cannot be ignored. 
+As the world becomes more digitally interconnected, the importance of sustainable coding practices grows.
+ Developers have a unique opportunity to make a positive impact by writing code that is not only functional and efficient but also environmentally friendly.
+This innovative, gamified VS Code extension provides real-time guidance on energy-efficient coding patterns during debugging sessions. 
+Eco-Debugger is particularly beneficial for freshmen programmers, educating them on best practices while making the learning process engaging and fun.
+
+The environmental impact of software development cannot be ignored. 
+As the world becomes more digitally interconnected, the importance of sustainable coding practices grows.
+ Developers have a unique opportunity to make a positive impact by writing code that is not only functional and efficient but also environmentally friendly.
+This innovative, gamified VS Code extension provides real-time guidance on energy-efficient coding patterns during debugging sessions. 
+Eco-Debugger is particularly beneficial for freshmen programmers, educating them on best practices while making the learning process engaging and fun.
+
+The aim of Eco-Debugger is to make debugging fun while reducing carbon footprint of software by encouraging eco-friendly coding habits in VS code.
+ Eco-Debugger represents a significant step towards integrating sustainability into software development. By educating developers about energy-efficient coding practices and making the debugging process more engaging, Eco-Debugger has the potential to drive meaningful change in the industry. As technology continues to evolve, Eco-Debugger will play a crucial role in shaping a more sustainable digital future.
+Educate: To provide context-aware eco-tips during debugging.
+Engage: To implement a gamified system where users earn badges/XP when fixing bugs detected by the extension or when eco-tips suggested by the extension are applied.
+Analyze: Develop real-time code analysis to highlight energy-wasteful patterns.
+Track progress: Track developers’ eco-progress.
+Despite increasing recognition of technology's ecological footprint, developers often lack resources that make sustainable coding both engaging and practical. Existing debugging tools primarily focus on resolving errors, overlooking the chance to teach programmers about eco-friendly coding habits or motivate them to adopt more sustainable approaches. Eco-Debugger fills this void by converting debugging into an interactive, gamified experience.
+The integration of gamification and energy-aware debugging tools in modern IDEs represents an emerging research frontier in sustainable software engineering. This literature review synthesizes existing work on agile methodologies, gamified learning systems, and green coding practices to justify Eco-Debugger’s innovative approach to fostering eco-conscious developer behavior.
+Software development methodologies are frameworks that guide the development process. The selection of an appropriate software development methodology is critical for projects like Eco-Debugger, which require iterative refinement, user feedback integration, and technical robustness. Below are some of the different types of methodologies:
+Agile methodology.
+Waterfall methodology.
+DevOps methodology.
+
+By adopting the Scrum methodology, the Eco-Debugger team will be able to:
+ Respond quickly to changing project requirements.
+ Deliver working software in short iterations.
+ Foster collaboration and communication among team members.
+ Prioritize features based on user needs and feedback.
+ Improved Quality: Continuous testing and refinement ensure high-quality software that meets user needs. 
+Sustainability: Our project focuses on energy-saving suggestions and CO₂ emission estimation which aligns with the Agile Scrum methodology's emphasis on continuous improvement and adaptation.
+By embracing Agile Scrum, our project can deliver a cutting-edge tool that promotes sustainable software development practices, while ensuring a high-quality user experience.
+Gamification in Developer: Tools Gamification techniques (Deterding et al., 2011) have been successfully applied to programming education (e.g., Codecademy’s badges). However, most tools focus solely on code correctness, neglecting energy efficiency—a gap Eco-Debugger addresses.
+Green Software Engineering: The Green Software Foundation’s SCI framework (2023) provides metrics for carbon-aware coding, while studies (Pang et al., 2021) demonstrate that real-time feedback reduces energy waste by up to 23%. Eco-Debugger extends this work by embedding SCI estimates directly into debugging workflows.
+Gamified Debugging: Nunes et al. (2020) found that XP systems increase developer engagement by 40%, but their study omitted environmental impacts.
+To ensure the Eco-Debugger project delivers high-quality and sustainable software, we adopted the Agile Scrum methodology. This approach enables iterative development, flexibility, and continuous improvement. We applied the following to our work:
+Weekly Sprints.
+Daily Stand-up Meetings.
+Incremental Development.
+Test-Driven Development (TDD).
+Functional Requirements: Bug detection and analysis, Eco-tip generation( AI integrated), XP and leveling system, User authentication, Leaderboard(Classroom mode), Code linting and Eco parsing, and Extension settings.
+Non-Functional Requirements: Performance, Scalability, Security, Reliability, Maintainability, Portability, and Usability.
+This system is designed as a multi-layered architecture that integrates seamlessly with Visual Studio Code (VS Code) while providing real-time feedback on code efficiency and environmental impact. The architecture follows a model where the VS Code extension interacts with backend analysis tools and gamification services to deliver a responsive and engaging user experience.
+Functional Requirements: Bug detection and analysis, Eco-tip generation( AI integrated), XP and leveling system, User authentication, Leaderboard(Classroom mode), Code linting and Eco parsing, and Extension settings.
+Non-Functional Requirements: Performance, Scalability, Security, Reliability, Maintainability, Portability, and Usability.
+2. Agile/Scrum Methodology
+Agile methodologies, particularly Scrum, address Waterfall’s limitations through iterative development cycles (sprints) and continuous stakeholder collaboration. Scrum’s emphasis on incremental deliverables (e.g., releasing a minimal viable extension with core ebugging features first) allows rapid validation of Eco-Debugger’s dual objectives: energy efficiency and user engagement. Empirical research demonstrates that Scrum improves success rates by ∼35% for tools requiring frequent user testing, as it enables biweekly feedback loops—critical for refining gamification elements like achievement thresholds or CO₂ visualization. However, Agile’s reliance on self-organizing teams demands high developer autonomy, which may require additional training for academic teams collaborating on Classroom Mode. Despite this, Agile’s flexibility in prioritizing backlog items (like fixing energy-profiling bugs before UI polish) makes it the optimal choice for Eco-Debugger’s dynamic requirements.
+3. DevOps Methodology
+DevOps extends Agile principles by integrating continuous integration/continuous deployment (CI/CD) pipelines, automated testing, and infrastructure-as-code. While DevOps excels in large-scale, high-availability systems (e.g., cloud-based IDEs), its complexity outweighs the needs of a single IDE extension like Eco-Debugger. For example, implementing DevOps’ automated deployment tools would introduce unnecessary overhead for a tool distributed via the VS Code Marketplace. Fitzgerald and Stol (2017) note that DevOps’ value emerges in projects with frequent production releases—a scenario mismatched with Eco-Debugger’s update cycle (target: quarterly). Moreover, DevOps’ steep learning curve could divert resources from core innovation in energy profiling algorithms or gamification design. Comparative studies (Hoda et al., 2012; Dybå and Dingsøyr, 2008) conclude that Scrum’s balance of structure and adaptability outperforms Waterfall and DevOps for tools with:
+•	Uncertain requirements (e.g., evolving gamification metrics),
+•	Need for user-centric design (e.g., educator input on Classroom Mode),
+•	Moderate team sizes (e.g., 3–5 developers).
+Eco-Debugger’s unique blend of experimental features (real-time CO₂ estimates + XP rewards) aligns precisely with Scrum’s strengths, while avoiding the rigidity of Waterfall and the operational bloat of DevOps.
+aligns precisely with Scrum’s strengths, while avoiding the rigidity of Waterfall and the operational bloat of DevOps.
+Reason for the Choice of Scrum Methodology
+The selection of Scrum as the primary development methodology for the Eco-Debugger project was driven by its unique alignment with the project’s core objectives: iterative refinement, user-centric design, and adaptive sustainability features. Below is a detailed justification for this choice, supported by empirical research and project-specific requirements.
+•	Iterative Development Enables quick prototyping of features (XP rewards, CO₂ feedback) and continuous improvement through biweekly sprints.
+•	User-Centric Design Feedback from developers ensures the tool remains practical and engaging.
+•	Adaptability Allows seamless incorporation of new sustainability standards (e.g., updated energy-profiling metrics).
+•	Proven Success Similar tools (e.g, CodeAcademy, VS Code extensions) use Scrum for efficient, incremental updates.
+ntric design, and adaptive sustainability features. Below is a detailed justification for this choice, supported by empirical research and project-specific requirements.
+•	Iterative Development Enables quick prototyping of features (XP rewards, CO₂ feedback) and continuous improvement through biweekly sprints.
+•	User-Centric Design Feedback from developers ensures the tool remains practical and engaging.
+•	Adaptability Allows seamless incorporation of new sustainability standards (e.g., updated energy-profiling metrics).
+•	Proven Success Similar tools (e.g, CodeAcademy, VS Code extensions) use Scrum for efficient, incremental updates.
+ntric design, and adaptive sustainability features. Below is a detailed justification for this choice, supported by empirical research and project-specific requirements.
+•	Iterative Development Enables quick prototyping of features (XP rewards, CO₂ feedback) and continuous improvement through biweekly sprints.
+•	User-Centric Design Feedback from developers ensures the tool remains practical and engaging.
+•	Adaptability Allows seamless incorporation of new sustainability standards (e.g., updated energy-profiling metrics).
+•	Proven Success Similar tools (e.g, CodeAcademy, VS Code extensions) use Scrum for efficient, incremental updates.
+ntric design, and adaptive sustainability features. Below is a detailed justification for this choice, supported by empirical research and project-specific requirements.
+•	Iterative Development Enables quick prototyping of features (XP rewards, CO₂ feedback) and continuous improvement through biweekly sprints.
+•	User-Centric Design Feedback from developers ensures the tool remains practical and engaging.
+•	Adaptability Allows seamless incorporation of new sustainability standards (e.g., updated energy-profiling metrics).
+•	Proven Success Similar tools (e.g, CodeAcademy, VS Code extensions) use Scrum for efficient, incremental updates.
+•	Gamification in Developer: Tools Gamification techniques (Deterding et al., 2011) have been successfully applied to programming education (e.g., Codecademy’s badges). However, most tools focus solely on code correctness, neglecting energy efficiency—a gap Eco-Debugger addresses.
+•	Green Software Engineering: The Green Software Foundation’s SCI framework (2023) provides metrics for carbon-aware coding, while studies (Pang et al., 2021) demonstrate that real-time feedback reduces energy waste by up to 23%. Eco-Debugger extends this work by embedding SCI estimates directly into debugging workflows.
+•	IDE Extensions for Sustainability Existing VS Code extensions (e.g., Code Carbon) track emissions passively. Eco-Debugger innovates by proactively suggesting optimizations during debugging, bridging gamification and sustainability.
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+	Reviews eco-friendly suggestions.
+	Displays personalized eco-tips per file or code block.
+XP and leveling system
+	Rewards XP for fixing bugs and applying eco-tips.
+	Tracks XP’s and levels.
+	Awards badges like “Green coder”,” bug slayer” etc
+User authentication
+	Authenticates users via GitHub Authentication.
+	Stores user profiles and progress in Superbase.
+Functional requirement 
+The functional requirements are as follows:
+Bug detection and analysis
+	Automatically detects fixed bugs or code changes on. 
+	Analysis source code per eco efficiency.
+Eco-tip generation (AI integrated)
+	Sends code to AI API per analysis.
+
+Security 
+	GitHub Authentication.
+	API tokens encrypted.
+	Data in Supabase must be access controlled (RLS enabled). 
+Reliability
+	Must work well consistently across VS code extension.
+	Tips and XPs must not be cost due to reload or network failure.
+Maintainability
+	Code base has clear modular architecture.
+	Uses consistent formatting and typescript typing.
+Portability
+	Works on windows, macOS, and very compatible with newer versions of VS code.
+Usability 
+	Simple pop-up tooltid for eco-tips.
+	User friendly and engaging UI
+	Easy GitHub login.
+	Settings available via panel.
+System Design
+	Team A (XP Engine)
+o	Built XP (Experience Points) engine that gives XP when bugs are fixed.
+o	Later integrated GroqAI when basic pattern matching proved insufficient for multi-language support
+o	Handled authentication (switched from Firebase to Supabase and GitHub authentication support for better integration.)
+	Team B (Eco-Tips)
+o	Worked on XP Engine as well.
+o	Developed an Eco-Tip engine that scans Python and JS/TS code for beginner mistakes that waste resources. 
+o	Implemented non-intrusive side-panel notifications. That is, displays popup side notifications with XP and Eco-tips
+	Team C (UI)
+o	Initially developed an HTML webview interface but faced difficulties connecting to backend.
+o	Pivoted to TreeView with Scrum Master’s guidance.
+o	Refined the badges Tab for effective unlocking of achievements.
+	Adapted Structure
+o	Later merged into a unified team after recognizing integration bottlenecks.
+o	Built XP (Experience Points) engine that gives XP when bugs are fixed.
+o	Later integrated GroqAI when basic pattern matching proved insufficient for multi-language support
+o	Handled authentication (switched from Firebase to Supabase and GitHub authentication support for better integration.)
+	Team B (Eco-Tips)
+o	Worked on XP Engine as well.
+o	Developed an Eco-Tip engine that scans Python and JS/TS code for beginner mistakes that waste resources. 
+o	Implemented non-intrusive side-panel notifications. That is, displays popup side notifications with XP and Eco-tips
