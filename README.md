@@ -24,7 +24,7 @@ A gamified VS Code extension for debugging with eco coding tips.
 ## How to Use
 
 1. **Install the Extension**  
-   - Download and install from the VS Code Marketplace (or use the `.vsix` file provided).
+   - Download and install from the releases ( the `.vsix` file provided).
 
 2. **Start Debugging**  
    - Open your project in VS Code.
