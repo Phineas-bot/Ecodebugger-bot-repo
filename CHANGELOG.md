@@ -1,6 +1,6 @@
 # Change Log
 
-All notable changes to the "Ecodebugger" extension will be documented in this file.
+All further notable changes to the "Ecodebugger" extension will be documented in this file.
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
