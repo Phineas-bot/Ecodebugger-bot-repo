@@ -7,7 +7,7 @@ let groqBatchTimer: NodeJS.Timeout | undefined;
 
 export function canSendGroqRequest() {
     const now = Date.now();
-    if (now - groqRateLimit.lastReset > 60 * 60 * 1000) {
+    if (now - groqRateLimit.lastReset > 30 * 30 * 1000) {
         groqRateLimit = { count: 0, lastReset: now };
     }
     return groqRateLimit.count < GROQ_RATE_LIMIT;
